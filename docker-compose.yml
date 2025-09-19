@@ -1,28 +1,31 @@
-version: '3'
+version: "3.8"
 
 services:
-  rpcc-postgres:
-    image: postgres:15.5-alpine3.18
-    restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-  rpcc-backend:
+  backend:
     build:
-      context: Backend
-    restart: always
+      context: ./Backend
+      dockerfile: Dockerfile
+    image: creative-cluster-backend:latest
     ports:
       - "8080:8080"
-    depends_on:
-      - rpcc-postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://rpcc-postgres:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      # Dokploy typically provides a managed database; provide the full JDBC URL and credentials
+      # via environment variables or a dokploy-provided secret. Example in your .env:
+      # POSTGRES_USER=postgres
+      # POSTGRES_PASSWORD=bazepodataka
+      # POSTGRES_DB=postgresql://postgres:bazepodataka@your-db-host:5432/your-db-name
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
 
-volumes:
-  postgres-data:
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    image: creative-cluster-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+# Note: This compose file does not create a database service. Use Dokploy's managed DB or
+# provide an external database and set SPRING_DATASOURCE_* env vars accordingly.
