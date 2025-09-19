@@ -5,8 +5,7 @@ FROM maven:3.8.5-openjdk-17-slim AS builder
 WORKDIR /app
 
 # Copy only the Maven files first to leverage caching for dependencies
-COPY pom.xml mvnw* .
-COPY .mvn .mvn
+COPY pom.xml .
 
 # Download dependencies (offline) to cache them in the layer
 RUN mvn dependency:go-offline -B
