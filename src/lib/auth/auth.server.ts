@@ -8,6 +8,13 @@ import * as schema from "@/db/schema";
 import { env } from "@/env.server";
 import { site } from "@/sites";
 
+import { queueResetEmail, queueVerificationEmail } from "./auth-email.server";
+import { guardAdminUpdate, assertAdminsRemain } from "./min-admins.server";
+import { passwordPolicyHook } from "./password-hook.server";
+import { PASSWORD_BACKSTOP_LENGTH } from "./password-policy";
+
+const RESET_TOKEN_SECONDS = 3600;
+
 export const auth = betterAuth({
   appName: site.name,
   baseURL: env.BETTER_AUTH_URL,
@@ -28,14 +35,56 @@ export const auth = betterAuth({
       },
       invitedBy: { type: "string", required: false, input: false },
     },
+    changeEmail: { enabled: true },
   },
   session: {
     cookieCache: { enabled: true, maxAge: 60 },
+  },
+  hooks: { before: passwordPolicyHook },
+  databaseHooks: {
+    user: {
+      update: {
+        before: async (data, ctx) => {
+          const body = ctx?.body as { userId?: unknown } | undefined;
+          await guardAdminUpdate(data, body?.userId);
+        },
+      },
+      delete: {
+        before: async (user) => {
+          await assertAdminsRemain(user.id);
+        },
+      },
+    },
   },
   emailAndPassword: {
     enabled: true,
     disableSignUp: true,
     revokeSessionsOnPasswordReset: true,
+    // The policy hook counts NFKC code points; these only guard against absurd input.
+    minPasswordLength: 1,
+    maxPasswordLength: PASSWORD_BACKSTOP_LENGTH,
+    resetPasswordTokenExpiresIn: RESET_TOKEN_SECONDS,
+    sendResetPassword: async ({ user, token }) => {
+      await queueResetEmail(
+        { email: user.email, locale: (user as { locale?: string }).locale },
+        token,
+      );
+    },
+  },
+  emailVerification: {
+    expiresIn: 3600,
+    sendVerificationEmail: async ({ user, url, token }) => {
+      await queueVerificationEmail({
+        user: {
+          email: user.email,
+          locale: (user as { locale?: string }).locale,
+        },
+        emailVerified: user.emailVerified,
+        link: url,
+        expiry: "hour",
+        idempotencyKey: `verify:${token}`,
+      });
+    },
   },
   socialProviders:
     env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
