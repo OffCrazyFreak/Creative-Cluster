@@ -5,6 +5,7 @@ import ErrorPage from "@/components/custom/errors/error-page";
 import NotFoundPage from "@/components/custom/errors/not-found-page";
 import AppShell from "@/components/custom/layout/app-shell";
 import RootDocument from "@/components/custom/layout/root-document";
+import { viewerQueryOptions } from "@/features/session/viewer-query";
 import { site } from "@/sites";
 
 import appCss from "../styles.css?url";
@@ -14,6 +15,9 @@ interface IRouterContext {
 }
 
 export const Route = createRootRouteWithContext<IRouterContext>()({
+  beforeLoad: async ({ context }) => ({
+    viewer: await context.queryClient.ensureQueryData(viewerQueryOptions()),
+  }),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
