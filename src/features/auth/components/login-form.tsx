@@ -1,4 +1,3 @@
-import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { useAppForm } from "@/components/custom/form/app-form";
@@ -6,18 +5,12 @@ import { FieldGroup } from "@/components/ui/field";
 import { authClient } from "@/lib/auth/auth-client";
 import { m } from "@/paraglide/messages";
 
-import { authErrorMessage } from "../auth-errors";
 import { loginSchema } from "../auth-schemas";
 import { useRefreshViewer } from "../hooks/use-refresh-viewer";
-import { safeRedirect } from "../safe-redirect";
+import { safeAuthCall } from "../safe-auth-call";
 import FormError from "./form-error";
 
-interface ILoginFormProps {
-  redirect?: string;
-}
-
-export default function LoginForm({ redirect }: ILoginFormProps) {
-  const router = useRouter();
+export default function LoginForm() {
   const refreshViewer = useRefreshViewer();
   const [error, setError] = useState<string | null>(null);
 
@@ -26,13 +19,10 @@ export default function LoginForm({ redirect }: ILoginFormProps) {
     validators: { onChange: loginSchema },
     onSubmit: async ({ value }) => {
       setError(null);
-      const result = await authClient.signIn.email(value);
-      if (result.error) {
-        setError(authErrorMessage(result.error));
-        return;
-      }
-      await refreshViewer();
-      router.history.push(safeRedirect(redirect) ?? "/account");
+      const message = await safeAuthCall(() => authClient.signIn.email(value));
+      setError(message);
+      // The /login route redirects a logged-in viewer to the page they came from.
+      if (!message) await refreshViewer();
     },
   });
 

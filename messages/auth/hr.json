@@ -54,5 +54,6 @@
   "auth_claim_failed": "Unos nije moguće preuzeti. Pokušaj ponovno.",
   "auth_claim_next": "Sada odaberi lozinku za svoj račun.",
   "auth_error_generic": "Nešto je pošlo po zlu. Pokušaj ponovno.",
-  "auth_login_error_google": "Ovaj Google račun nema račun ovdje. Računi se otvaraju na poziv."
+  "auth_login_error_google": "Ovaj Google račun nema račun ovdje. Računi se otvaraju na poziv.",
+  "auth_claim_used_hint": "Unos je već preuzet? Prijavi se, a ako lozinka nije postavljena, zatraži poveznicu za novu lozinku."
 }

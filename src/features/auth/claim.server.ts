@@ -4,7 +4,7 @@ import { and, eq, gt, isNull, sql } from "drizzle-orm";
 
 import { INVITE_TOKEN_TTL_SECONDS } from "@/constants/email";
 import { LOCALES } from "@/constants/locales";
-import { db } from "@/db/client.server";
+import { db, type DbOrTx } from "@/db/client.server";
 import { claimInvite, entry, user } from "@/db/schema";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { createPasswordToken } from "@/lib/auth/password-token.server";
@@ -26,6 +26,15 @@ function usableInvite(tokenHash: string) {
     isNull(claimInvite.usedAt),
     gt(claimInvite.expiresAt, sql`now()`),
   );
+}
+
+async function userIdByEmail(tx: DbOrTx, email: string) {
+  const [row] = await tx
+    .select({ id: user.id })
+    .from(user)
+    .where(eq(user.email, email))
+    .limit(1);
+  return row?.id;
 }
 
 export async function getClaimPreview(token: string) {
@@ -58,13 +67,10 @@ export async function claimListing(token: string): Promise<ClaimResult> {
     if (listing.ownerUserId) return { status: "taken" };
 
     const email = invite.email.toLowerCase();
-    const [existing] = await tx
-      .select({ id: user.id })
-      .from(user)
-      .where(eq(user.email, email))
-      .limit(1);
+    const existingId = await userIdByEmail(tx, email);
     const locale = LOCALES.find((l) => l === listing.sourceLocale);
-    const [created] = existing
+    // A concurrent invite for the same address wins the insert; then we link to that account.
+    const [created] = existingId
       ? []
       : await tx
           .insert(user)
@@ -75,8 +81,11 @@ export async function claimListing(token: string): Promise<ClaimResult> {
             emailVerified: true,
             locale: locale ?? site.baseLocale,
           })
+          .onConflictDoNothing({ target: user.email })
           .returning({ id: user.id });
-    const ownerId = existing?.id ?? created.id;
+    const ownerId =
+      existingId ?? created?.id ?? (await userIdByEmail(tx, email));
+    if (!ownerId) throw new Error("Claim could not resolve the owner account");
 
     await tx
       .update(entry)

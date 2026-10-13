@@ -14,6 +14,9 @@ export function usePasswordStrength(password: string) {
       .then((checker) => checker.checkAsync(password.slice(0, 128)))
       .then((checked) => {
         if (!stale) setResult({ password, score: checked.score });
+      })
+      .catch(() => {
+        // The bar is advisory; without it the form still works.
       });
     return () => {
       stale = true;

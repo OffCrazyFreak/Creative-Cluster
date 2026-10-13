@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { m } from "@/paraglide/messages";
 
 import AuthPage from "./auth-page";
+import FormError from "./form-error";
 import GoogleButton from "./google-button";
 import LoginForm from "./login-form";
 
@@ -20,13 +20,9 @@ export default function LoginPage({
 }: ILoginPageProps) {
   return (
     <AuthPage title={m.auth_login_title()} intro={m.auth_login_intro()}>
-      {failed && (
-        <Alert variant="destructive" role="alert">
-          <AlertDescription>{m.auth_login_error_google()}</AlertDescription>
-        </Alert>
-      )}
-      <LoginForm redirect={redirect} />
-      {googleEnabled && <GoogleButton />}
+      <FormError message={failed ? m.auth_login_error_google() : null} />
+      <LoginForm />
+      {googleEnabled && <GoogleButton redirect={redirect} />}
       <Link to="/reset-password">{m.auth_login_forgot()}</Link>
       <p className="text-sm">
         {m.auth_login_invite_only()}{" "}

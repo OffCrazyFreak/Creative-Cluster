@@ -21,5 +21,5 @@ export const newPasswordSchema = z
   });
 
 export const claimTokenSchema = z.object({
-  token: z.string().min(10).max(200),
+  token: z.string().min(1).max(200),
 });

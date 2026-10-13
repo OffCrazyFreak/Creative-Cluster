@@ -1,8 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/auth-client";
 import { m } from "@/paraglide/messages";
+import { getLocale, localizeHref } from "@/paraglide/runtime";
 
-export default function GoogleButton() {
+import { safeRedirect } from "../safe-redirect";
+
+interface IGoogleButtonProps {
+  redirect?: string;
+}
+
+export default function GoogleButton({ redirect }: IGoogleButtonProps) {
+  // better-auth sends the browser to these URLs, so they carry the language prefix already.
+  const locale = getLocale();
+  const target = safeRedirect(redirect) ?? "/account";
   return (
     <Button
       type="button"
@@ -10,8 +20,8 @@ export default function GoogleButton() {
       onClick={() =>
         void authClient.signIn.social({
           provider: "google",
-          callbackURL: "/account",
-          errorCallbackURL: "/login?error=google",
+          callbackURL: localizeHref(target, { locale }),
+          errorCallbackURL: localizeHref("/login?error=google", { locale }),
         })
       }
     >

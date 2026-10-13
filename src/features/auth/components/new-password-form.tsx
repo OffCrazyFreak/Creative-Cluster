@@ -8,7 +8,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { authClient } from "@/lib/auth/auth-client";
 import { m } from "@/paraglide/messages";
 
-import { authErrorMessage } from "../auth-errors";
+import { safeAuthCall } from "../safe-auth-call";
 import { newPasswordSchema } from "../auth-schemas";
 import FormError from "./form-error";
 import NewPasswordField from "./new-password-field";
@@ -30,12 +30,11 @@ export default function NewPasswordForm({
     validators: { onChange: newPasswordSchema },
     onSubmit: async ({ value }) => {
       setError(null);
-      const result = await authClient.resetPassword({
-        newPassword: value.newPassword,
-        token,
-      });
-      if (result.error) setError(authErrorMessage(result.error));
-      else setDone(true);
+      const message = await safeAuthCall(() =>
+        authClient.resetPassword({ newPassword: value.newPassword, token }),
+      );
+      setError(message);
+      setDone(!message);
     },
   });
 

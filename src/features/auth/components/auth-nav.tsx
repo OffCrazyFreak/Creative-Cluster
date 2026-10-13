@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/auth-client";
 import { m } from "@/paraglide/messages";
 
+import { safeAuthCall } from "../safe-auth-call";
 import { useRefreshViewer } from "../hooks/use-refresh-viewer";
 
 export default function AuthNav() {
@@ -11,7 +12,8 @@ export default function AuthNav() {
   const refreshViewer = useRefreshViewer();
 
   async function logOut() {
-    await authClient.signOut();
+    // Refresh either way: if signOut failed the viewer query shows the session is still there.
+    await safeAuthCall(() => authClient.signOut());
     await refreshViewer();
   }
 

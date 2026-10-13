@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { m } from "@/paraglide/messages";
 
 import { claimImportedListing } from "../auth.functions";
+import FormError from "./form-error";
 import NewPasswordForm from "./new-password-form";
 
 interface IClaimPanelProps {
@@ -47,11 +47,7 @@ export default function ClaimPanel({
   }
 
   if (state.step === "error") {
-    return (
-      <Alert variant="destructive" role="alert">
-        <AlertDescription>{state.message}</AlertDescription>
-      </Alert>
-    );
+    return <FormError message={state.message} />;
   }
   if (state.step === "linked") {
     return (

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { getClaimInvite } from "@/features/auth/auth.functions";
 import AuthPage from "@/features/auth/components/auth-page";
@@ -22,7 +22,12 @@ function ClaimRoute() {
           email={invite.email}
         />
       ) : (
-        <p>{m.auth_claim_invalid()}</p>
+        <>
+          <p>{m.auth_claim_invalid()}</p>
+          <p>{m.auth_claim_used_hint()}</p>
+          <Link to="/login">{m.auth_login_submit()}</Link>
+          <Link to="/reset-password">{m.auth_login_forgot()}</Link>
+        </>
       )}
     </AuthPage>
   );

@@ -6,7 +6,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { authClient } from "@/lib/auth/auth-client";
 import { m } from "@/paraglide/messages";
 
-import { authErrorMessage } from "../auth-errors";
+import { safeAuthCall } from "../safe-auth-call";
 import { resetRequestSchema } from "../auth-schemas";
 import FormError from "./form-error";
 
@@ -19,11 +19,11 @@ export default function ResetRequestForm() {
     validators: { onChange: resetRequestSchema },
     onSubmit: async ({ value }) => {
       setError(null);
-      const result = await authClient.requestPasswordReset({
-        email: value.email,
-      });
-      if (result.error) setError(authErrorMessage(result.error));
-      else setSent(true);
+      const message = await safeAuthCall(() =>
+        authClient.requestPasswordReset({ email: value.email }),
+      );
+      setError(message);
+      setSent(!message);
     },
   });
 
