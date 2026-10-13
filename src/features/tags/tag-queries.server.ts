@@ -1,8 +1,8 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
 
 import { TAG_FIELDS } from "@/constants/tags";
 import { db } from "@/db/client.server";
-import { entryTag, tag } from "@/db/schema";
+import { entry, entryTag, tag } from "@/db/schema";
 
 import type { IEntryTags, ITagOption } from "./tag-schemas";
 import {
@@ -11,28 +11,40 @@ import {
   usableTagCondition,
 } from "./tag-visibility.server";
 
+export interface ITagViewer {
+  userId: string | null;
+  isAdmin?: boolean;
+}
+
 export async function listPickerTags(
-  viewerUserId: string | null,
+  viewer: ITagViewer,
 ): Promise<ITagOption[]> {
   return db
     .select(tagOptionColumns)
     .from(tag)
-    .where(usableTagCondition({ userId: viewerUserId }))
+    .where(usableTagCondition(viewer))
     .orderBy(asc(tag.labelEn));
 }
 
+// Tags of an unpublished entry are visible only to its owner and to admins.
 export async function getEntryTags(
   entryId: string,
-  viewerUserId: string | null,
+  viewer: ITagViewer,
 ): Promise<IEntryTags> {
   const rows = await db
     .select({ field: entryTag.field, ...tagOptionColumns })
     .from(entryTag)
     .innerJoin(tag, eq(tag.id, entryTag.tagId))
+    .innerJoin(entry, eq(entry.id, entryTag.entryId))
     .where(
       and(
         eq(entryTag.entryId, entryId),
-        usableTagCondition({ userId: viewerUserId }),
+        usableTagCondition(viewer),
+        or(
+          eq(entry.status, "published"),
+          viewer.isAdmin ? sql`true` : undefined,
+          viewer.userId ? eq(entry.ownerUserId, viewer.userId) : undefined,
+        ),
       ),
     )
     .orderBy(asc(tag.labelEn));

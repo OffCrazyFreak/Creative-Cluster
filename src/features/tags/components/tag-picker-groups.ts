@@ -16,6 +16,19 @@ export interface IPickerGroup {
   items: PickerItem[];
 }
 
+export function unknownTag(id: string, label: string): ITagOption {
+  return {
+    id,
+    slug: id,
+    labelEn: label,
+    labelHr: label,
+    aliasesEn: [],
+    aliasesHr: [],
+    parentId: null,
+    status: "active",
+  };
+}
+
 export function isSuggestItem(item: PickerItem): item is ISuggestItem {
   return "suggest" in item;
 }
@@ -37,16 +50,16 @@ export function buildGroups(
     sorted.flatMap((option) => (option.parentId ? [option.parentId] : [])),
   );
   const parents = sorted.filter((option) => parentIds.has(option.id));
-  const groups: IPickerGroup[] = parents.map((parent) => ({
-    value: tagLabel(parent, locale),
-    items: [
+  // Each tag appears once even if the data nests deeper than two levels.
+  const grouped = new Set<string>();
+  const groups: IPickerGroup[] = parents.flatMap((parent) => {
+    const items = [
       parent,
       ...sorted.filter((option) => option.parentId === parent.id),
-    ],
-  }));
-  const grouped = new Set(
-    groups.flatMap((g) => g.items.map((item) => item.id)),
-  );
+    ].filter((option) => !grouped.has(option.id));
+    items.forEach((option) => grouped.add(option.id));
+    return items.length ? [{ value: tagLabel(parent, locale), items }] : [];
+  });
   const rest = sorted.filter((option) => !grouped.has(option.id));
   if (rest.length) groups.push({ value: otherLabel, items: rest });
   if (suggestQuery) {

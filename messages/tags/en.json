@@ -36,5 +36,6 @@
   "tags_admin_merge_title": "Merge \"{label}\" into another tag",
   "tags_admin_merge_hint": "Every entry and opportunity using this tag moves to the tag you pick, and its names become aliases of it.",
   "tags_admin_merge_target": "Search for the tag to keep",
-  "tags_admin_merge_confirm": "Merge tags"
+  "tags_admin_merge_confirm": "Merge tags",
+  "tags_picker_unknown": "Unavailable tag"
 }

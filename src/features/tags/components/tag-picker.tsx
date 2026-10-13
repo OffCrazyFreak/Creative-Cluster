@@ -24,6 +24,7 @@ import { tagLabel } from "../tag-label";
 import type { ITagOption } from "../tag-schemas";
 import {
   buildGroups,
+  unknownTag,
   isSuggestItem,
   pickerFilter,
   type IPickerGroup,
@@ -59,10 +60,14 @@ export default function TagPicker({
   const [query, setQuery] = useState("");
   const [failed, setFailed] = useState(false);
 
+  // Ids missing from the options (still loading, or not listable for this viewer) stay selected under a
+  // fallback label, so saving never wipes tags the picker could not show.
   const selected = useMemo(
     () =>
-      value.flatMap(
-        (tagId) => tags.find((option) => option.id === tagId) ?? [],
+      value.map(
+        (tagId) =>
+          tags.find((option) => option.id === tagId) ??
+          unknownTag(tagId, m.tags_picker_unknown()),
       ),
     [tags, value],
   );

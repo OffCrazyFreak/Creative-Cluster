@@ -36,5 +36,6 @@
   "tags_admin_merge_title": "Spoji \"{label}\" s drugom oznakom",
   "tags_admin_merge_hint": "Svi unosi i prilike s ovom oznakom prelaze na oznaku koju odabereš, a njezini nazivi postaju aliasi te oznake.",
   "tags_admin_merge_target": "Traži oznaku koju želiš zadržati",
-  "tags_admin_merge_confirm": "Spoji oznake"
+  "tags_admin_merge_confirm": "Spoji oznake",
+  "tags_picker_unknown": "Nedostupna oznaka"
 }

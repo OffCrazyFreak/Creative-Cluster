@@ -20,7 +20,11 @@ export interface ITagOption extends ITagText {
 export type IEntryTags = Record<TagField, ITagOption[]>;
 
 const labelSchema = z.string().trim().min(2).max(60);
-const aliasesSchema = z.array(z.string().trim().min(1).max(60)).max(20);
+// Merges carry aliases over, so the cap here is also the cap there.
+export const MAX_TAG_ALIASES = 20;
+const aliasesSchema = z
+  .array(z.string().trim().min(1).max(60))
+  .max(MAX_TAG_ALIASES);
 
 export const entryTagsInput = z.object({ entryId: z.uuid() });
 

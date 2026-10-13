@@ -8,6 +8,7 @@ import { addEntry, addTag, addUser } from "../../../tests/helpers/fixture-data";
 import type { ITempDatabase } from "../../../tests/helpers/temp-database";
 import { seedTags } from "./seed-tags.server";
 import { TagSelectionError } from "./tag-errors";
+import { MAX_TAG_ALIASES } from "./tag-schemas";
 
 const { temp } = await vi.hoisted(async () => {
   const helper = await import("../../../tests/helpers/temp-database");
@@ -17,7 +18,7 @@ const { temp } = await vi.hoisted(async () => {
 vi.mock("@/db/client.server", () => ({ db: temp?.db }));
 const { decideSuggestion } = await import("./decide-suggestion.server");
 const { mergeTags } = await import("./merge-tags.server");
-const { listPickerTags } = await import("./tag-queries.server");
+const { listPickerTags, getEntryTags } = await import("./tag-queries.server");
 const { saveEntryTags } = await import("./save-entry-tags.server");
 const { suggestTag, MAX_OPEN_SUGGESTIONS } =
   await import("./suggest-tag.server");
@@ -30,7 +31,7 @@ describe.skipIf(!temp)("tag services", () => {
   });
 
   async function slugsFor(userId: string | null) {
-    return (await listPickerTags(userId)).map((t) => t.slug);
+    return (await listPickerTags({ userId })).map((t) => t.slug);
   }
   async function entryTagIds(
     entryId: string,
@@ -136,7 +137,7 @@ describe.skipIf(!temp)("tag services", () => {
     });
 
     it("lets the author use the suggestion on their own entry, but nobody else", async () => {
-      const mine = (await listPickerTags(owner.id)).find(
+      const mine = (await listPickerTags({ userId: owner.id })).find(
         (t) => t.slug === "glassblowing",
       );
       await saveEntryTags({
@@ -274,6 +275,151 @@ describe.skipIf(!temp)("tag services", () => {
     });
   });
 
+  describe("review fixes", () => {
+    it("lets an admin see and keep a member's pending suggestion", async () => {
+      const member = await addUser(db, "m1");
+      const admin = await addUser(db, "a1", "admin");
+      const entryRow = await addEntry(
+        db,
+        "M1 entry",
+        {},
+        { ownerUserId: member.id },
+      );
+      const { tag } = await suggestTag({
+        userId: member.id,
+        label: "Pending thing",
+        locale: "en",
+      });
+      await saveEntryTags({
+        entryId: entryRow.id,
+        field: "topic",
+        tagIds: [tag.id],
+        actor: { userId: member.id, isAdmin: false },
+      });
+      const adminView = { userId: admin.id, isAdmin: true };
+      expect((await listPickerTags(adminView)).map((t) => t.id)).toContain(
+        tag.id,
+      );
+      expect((await getEntryTags(entryRow.id, adminView)).topic).toHaveLength(
+        1,
+      );
+      await saveEntryTags({
+        entryId: entryRow.id,
+        field: "topic",
+        tagIds: [tag.id],
+        actor: adminView,
+      });
+      expect(await entryTagIds(entryRow.id, "topic")).toEqual([tag.id]);
+    });
+
+    it("hides the tags of an unpublished entry from strangers", async () => {
+      const member = await addUser(db, "m2");
+      const t = await addTag(db, "draft-visible");
+      const draft = await addEntry(
+        db,
+        "Draft entry",
+        { topic: [t.id] },
+        { status: "draft", ownerUserId: member.id },
+      );
+      expect((await getEntryTags(draft.id, { userId: null })).topic).toEqual(
+        [],
+      );
+      expect(
+        (await getEntryTags(draft.id, { userId: member.id })).topic,
+      ).toHaveLength(1);
+      expect(
+        (await getEntryTags(draft.id, { userId: null, isAdmin: true })).topic,
+      ).toHaveLength(1);
+    });
+
+    it("gives symbol-only suggestions a tag slug and resolves slug collisions", async () => {
+      const member = await addUser(db, "m3");
+      const [a, b, c] = await Promise.all([
+        suggestTag({ userId: member.id, label: "!!!", locale: "en" }),
+        suggestTag({ userId: member.id, label: "Fizz?", locale: "en" }),
+        suggestTag({ userId: member.id, label: "fizz!", locale: "en" }),
+      ]);
+      expect(a.tag.slug).toBe("tag");
+      expect([b.tag.slug, c.tag.slug].sort()).toEqual(["fizz", "fizz-2"]);
+    });
+
+    it("cannot exceed the suggestion cap with parallel requests", async () => {
+      const member = await addUser(db, "m4");
+      const results = await Promise.allSettled(
+        Array.from({ length: MAX_OPEN_SUGGESTIONS + 3 }, (_, i) =>
+          suggestTag({
+            userId: member.id,
+            label: `Parallel ${i}`,
+            locale: "en",
+          }),
+        ),
+      );
+      expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(
+        MAX_OPEN_SUGGESTIONS,
+      );
+    });
+
+    it("logs the entry, opportunity and tag changes of a rejection and a merge", async () => {
+      const admin = await addUser(db, "a2", "admin");
+      const member = await addUser(db, "m5");
+      const entryRow = await addEntry(
+        db,
+        "Logged",
+        {},
+        { ownerUserId: member.id },
+      );
+      const { tag: bad } = await suggestTag({
+        userId: member.id,
+        label: "Bad tag",
+        locale: "en",
+      });
+      await saveEntryTags({
+        entryId: entryRow.id,
+        field: "seeking",
+        tagIds: [bad.id],
+        actor: { userId: member.id, isAdmin: false },
+      });
+      await decideSuggestion({
+        tagId: bad.id,
+        decision: "reject",
+        adminId: admin.id,
+      });
+      const logs = await db
+        .select()
+        .from(schema.changeLog)
+        .where(eq(schema.changeLog.entityId, entryRow.id));
+      expect(logs.at(-1)).toMatchObject({
+        source: "admin",
+        before: { tags_seeking: ["bad-tag"] },
+        after: { tags_seeking: [] },
+      });
+
+      const keep = await addTag(db, "keep-log");
+      const gone = await addTag(db, "gone-log");
+      const e2 = await addEntry(db, "Logged 2", { offering: [gone.id] });
+      await mergeTags({
+        sourceId: gone.id,
+        targetId: keep.id,
+        adminId: admin.id,
+      });
+      const entryLogs = await db
+        .select()
+        .from(schema.changeLog)
+        .where(eq(schema.changeLog.entityId, e2.id));
+      expect(entryLogs).toMatchObject([
+        {
+          before: { tags_offering: ["gone-log"] },
+          after: { tags_offering: ["keep-log"] },
+        },
+      ]);
+      const tagLogs = await db
+        .select()
+        .from(schema.changeLog)
+        .where(eq(schema.changeLog.entityId, keep.id));
+      expect(tagLogs).toHaveLength(1);
+    });
+  });
+
   describe("mergeTags", () => {
     it("repoints usage, carries aliases and children, and survives overlap", async () => {
       const admin = await addUser(db, "mergeadmin", "admin");
@@ -341,6 +487,65 @@ describe.skipIf(!temp)("tag services", () => {
         .where(eq(schema.tag.id, child.id));
       expect(movedChild.parentId).toBe(keep.id);
       expect(await slugsFor(null)).not.toContain("clay-work");
+    });
+
+    it("caps carried-over aliases at the edit limit", async () => {
+      const admin = await addUser(db, "a3", "admin");
+      const keep = await addTag(db, "cap-keep", {
+        aliasesEn: Array.from({ length: 20 }, (_, i) => `keep alias ${i}`),
+      });
+      const gone = await addTag(db, "cap-gone", {
+        labelEn: "Cap gone",
+        aliasesEn: Array.from({ length: 20 }, (_, i) => `gone alias ${i}`),
+      });
+      await mergeTags({
+        sourceId: gone.id,
+        targetId: keep.id,
+        adminId: admin.id,
+      });
+      const [row] = await db
+        .select()
+        .from(schema.tag)
+        .where(eq(schema.tag.id, keep.id));
+      expect(row.aliasesEn).toHaveLength(MAX_TAG_ALIASES);
+      expect(row.aliasesEn).toContain("Cap gone");
+    });
+
+    it("refuses a merge that would nest tags two levels deep", async () => {
+      const admin = await addUser(db, "a4", "admin");
+      const root = await addTag(db, "nest-root");
+      const parent = await addTag(db, "nest-parent");
+      await addTag(db, "nest-child", { parentId: parent.id });
+      const deep = await addTag(db, "nest-deep", { parentId: root.id });
+      await expect(
+        mergeTags({
+          sourceId: parent.id,
+          targetId: deep.id,
+          adminId: admin.id,
+        }),
+      ).rejects.toBeInstanceOf(TagSelectionError);
+    });
+
+    it("flattens when a parent is merged into its own child", async () => {
+      const admin = await addUser(db, "a5", "admin");
+      const parent = await addTag(db, "flat-parent");
+      const child = await addTag(db, "flat-child", { parentId: parent.id });
+      const sibling = await addTag(db, "flat-sibling", { parentId: parent.id });
+      await mergeTags({
+        sourceId: parent.id,
+        targetId: child.id,
+        adminId: admin.id,
+      });
+      const rows = await db
+        .select()
+        .from(schema.tag)
+        .where(eq(schema.tag.id, sibling.id));
+      expect(rows[0].parentId).toBe(child.id);
+      const [target] = await db
+        .select()
+        .from(schema.tag)
+        .where(eq(schema.tag.id, child.id));
+      expect(target.parentId).toBeNull();
     });
 
     it("refuses a self merge and a merged target", async () => {

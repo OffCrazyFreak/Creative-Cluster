@@ -12,16 +12,25 @@ import {
 } from "./tag-schemas";
 import { getEntryTags, listPickerTags } from "./tag-queries.server";
 
+function viewerOf(
+  session: { user: { id: string; role?: string | null } } | null,
+) {
+  return {
+    userId: session?.user.id ?? null,
+    isAdmin: session?.user.role === "admin",
+  };
+}
+
 export const listTags = createServerFn({ method: "GET" })
   .middleware([publicGuard])
   .inputValidator(z.void())
-  .handler(({ context }) => listPickerTags(context.session?.user.id ?? null));
+  .handler(({ context }) => listPickerTags(viewerOf(context.session)));
 
 export const getTagsOfEntry = createServerFn({ method: "GET" })
   .middleware([publicGuard])
   .inputValidator(entryTagsInput)
   .handler(({ data, context }) =>
-    getEntryTags(data.entryId, context.session?.user.id ?? null),
+    getEntryTags(data.entryId, viewerOf(context.session)),
   );
 
 export const suggestNewTag = createServerFn({ method: "POST" })
