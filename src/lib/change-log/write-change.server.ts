@@ -1,9 +1,13 @@
 import type { DbOrTx } from "@/db/client.server";
 import { changeLog } from "@/db/schema";
-import type { ChangeAction, ChangeSource } from "@/constants/moderation";
+import type {
+  ChangeAction,
+  ChangeSource,
+  ModeratedEntity,
+} from "@/constants/moderation";
 
 export interface IWriteChange {
-  entityType: "entry" | "opportunity" | "link" | "tag" | "user";
+  entityType: ModeratedEntity;
   entityId: string;
   userId: string | null;
   source: ChangeSource;
