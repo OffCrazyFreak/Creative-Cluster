@@ -34,7 +34,7 @@ export function matchQuery(entryId: string) {
     ),
     subject as (
       select
-        exists (select 1 from entry where id = ${me} and not matching_opt_out) as allowed,
+        exists (select 1 from entry where id = ${me} and status = 'published' and not matching_opt_out) as allowed,
         exists (select 1 from mine where field in ('offering', 'seeking')) as has_exchange
     ),
     linked as (
