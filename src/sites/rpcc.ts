@@ -22,5 +22,5 @@ export const rpcc = {
     email: "TODO-privacy@inovatoridnz.net",
   },
   searchConsoleToken: null,
-  map: { center: [10, 48], zoom: 3.5 },
+  map: { center: [10, 48], zoom: 3.5, style: "openfreemap" },
 } as const satisfies ISiteConfig;

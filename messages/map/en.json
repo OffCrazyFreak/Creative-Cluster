@@ -1,3 +1,57 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "map_search_label": "Search the directory",
+  "map_search_placeholder": "Search by name, town or tag",
+  "map_filters_button": "Filters",
+  "map_filters_title": "Filter the results",
+  "map_filter_tags": "Tags",
+  "map_filter_country": "Country",
+  "map_filter_country_any": "All countries",
+  "map_filter_legal": "Legal status",
+  "map_filter_legal_any": "Any legal status",
+  "map_filter_distance": "Distance",
+  "map_filter_distance_any": "Any distance",
+  "map_filter_near_me": "Use my location",
+  "map_filter_near_center": "Use the map centre",
+  "map_filter_near_clear": "Clear the point",
+  "map_filter_near_set": "Within {km} km of the chosen point",
+  "map_filter_near_needs_point": "Choose a point first.",
+  "map_filter_geolocation_denied": "Your location is not available.",
+  "map_filter_clear": "Clear all filters",
+  "map_chip_remove": "Remove filter {label}",
+  "map_chip_text": "Search: {text}",
+  "map_chip_near": "Within {km} km",
+  "map_chip_area": "Inside the map area",
+  "map_popular_tags": "Popular tags",
+  "map_search_area": "Search this area",
+  "map_empty": "No listings match these filters.",
+  "map_results_list": "Results list",
+  "map_override_clear": "Show all results",
+  "map_skip_map": "Skip the map",
+  "map_region_label": "Map of listings",
+  "map_sheet_label": "Results panel",
+  "map_loading": "Loading the map",
+  "map_webgl_unsupported": "This browser cannot draw the map (it needs WebGL 2). The list has all the same listings.",
+  "map_load_failed": "The map could not be loaded. The list still works.",
+  "map_show_map": "Show the map",
+  "map_results_live": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} entry shown",
+        "countPlural=other": "{count} entries shown"
+      }
+    }
+  ],
+  "map_override_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} entry at this spot",
+        "countPlural=other": "{count} entries at this spot"
+      }
+    }
+  ]
 }
