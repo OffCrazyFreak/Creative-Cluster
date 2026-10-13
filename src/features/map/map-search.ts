@@ -1,3 +1,4 @@
+import { isKnownCountry } from "@/features/directory/country-name";
 import { z } from "zod";
 
 // TanStack parses `?q=2024` as a number, so every text value accepts both and falls back to "".
@@ -53,7 +54,10 @@ export interface IMapFilters {
 }
 
 function parseNumbers(value: string, count: number): number[] | null {
-  const parts = value.split(",").map(Number);
+  const raw = value.split(",");
+  // Number("") is 0, so empty segments must be rejected before converting.
+  if (raw.some((part) => part.trim() === "")) return null;
+  const parts = raw.map(Number);
   return parts.length === count && parts.every(Number.isFinite) ? parts : null;
 }
 
@@ -86,7 +90,7 @@ export function toFilters(search: MapSearch): IMapFilters {
   return {
     q: search.q.trim(),
     tags: search.tags ? search.tags.split(",").filter(Boolean) : [],
-    country: search.country.toUpperCase(),
+    country: isKnownCountry(search.country) ? search.country.toUpperCase() : "",
     legal: search.legal,
     near,
     radiusKm: near ? search.radius : 0,

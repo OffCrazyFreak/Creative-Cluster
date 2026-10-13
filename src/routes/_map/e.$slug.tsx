@@ -4,7 +4,7 @@ import EntryDetail from "@/features/entry/components/entry-detail";
 import EntryGone from "@/features/entry/components/entry-gone";
 import { entryJsonLd } from "@/features/entry/entry-json-ld";
 import { goneStatusMiddleware } from "@/features/entry/gone-status-middleware";
-import { getEntryPage } from "@/features/entry/entry.functions";
+import { entryQueryOptions } from "@/features/entry/entry-queries";
 import { placeLine } from "@/features/entry/components/entry-location";
 import { useTrackEntryView } from "@/features/entry/use-track-entry-view";
 import { m } from "@/paraglide/messages";
@@ -15,9 +15,9 @@ import { serializeJsonLd } from "@/utils/json-ld";
 export const Route = createFileRoute("/_map/e/$slug")({
   server: { middleware: [goneStatusMiddleware] },
   loader: async ({ params, context }) => {
-    // The viewer id keys nothing here: the server redacts per request, and the result is not cached across users.
-    void context;
-    const result = await getEntryPage({ data: { slug: params.slug } });
+    const result = await context.queryClient.ensureQueryData(
+      entryQueryOptions(params.slug, context.viewer?.id ?? null),
+    );
     if (result.status === "missing") throw notFound();
     if (result.status === "redirect")
       throw redirect({
@@ -27,7 +27,6 @@ export const Route = createFileRoute("/_map/e/$slug")({
       });
     return result;
   },
-  staleTime: 30_000,
   head: ({ loaderData, params }) => {
     if (!loaderData || loaderData.status === "gone")
       return {

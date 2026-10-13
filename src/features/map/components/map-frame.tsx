@@ -42,7 +42,6 @@ export default function MapFrame() {
 
   const [status, setStatus] = useState<MapStatus>("idle");
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
-  const [pendingBounds, setPendingBounds] = useState<IBounds | null>(null);
   const filterSignature = [
     search.q,
     search.tags,
@@ -53,13 +52,21 @@ export default function MapFrame() {
   ].join("|");
   const [listOverride, setListOverride] =
     useSignatureState<string[]>(filterSignature);
+  // A pending area belongs to the filters it was panned under.
+  const [pendingBounds, setPendingBounds] =
+    useSignatureState<IBounds>(filterSignature);
   const [areaBounds, setAreaBounds] =
     useSignatureState<IBounds>(filterSignature);
 
   // An entry opened directly stays map-free (no MapLibre download) until the visitor asks for it.
+  const [directoryWanted, setDirectoryWanted] = useState(false);
+  // Filter options and popular tags need the data (a small JSON), so entry pages fetch it when idle.
+  useIdleActivation(Boolean(entryMatch) && !directoryWanted, () =>
+    setDirectoryWanted(true),
+  );
   const directoryQuery = useQuery({
     ...publishedDirectoryQueryOptions(),
-    enabled: !entryMatch || status === "active",
+    enabled: !entryMatch || status === "active" || directoryWanted,
   });
   const directory = directoryQuery.data;
   const { filters, pins, listed } = useMapResults({
@@ -121,7 +128,7 @@ export default function MapFrame() {
       setPendingBounds(null);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filterSignature],
+    [filterSignature, setAreaBounds, setPendingBounds],
   );
   const value = useMemo<IMapFrameValue>(
     () => ({

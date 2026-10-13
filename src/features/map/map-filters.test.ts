@@ -132,6 +132,8 @@ describe("helpers", () => {
     });
     expect(parseViewport("95,15,3")).toBeNull();
     expect(parseViewport("x,1,2")).toBeNull();
+    expect(parseViewport(",,")).toBeNull();
+    expect(parsePoint(" , ")).toBeNull();
     expect(parsePoint("1,2,3")).toBeNull();
     expect(formatViewport({ lat: 1, lng: 2, zoom: 3 })).toBe(
       "1.0000,2.0000,3.00",
@@ -150,5 +152,11 @@ describe("helpers", () => {
     expect(search.radius).toBe(0);
     expect(toFilters(search).near).toEqual({ lat: 1, lng: 2 });
     expect(toFilters(search).radiusKm).toBe(0);
+    expect(
+      toFilters(mapSearchSchema.parse({ country: "abc123" })).country,
+    ).toBe("");
+    expect(toFilters(mapSearchSchema.parse({ country: "hr" })).country).toBe(
+      "HR",
+    );
   });
 });
