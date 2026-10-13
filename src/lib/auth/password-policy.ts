@@ -4,7 +4,8 @@ import { m } from "@/paraglide/messages";
 
 export const PASSWORD_MIN_LENGTH = 12;
 export const PASSWORD_MAX_LENGTH = 128;
-// better-auth counts UTF-16 units before normalising, so this is only a backstop.
+// better-auth counts raw UTF-16 units, so this only guards against absurd input; exotic
+// decomposed text can hit it before the code point limit does.
 export const PASSWORD_BACKSTOP_LENGTH = 256;
 
 export type PasswordIssue = "too_short" | "too_long";

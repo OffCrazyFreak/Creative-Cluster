@@ -7,23 +7,21 @@ import { user } from "@/db/schema";
 
 export const MIN_ADMINS_CODE = "MIN_ADMINS";
 
-// Gives the admin a clear message before better-auth writes. The lock only covers this check, so
-// migration 0002 (a trigger) is what makes the rule hold when two demotions race.
+// Gives the admin a clear message before better-auth writes. A row lock here could not span
+// that write, so migration 0002 (a trigger with an advisory lock) is what holds the rule when
+// two changes race, and it also covers any path that reaches the update without a known target.
 export async function assertAdminsRemain(targetUserId: string) {
-  await db.transaction(async (tx) => {
-    const admins = await tx
-      .select({ id: user.id })
-      .from(user)
-      .where(and(eq(user.role, "admin"), eq(user.banned, false)))
-      .for("update");
-    const targetIsAdmin = admins.some((admin) => admin.id === targetUserId);
-    if (targetIsAdmin && admins.length - 1 < MIN_ADMINS) {
-      throw APIError.from("BAD_REQUEST", {
-        code: MIN_ADMINS_CODE,
-        message: `There must always be at least ${MIN_ADMINS} active admins`,
-      });
-    }
-  });
+  const admins = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(and(eq(user.role, "admin"), eq(user.banned, false)));
+  const targetIsAdmin = admins.some((admin) => admin.id === targetUserId);
+  if (targetIsAdmin && admins.length - 1 < MIN_ADMINS) {
+    throw APIError.from("BAD_REQUEST", {
+      code: MIN_ADMINS_CODE,
+      message: `There must always be at least ${MIN_ADMINS} active admins`,
+    });
+  }
 }
 
 // Only role and ban changes can take away an admin; the target id comes from the admin endpoint body.

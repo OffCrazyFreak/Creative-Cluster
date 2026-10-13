@@ -28,4 +28,8 @@ export const EMAIL_SOFT_CAP_RATIO = 0.8;
 export const EMAIL_EXPIRY_KEYS = ["hour", "days7", "days30"] as const;
 export type EmailExpiry = (typeof EMAIL_EXPIRY_KEYS)[number];
 
+// Reset and verification links: the mail text and better-auth's token lifetime come from here.
+export const AUTH_LINK_EXPIRY: EmailExpiry = "hour";
+export const AUTH_LINK_TTL_SECONDS = 3600;
+
 export const INVITE_TOKEN_TTL_SECONDS = 7 * 24 * 3600;

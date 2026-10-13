@@ -10,16 +10,25 @@ import {
 // Request body field that carries the new password, per endpoint.
 const PASSWORD_FIELDS: Record<string, string> = {
   "/sign-up/email": "password",
+  "/admin/create-user": "password",
   "/reset-password": "newPassword",
   "/change-password": "newPassword",
   "/set-password": "newPassword",
   "/admin/set-user-password": "newPassword",
 };
 
-// A breached password is refused only when Have I Been Pwned answers; an outage lets it through.
+const HIBP_TIMEOUT_MS = 3000;
+
+// A breached password is refused only when Have I Been Pwned answers in time; an outage or a
+// stall lets it through. better-auth hashes the NFKC form, so that is the form we look up.
 async function isBreached(password: string): Promise<boolean> {
   try {
-    return await isPasswordCompromised(password);
+    return await Promise.race([
+      isPasswordCompromised(password.normalize("NFKC")),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), HIBP_TIMEOUT_MS),
+      ),
+    ]);
   } catch (error) {
     console.warn(
       "Have I Been Pwned is unreachable, password accepted without the breach check",

@@ -1,4 +1,4 @@
-import type { EmailExpiry } from "@/constants/email";
+import { AUTH_LINK_EXPIRY, type EmailExpiry } from "@/constants/email";
 import { LOCALES, type AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
 import { env } from "@/env.server";
@@ -16,7 +16,8 @@ export function recipientLocale(user: IMailRecipient): AppLocale {
   return LOCALES.find((locale) => locale === user.locale) ?? site.baseLocale;
 }
 
-// Links point at our own pages (not /api/auth) and carry the recipient's language prefix.
+// Reset and invite links point at our own pages with the recipient's language prefix; the
+// verification links stay on better-auth's verify endpoint, which must see the token itself.
 export function pageLink(path: string, locale: AppLocale): string {
   return new URL(localizeHref(path, { locale }), env.BETTER_AUTH_URL).href;
 }
@@ -39,7 +40,7 @@ export async function queueResetEmail(user: IMailRecipient, token: string) {
         `/reset-password?token=${encodeURIComponent(token)}`,
         locale,
       ),
-      expiry: "hour",
+      expiry: AUTH_LINK_EXPIRY,
     },
     idempotencyKey: `reset:${token}`,
   });
