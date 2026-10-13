@@ -14,7 +14,6 @@ export default function LanguageSwitch() {
       href={localizeHref(href, { locale: target })}
       hrefLang={target}
       lang={target}
-      aria-label={m.common_language_switch_label()}
     >
       {m.common_language_switch()}
     </a>

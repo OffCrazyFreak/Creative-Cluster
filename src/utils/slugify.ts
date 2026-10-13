@@ -1,12 +1,16 @@
-// Croatian đ has no NFD decomposition, so it is mapped by hand before stripping marks.
+import slugifyText from "@sindresorhus/slugify";
+
+const FALLBACK_SLUG = "entry";
+
+// The library transliterates Cyrillic, Greek and letters like ł or ß; Croatian đ is dj by convention.
 export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replaceAll("đ", "dj")
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+  const slug = slugifyText(text, {
+    customReplacements: [
+      ["đ", "dj"],
+      ["Đ", "Dj"],
+    ],
+  })
     .slice(0, 80)
     .replace(/-+$/g, "");
+  return slug || FALLBACK_SLUG;
 }

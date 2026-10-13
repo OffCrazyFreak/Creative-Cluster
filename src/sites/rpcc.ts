@@ -1,6 +1,7 @@
 import type { ISiteConfig } from "./site-config-types.ts";
 
 // Values marked TODO are placeholders until the clients send the facts (site-texts/CHECKLIST.md).
+// Inovatori DNŽ runs both sites and is the Creative Cluster privacy contact, so the legal identity is shared.
 export const rpcc = {
   id: "rpcc",
   name: "Creative Cluster",

@@ -32,7 +32,8 @@ Never:
 - `function name() {}`, not `const name = () => {}`, except small inline callbacks. `import { useState } from "react"`, never `React.useState`. No `any`: define the type or narrow `unknown`.
 - Comments only for the why: business rules, security assumptions, workarounds. Never narrate the code.
 - Prefer a library over hand-rolled code. Look for an existing helper in `src/utils/`, `src/lib/`, `src/hooks/`, the feature folder before writing a new one.
-- UI is plain shadcn (Base UI) from `src/components/ui/` with layout classes only (flex, grid, gap, padding, width). No colours, fonts, shadows or custom theme tokens: a tweakcn theme is dropped into `src/styles.css` later. Our components live in `src/components/custom/` (shared) or the feature folder.
+- UI is plain shadcn (Base UI) from `src/components/ui/` with layout classes (flex, grid, gap, padding, width) and shadcn's documented typography and border utilities only. No hard-coded colours, font families, shadows or custom theme tokens: a tweakcn theme is dropped into `src/styles.css` later. Our components live in `src/components/custom/` (shared) or the feature folder.
+- Use `site.baseLocale` from `src/sites`, never Paraglide's exported `baseLocale` (one inlang project serves both sites). Code outside a request (jobs, emails, scripts) passes the locale explicitly.
 - Croatian copy uses "ti" and ungendered forms; the organisation speaks as "mi". No em or en dashes and no arrow characters in any text.
 
 ## Layout
