@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
+import EscoFooterNote from "@/features/tags/components/esco-footer-note";
 import { site } from "@/sites";
 import { m } from "@/paraglide/messages";
 
@@ -7,6 +8,7 @@ export default function SiteFooter() {
   return (
     <footer className="flex flex-col gap-4 border-t p-4 text-sm">
       {site.showFundingLine && <p>{m.common_footer_funding()}</p>}
+      <EscoFooterNote />
       <ul className="flex flex-wrap gap-4">
         <li>
           <Link to="/privacy">{m.common_footer_privacy()}</Link>

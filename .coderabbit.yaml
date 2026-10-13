@@ -1,0 +1,5 @@
+# Reviews run through the CodeRabbit CLI per pull request. Automatic reviews on every push
+# use the same hourly quota and starve those runs, so they are off.
+reviews:
+  auto_review:
+    enabled: false

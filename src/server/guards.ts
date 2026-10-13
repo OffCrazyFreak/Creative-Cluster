@@ -8,7 +8,10 @@ import { readSession } from "./session.server";
 export const publicGuard = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
     const session = await readSession({ fresh: false });
-    return next({ context: { session } });
+    // A banned user browses public pages as an anonymous visitor.
+    return next({
+      context: { session: session?.user.banned ? null : session },
+    });
   },
 );
 
