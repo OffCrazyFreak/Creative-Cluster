@@ -56,7 +56,7 @@ CREATE TABLE "job" (
 	"locked_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "job_idempotencyKey_unique" UNIQUE("idempotency_key"),
+	CONSTRAINT "job_idempotency_key_unique" UNIQUE("idempotency_key"),
 	CONSTRAINT "job_type_check" CHECK ("job"."type" in ('translate', 'email', 'geocode_retry')),
 	CONSTRAINT "job_status_check" CHECK ("job"."status" in ('queued', 'running', 'done', 'failed'))
 );
@@ -78,7 +78,7 @@ CREATE TABLE "link" (
 	"decided_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "link_fromId_toId_kind_unique" UNIQUE("from_id","to_id","kind"),
+	CONSTRAINT "link_from_to_kind_unique" UNIQUE("from_id","to_id","kind"),
 	CONSTRAINT "link_not_self_check" CHECK ("link"."from_id" <> "link"."to_id"),
 	CONSTRAINT "link_symmetric_order_check" CHECK (not "link"."symmetric" or "link"."from_id" < "link"."to_id"),
 	CONSTRAINT "link_kind_check" CHECK ("link"."kind" in ('collaborated', 'eu_partner', 'member_of', 'supplier', 'mentor')),
@@ -191,7 +191,7 @@ CREATE TABLE "translation" (
 	"provider" text,
 	"source_hash" text NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "translation_entityType_entityId_field_locale_unique" UNIQUE("entity_type","entity_id","field","locale"),
+	CONSTRAINT "translation_entity_field_locale_unique" UNIQUE("entity_type","entity_id","field","locale"),
 	CONSTRAINT "translation_entity_check" CHECK ("translation"."entity_type" in ('entry', 'opportunity')),
 	CONSTRAINT "translation_origin_check" CHECK ("translation"."origin" in ('machine', 'human'))
 );

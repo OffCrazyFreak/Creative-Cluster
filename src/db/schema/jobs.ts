@@ -23,7 +23,7 @@ export const job = pgTable(
     id: id(),
     type: text().$type<JobType>().notNull(),
     payload: jsonb().$type<Record<string, unknown>>().notNull(),
-    idempotencyKey: text().unique(),
+    idempotencyKey: text().unique("job_idempotency_key_unique"),
     priority: integer().notNull().default(5),
     runAt: timestamptz().notNull().defaultNow(),
     attempts: integer().notNull().default(0),

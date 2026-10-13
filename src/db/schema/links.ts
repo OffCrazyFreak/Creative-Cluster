@@ -48,7 +48,7 @@ export const link = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [
-    unique().on(t.fromId, t.toId, t.kind),
+    unique("link_from_to_kind_unique").on(t.fromId, t.toId, t.kind),
     index().on(t.fromId),
     index().on(t.toId),
     check("link_not_self_check", sql`${t.fromId} <> ${t.toId}`),

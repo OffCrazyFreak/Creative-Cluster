@@ -24,7 +24,12 @@ export const translation = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [
-    unique().on(t.entityType, t.entityId, t.field, t.locale),
+    unique("translation_entity_field_locale_unique").on(
+      t.entityType,
+      t.entityId,
+      t.field,
+      t.locale,
+    ),
     check(
       "translation_entity_check",
       oneOf(t.entityType, TRANSLATABLE_ENTITIES),
