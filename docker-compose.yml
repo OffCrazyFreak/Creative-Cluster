@@ -1,0 +1,17 @@
+name: creative-cluster
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: cc
+      POSTGRES_PASSWORD: cc
+      POSTGRES_DB: cc_rpcc
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+      - ./scripts/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+volumes:
+  db-data:
