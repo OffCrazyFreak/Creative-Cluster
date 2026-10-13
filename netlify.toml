@@ -1,0 +1,35 @@
+[build]
+  command = "pnpm build"
+  publish = "dist/client"
+  # Merges to main never deploy; only build hooks (manual Deploy action, Saturday schedule) do.
+  ignore = "node scripts/netlify-ignore.mjs"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(self), interest-cohort=()"
+    X-Frame-Options = "DENY"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# PostHog through our own domain so ad blockers and third-party cookies never apply.
+[[redirects]]
+  from = "/ingest-cc/static/*"
+  to = "https://eu-assets.i.posthog.com/static/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/ingest-cc/*"
+  to = "https://eu.i.posthog.com/:splat"
+  status = 200
+  force = true
