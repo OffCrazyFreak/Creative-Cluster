@@ -1,0 +1,16 @@
+node_modules
+dist
+.netlify
+.tanstack
+.nitro
+.output
+*.local
+*.tsbuildinfo
+.DS_Store
+.env*
+!.env.example
+!.env.ci
+src/paraglide
+data/cache
+src/routeTree.gen.ts
+project.inlang/cache

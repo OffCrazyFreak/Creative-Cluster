@@ -1,0 +1,31 @@
+{
+  "$schema": "https://inlang.com/schema/project-settings",
+  "baseLocale": "en",
+  "locales": ["en", "hr"],
+  "modules": [
+    "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@4/dist/index.js"
+  ],
+  "plugin.inlang.messageFormat": {
+    "pathPattern": [
+      "./messages/common/{locale}.json",
+      "./messages/auth/{locale}.json",
+      "./messages/directory/{locale}.json",
+      "./messages/entry/{locale}.json",
+      "./messages/map/{locale}.json",
+      "./messages/location/{locale}.json",
+      "./messages/apply/{locale}.json",
+      "./messages/review/{locale}.json",
+      "./messages/account/{locale}.json",
+      "./messages/opportunities/{locale}.json",
+      "./messages/connections/{locale}.json",
+      "./messages/matching/{locale}.json",
+      "./messages/tags/{locale}.json",
+      "./messages/translation/{locale}.json",
+      "./messages/images/{locale}.json",
+      "./messages/contact/{locale}.json",
+      "./messages/admin/{locale}.json",
+      "./messages/legal/{locale}.json",
+      "./messages/email/{locale}.json"
+    ]
+  }
+}

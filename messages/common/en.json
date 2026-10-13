@@ -1,0 +1,43 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "common_skip_to_content": "Skip to content",
+  "common_nav_map": "Map",
+  "common_nav_directory": "Directory",
+  "common_nav_opportunities": "Opportunities",
+  "common_nav_about": "About",
+  "common_nav_help": "Help",
+  "common_nav_apply": "Add a listing",
+  "common_nav_login": "Log in",
+  "common_nav_account": "My account",
+  "common_nav_admin": "Admin",
+  "common_main_navigation": "Main navigation",
+  "common_language_switch": "Hrvatski",
+  "common_footer_privacy": "Privacy",
+  "common_footer_terms": "Terms",
+  "common_footer_imprint": "Imprint",
+  "common_footer_accessibility": "Accessibility",
+  "common_footer_funding": "Co-funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or EACEA. Neither the European Union nor EACEA can be held responsible for them.",
+  "common_not_found_title": "Page not found",
+  "common_not_found_body": "The page you are looking for does not exist or has moved.",
+  "common_back_home": "Back to the home page",
+  "common_error_title": "Something went wrong",
+  "common_error_body": "Please try again in a moment. If it keeps happening, let us know.",
+  "common_try_again": "Try again",
+  "common_loading": "Loading",
+  "common_save": "Save",
+  "common_cancel": "Cancel",
+  "common_close": "Close",
+  "common_delete": "Delete",
+  "common_edit": "Edit",
+  "common_search": "Search",
+  "common_entry_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} entry",
+        "countPlural=other": "{count} entries"
+      }
+    }
+  ]
+}

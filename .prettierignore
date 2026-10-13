@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+dist
+.netlify
+.tanstack
+src/paraglide
+src/routeTree.gen.ts
+drizzle/meta
+project.inlang/cache

@@ -1,0 +1,11 @@
+allowBuilds:
+  esbuild: true
+  lightningcss: true
+  unrs-resolver: true
+  msw: false
+  # Pulled in by the Netlify dev plugin; images are resized in the browser.
+  sharp: false
+
+# Three days of cooldown: the npm compromises of 2025 and 2026, including the
+# May 2026 @tanstack one, were pulled within hours to two days.
+minimumReleaseAge: 4320

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "common_skip_to_content": "Preskoči na sadržaj",
+  "common_nav_map": "Karta",
+  "common_nav_directory": "Imenik",
+  "common_nav_opportunities": "Prilike",
+  "common_nav_about": "O nama",
+  "common_nav_help": "Pomoć",
+  "common_nav_apply": "Dodaj unos",
+  "common_nav_login": "Prijava",
+  "common_nav_account": "Moj račun",
+  "common_nav_admin": "Administracija",
+  "common_main_navigation": "Glavna navigacija",
+  "common_language_switch": "English",
+  "common_footer_privacy": "Privatnost",
+  "common_footer_terms": "Uvjeti korištenja",
+  "common_footer_imprint": "Impresum",
+  "common_footer_accessibility": "Pristupačnost",
+  "common_footer_funding": "Sufinancira Europska unija. Izneseni stavovi i mišljenja su stavovi i mišljenja autora i ne moraju se podudarati sa stavovima i mišljenjima Europske unije ili EACEA-e. Ni Europska unija ni EACEA ne mogu se smatrati odgovornima za njih.",
+  "common_not_found_title": "Stranica nije pronađena",
+  "common_not_found_body": "Stranica koju tražiš ne postoji ili je premještena.",
+  "common_back_home": "Natrag na početnu stranicu",
+  "common_error_title": "Nešto je pošlo po zlu",
+  "common_error_body": "Pokušaj ponovno za trenutak. Ako se ponavlja, javi nam.",
+  "common_try_again": "Pokušaj ponovno",
+  "common_loading": "Učitavanje",
+  "common_save": "Spremi",
+  "common_cancel": "Odustani",
+  "common_close": "Zatvori",
+  "common_delete": "Obriši",
+  "common_edit": "Uredi",
+  "common_search": "Traži",
+  "common_entry_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} unos",
+        "countPlural=few": "{count} unosa",
+        "countPlural=other": "{count} unosa"
+      }
+    }
+  ]
+}
