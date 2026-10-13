@@ -1,13 +1,15 @@
-import type { ReactNode, RefObject } from "react";
+import { lazy, Suspense, type ReactNode, type RefObject } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
 import MapFilterChips from "./map-filter-chips";
 import MapSearchBar from "./map-search-bar";
-import MapSheet from "./map-sheet";
 import MapSkipLink from "./map-skip-link";
 import MapStatusNotice from "./map-status-notice";
 import type { MapStatus } from "../map-frame-context";
+
+// Phones only: the drawer code stays out of the desktop and entry-page bundles.
+const MapSheet = lazy(() => import("./map-sheet"));
 
 interface IMapOverlayLayoutProps {
   wide: boolean;
@@ -62,7 +64,9 @@ export default function MapOverlayLayout({
             <MapSearchBar />
             <MapFilterChips />
           </div>
-          <MapSheet sheetRef={sheetRef}>{children}</MapSheet>
+          <Suspense fallback={<div id="results-panel">{children}</div>}>
+            <MapSheet sheetRef={sheetRef}>{children}</MapSheet>
+          </Suspense>
         </>
       )}
     </div>

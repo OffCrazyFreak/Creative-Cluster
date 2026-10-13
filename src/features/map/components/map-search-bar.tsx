@@ -9,7 +9,7 @@ import { m } from "@/paraglide/messages";
 
 import { useUpdateMapSearch } from "../hooks/use-update-map-search";
 import { useMapFrame } from "../map-frame-context";
-import MapFiltersMenu from "./map-filters-menu";
+import MapFiltersTrigger from "./map-filters-trigger";
 
 const DEBOUNCE_MS = 300;
 
@@ -52,7 +52,7 @@ export default function MapSearchBar() {
           onChange={(event) => setDraft(event.target.value)}
         />
         <InputGroupAddon align="inline-end">
-          <MapFiltersMenu />
+          <MapFiltersTrigger />
         </InputGroupAddon>
       </InputGroup>
     </form>

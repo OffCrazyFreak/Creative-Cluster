@@ -18,7 +18,11 @@ import MapDistanceFilter from "./map-distance-filter";
 import MapFilterSelect from "./map-filter-select";
 import MapTagFilter from "./map-tag-filter";
 
-export default function MapFiltersMenu() {
+interface IMapFiltersMenuProps {
+  defaultOpen?: boolean;
+}
+
+export default function MapFiltersMenu({ defaultOpen }: IMapFiltersMenuProps) {
   const { directory, search, setAreaBounds, setListOverride } = useMapFrame();
   const { countries, legal } = useMapFacets(directory);
   const update = useUpdateMapSearch();
@@ -38,7 +42,7 @@ export default function MapFiltersMenu() {
   }
 
   return (
-    <Popover>
+    <Popover defaultOpen={defaultOpen}>
       <PopoverTrigger
         render={
           <Button
