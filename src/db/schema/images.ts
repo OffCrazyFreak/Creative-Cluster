@@ -15,14 +15,14 @@ export const image = pgTable(
     width: integer().notNull(),
     height: integer().notNull(),
     size: integer().notNull(),
-    contentHash: text().notNull().unique(),
+    contentHash: text().notNull().unique("image_content_hash_unique"),
     altText: text(),
     createdAt: createdAt(),
   },
   (t) => [
     check(
       "image_size_check",
-      sql`${t.size} > 0 and ${t.size} <= ${sql.raw(String(IMAGE_MAX_BYTES))}`,
+      sql`${t.size} = octet_length(${t.bytes}) and ${t.size} between 1 and ${sql.raw(String(IMAGE_MAX_BYTES))}`,
     ),
   ],
 );

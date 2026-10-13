@@ -1,6 +1,7 @@
 import {
   bigint,
   boolean,
+  check,
   index,
   integer,
   pgTable,
@@ -8,30 +9,41 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-import { createdAt, id, timestamptz, updatedAt } from "../columns";
+import { LOCALES } from "@/constants/locales";
+import { USER_ROLES } from "@/constants/roles";
 
-export const user = pgTable("user", {
-  id: id(),
-  name: text().notNull(),
-  email: text().notNull().unique(),
-  emailVerified: boolean().notNull().default(false),
-  image: text(),
-  role: text().notNull().default("member"),
-  banned: boolean().notNull().default(false),
-  banReason: text(),
-  banExpires: timestamptz(),
-  locale: text().notNull().default("en"),
-  invitedBy: uuid(),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
-});
+import { createdAt, id, oneOf, timestamptz, updatedAt } from "../columns";
+
+export const user = pgTable(
+  "user",
+  {
+    id: id(),
+    name: text().notNull(),
+    email: text().notNull().unique("user_email_unique"),
+    emailVerified: boolean().notNull().default(false),
+    image: text(),
+    role: text().notNull().default("member"),
+    banned: boolean().notNull().default(false),
+    banReason: text(),
+    banExpires: timestamptz(),
+    // No default: better-auth fills it from site.baseLocale, which differs per site.
+    locale: text().notNull(),
+    invitedBy: uuid(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    check("user_role_check", oneOf(t.role, USER_ROLES)),
+    check("user_locale_check", oneOf(t.locale, LOCALES)),
+  ],
+);
 
 export const session = pgTable(
   "session",
   {
     id: id(),
     expiresAt: timestamptz().notNull(),
-    token: text().notNull().unique(),
+    token: text().notNull().unique("session_token_unique"),
     ipAddress: text(),
     userAgent: text(),
     impersonatedBy: uuid(),
@@ -81,7 +93,7 @@ export const verification = pgTable(
 
 export const rateLimit = pgTable("rate_limit", {
   id: id(),
-  key: text().notNull().unique(),
+  key: text().notNull().unique("rate_limit_key_unique"),
   count: integer().notNull(),
   lastRequest: bigint({ mode: "number" }).notNull(),
 });

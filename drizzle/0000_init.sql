@@ -45,11 +45,13 @@ CREATE TABLE "user" (
 	"banned" boolean DEFAULT false NOT NULL,
 	"ban_reason" text,
 	"ban_expires" timestamp with time zone,
-	"locale" text DEFAULT 'en' NOT NULL,
+	"locale" text NOT NULL,
 	"invited_by" uuid,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "user_email_unique" UNIQUE("email")
+	CONSTRAINT "user_email_unique" UNIQUE("email"),
+	CONSTRAINT "user_role_check" CHECK ("user"."role" in ('admin', 'member')),
+	CONSTRAINT "user_locale_check" CHECK ("user"."locale" in ('hr', 'en'))
 );
 --> statement-breakpoint
 CREATE TABLE "verification" (
@@ -71,7 +73,7 @@ CREATE TABLE "claim_invite" (
 	"sent_at" timestamp with time zone,
 	"reminder_sent_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "claim_invite_tokenHash_unique" UNIQUE("token_hash")
+	CONSTRAINT "claim_invite_token_hash_unique" UNIQUE("token_hash")
 );
 --> statement-breakpoint
 CREATE TABLE "entry" (
@@ -120,6 +122,7 @@ CREATE TABLE "entry" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "entry_kind_check" CHECK ("entry"."kind" in ('organization', 'person', 'outside_partner')),
+	CONSTRAINT "entry_source_locale_check" CHECK ("entry"."source_locale" in ('hr', 'en')),
 	CONSTRAINT "entry_status_check" CHECK ("entry"."status" in ('draft', 'pending', 'published', 'suspended', 'rejected', 'archived')),
 	CONSTRAINT "entry_precision_check" CHECK ("entry"."precision" in ('house', 'street', 'town')),
 	CONSTRAINT "entry_location_source_check" CHECK ("entry"."location_source" in ('geoapify', 'dgu', 'photon', 'nominatim', 'manual', 'town_list')),
@@ -130,8 +133,7 @@ CREATE TABLE "slug_history" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"entry_id" uuid NOT NULL,
 	"slug" text NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "slug_history_slug_unique" UNIQUE("slug")
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "image" (
@@ -144,8 +146,8 @@ CREATE TABLE "image" (
 	"content_hash" text NOT NULL,
 	"alt_text" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "image_contentHash_unique" UNIQUE("content_hash"),
-	CONSTRAINT "image_size_check" CHECK ("image"."size" > 0 and "image"."size" <= 1000000)
+	CONSTRAINT "image_content_hash_unique" UNIQUE("content_hash"),
+	CONSTRAINT "image_size_check" CHECK ("image"."size" = octet_length("image"."bytes") and "image"."size" between 1 and 1000000)
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -162,4 +164,8 @@ CREATE INDEX "claim_invite_entry_id_index" ON "claim_invite" USING btree ("entry
 CREATE UNIQUE INDEX "entry_slug_lower_idx" ON "entry" USING btree (lower("slug"));--> statement-breakpoint
 CREATE INDEX "entry_status_kind_index" ON "entry" USING btree ("status","kind");--> statement-breakpoint
 CREATE INDEX "entry_owner_user_id_index" ON "entry" USING btree ("owner_user_id");--> statement-breakpoint
-CREATE INDEX "entry_published_idx" ON "entry" USING btree ("id") WHERE "entry"."status" = 'published';
+CREATE INDEX "entry_logo_image_id_index" ON "entry" USING btree ("logo_image_id");--> statement-breakpoint
+CREATE INDEX "entry_cover_image_id_index" ON "entry" USING btree ("cover_image_id");--> statement-breakpoint
+CREATE INDEX "entry_published_at_idx" ON "entry" USING btree ("published_at" desc) WHERE "entry"."status" = 'published';--> statement-breakpoint
+CREATE UNIQUE INDEX "slug_history_slug_lower_idx" ON "slug_history" USING btree (lower("slug"));--> statement-breakpoint
+CREATE INDEX "slug_history_entry_id_index" ON "slug_history" USING btree ("entry_id");

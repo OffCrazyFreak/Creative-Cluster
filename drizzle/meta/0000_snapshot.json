@@ -1,5 +1,5 @@
 {
-  "id": "a37eecc8-55c3-4c48-93d0-c27277b65a75",
+  "id": "f13756a9-7393-4e5b-aa89-7b8559c4cd65",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -344,8 +344,7 @@
           "name": "locale",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'en'"
+          "notNull": true
         },
         "invited_by": {
           "name": "invited_by",
@@ -381,7 +380,16 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "user_role_check": {
+          "name": "user_role_check",
+          "value": "\"user\".\"role\" in ('admin', 'member')"
+        },
+        "user_locale_check": {
+          "name": "user_locale_check",
+          "value": "\"user\".\"locale\" in ('hr', 'en')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.verification": {
@@ -545,8 +553,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "claim_invite_tokenHash_unique": {
-          "name": "claim_invite_tokenHash_unique",
+        "claim_invite_token_hash_unique": {
+          "name": "claim_invite_token_hash_unique",
           "nullsNotDistinct": false,
           "columns": [
             "token_hash"
@@ -894,13 +902,43 @@
           "method": "btree",
           "with": {}
         },
-        "entry_published_idx": {
-          "name": "entry_published_idx",
+        "entry_logo_image_id_index": {
+          "name": "entry_logo_image_id_index",
           "columns": [
             {
-              "expression": "id",
+              "expression": "logo_image_id",
               "isExpression": false,
               "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "entry_cover_image_id_index": {
+          "name": "entry_cover_image_id_index",
+          "columns": [
+            {
+              "expression": "cover_image_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "entry_published_at_idx": {
+          "name": "entry_published_at_idx",
+          "columns": [
+            {
+              "expression": "\"published_at\" desc",
+              "asc": true,
+              "isExpression": true,
               "nulls": "last"
             }
           ],
@@ -960,6 +998,10 @@
           "name": "entry_kind_check",
           "value": "\"entry\".\"kind\" in ('organization', 'person', 'outside_partner')"
         },
+        "entry_source_locale_check": {
+          "name": "entry_source_locale_check",
+          "value": "\"entry\".\"source_locale\" in ('hr', 'en')"
+        },
         "entry_status_check": {
           "name": "entry_status_check",
           "value": "\"entry\".\"status\" in ('draft', 'pending', 'published', 'suspended', 'rejected', 'archived')"
@@ -1009,7 +1051,38 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "slug_history_slug_lower_idx": {
+          "name": "slug_history_slug_lower_idx",
+          "columns": [
+            {
+              "expression": "lower(\"slug\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "slug_history_entry_id_index": {
+          "name": "slug_history_entry_id_index",
+          "columns": [
+            {
+              "expression": "entry_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "slug_history_entry_id_entry_id_fk": {
           "name": "slug_history_entry_id_entry_id_fk",
@@ -1026,15 +1099,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "slug_history_slug_unique": {
-          "name": "slug_history_slug_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1103,8 +1168,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "image_contentHash_unique": {
-          "name": "image_contentHash_unique",
+        "image_content_hash_unique": {
+          "name": "image_content_hash_unique",
           "nullsNotDistinct": false,
           "columns": [
             "content_hash"
@@ -1115,7 +1180,7 @@
       "checkConstraints": {
         "image_size_check": {
           "name": "image_size_check",
-          "value": "\"image\".\"size\" > 0 and \"image\".\"size\" <= 1000000"
+          "value": "\"image\".\"size\" = octet_length(\"image\".\"bytes\") and \"image\".\"size\" between 1 and 1000000"
         }
       },
       "isRLSEnabled": false

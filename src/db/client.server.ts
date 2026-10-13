@@ -16,9 +16,12 @@ export type DbOrTx = Db | Tx;
 function createDb(): Db {
   if (env.DATABASE_DRIVER === "neon") {
     const pool = new NeonPool({ connectionString: env.DATABASE_URL });
+    // An idle socket that dies while the function is frozen must not crash the process.
+    pool.on("error", (error: Error) => console.error("Neon pool error", error));
     return drizzleNeon({ client: pool, schema, casing: "snake_case" });
   }
   const pool = new PgPool({ connectionString: env.DATABASE_URL, max: 5 });
+  pool.on("error", (error) => console.error("Postgres pool error", error));
   return drizzlePg({ client: pool, schema, casing: "snake_case" });
 }
 

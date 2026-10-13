@@ -25,6 +25,7 @@ import {
   type LocationPrecision,
   type LocationSource,
 } from "@/constants/entry";
+import { LOCALES } from "@/constants/locales";
 import type { RichTextDoc } from "@/typings/rich-text";
 
 import { createdAt, id, oneOf, timestamptz, updatedAt } from "../columns";
@@ -86,10 +87,13 @@ export const entry = pgTable(
     uniqueIndex("entry_slug_lower_idx").on(sql`lower(${t.slug})`),
     index().on(t.status, t.kind),
     index().on(t.ownerUserId),
-    index("entry_published_idx")
-      .on(t.id)
+    index().on(t.logoImageId),
+    index().on(t.coverImageId),
+    index("entry_published_at_idx")
+      .on(sql`${t.publishedAt} desc`)
       .where(sql`${t.status} = 'published'`),
     check("entry_kind_check", oneOf(t.kind, ENTRY_KINDS)),
+    check("entry_source_locale_check", oneOf(t.sourceLocale, LOCALES)),
     check("entry_status_check", oneOf(t.status, ENTRY_STATUSES)),
     check("entry_precision_check", oneOf(t.precision, LOCATION_PRECISIONS)),
     check(
@@ -103,14 +107,22 @@ export const entry = pgTable(
   ],
 );
 
-export const slugHistory = pgTable("slug_history", {
-  id: id(),
-  entryId: uuid()
-    .notNull()
-    .references(() => entry.id, { onDelete: "cascade" }),
-  slug: text().notNull().unique(),
-  createdAt: createdAt(),
-});
+// Same case-insensitive rule as entry.slug; the slug service removes a history row when it becomes current again.
+export const slugHistory = pgTable(
+  "slug_history",
+  {
+    id: id(),
+    entryId: uuid()
+      .notNull()
+      .references(() => entry.id, { onDelete: "cascade" }),
+    slug: text().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex("slug_history_slug_lower_idx").on(sql`lower(${t.slug})`),
+    index().on(t.entryId),
+  ],
+);
 
 export const claimInvite = pgTable(
   "claim_invite",
@@ -120,7 +132,7 @@ export const claimInvite = pgTable(
       .notNull()
       .references(() => entry.id, { onDelete: "cascade" }),
     email: text().notNull(),
-    tokenHash: text().notNull().unique(),
+    tokenHash: text().notNull().unique("claim_invite_token_hash_unique"),
     expiresAt: timestamptz().notNull(),
     usedAt: timestamptz(),
     sentAt: timestamptz(),
