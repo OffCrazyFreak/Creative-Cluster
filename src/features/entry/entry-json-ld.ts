@@ -1,3 +1,4 @@
+import { safeHttpUrl } from "@/utils/safe-url";
 import { absoluteUrl } from "@/utils/seo-links";
 
 import type { IPublicEntry } from "./entry-schemas";
@@ -5,7 +6,10 @@ import type { IPublicEntry } from "./entry-schemas";
 // Town only, by design: people never expose a street, and organizations keep their address on the page.
 export function entryJsonLd(entry: IPublicEntry): Record<string, unknown> {
   const { city, countryCode } = entry.location;
-  const sameAs = Object.values(entry.socials);
+  const sameAs = Object.values(entry.socials).flatMap(
+    (url) => safeHttpUrl(url) ?? [],
+  );
+  const website = safeHttpUrl(entry.website);
   return {
     "@context": "https://schema.org",
     "@type": entry.kind === "person" ? "Person" : "Organization",
@@ -14,8 +18,8 @@ export function entryJsonLd(entry: IPublicEntry): Record<string, unknown> {
     ...(entry.descriptionText
       ? { description: entry.descriptionText.slice(0, 300) }
       : {}),
-    ...(entry.website
-      ? { sameAs: [entry.website, ...sameAs] }
+    ...(website
+      ? { sameAs: [website, ...sameAs] }
       : sameAs.length
         ? { sameAs }
         : {}),

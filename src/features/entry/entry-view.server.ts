@@ -4,12 +4,15 @@ import { isbot } from "isbot";
 import { db } from "@/db/client.server";
 import { entryViewDay } from "@/db/schema";
 
+import { hitLimit } from "@/lib/limits/check-limit.server";
+
 import { findPublicEntryId } from "./public-entry.server";
 
 interface IViewContext {
   userAgent: string | undefined;
   purpose: string | undefined;
   viewerId: string | null;
+  ip: string;
 }
 
 // Prefetches (router preload, browser speculation) and crawlers are not visits; neither is the owner.
@@ -21,6 +24,15 @@ function isCountableVisit({ userAgent, purpose }: IViewContext) {
 
 export async function recordEntryView(slug: string, context: IViewContext) {
   if (!isCountableVisit(context)) return;
+  // Flood guard only: counts are not exact visitors, but one client cannot inflate them without bound.
+  if (
+    !(await hitLimit({
+      key: `view:${context.ip}`,
+      max: 120,
+      windowSeconds: 3600,
+    }))
+  )
+    return;
   const target = await findPublicEntryId(slug);
   if (!target) return;
   if (context.viewerId && target.ownerUserId === context.viewerId) return;

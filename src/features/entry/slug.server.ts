@@ -33,6 +33,7 @@ export async function allocateSlug(db: DbOrTx, name: string): Promise<string> {
 }
 
 // Slugs are frozen after publishing except when an admin changes one; the old one then redirects.
+// Throws when the new slug is reserved, used by another entry or redirecting to another entry.
 export async function changeEntrySlug(
   tx: Tx,
   entryId: string,
@@ -44,10 +45,25 @@ export async function changeEntrySlug(
     .where(eq(entry.id, entryId))
     .limit(1);
   if (!current || current.slug === newSlug) return;
-  // The history slug is unique on lower(slug): reclaiming an old slug removes its redirect first.
-  await tx
-    .delete(slugHistory)
-    .where(sql`lower(${slugHistory.slug}) = lower(${newSlug})`);
+  if (reserved.has(newSlug)) throw new Error("Slug is reserved");
+
+  const [other] = await tx
+    .select({ id: entry.id })
+    .from(entry)
+    .where(sql`lower(${entry.slug}) = ${newSlug} and ${entry.id} <> ${entryId}`)
+    .limit(1);
+  if (other) throw new Error("Slug is taken");
+
+  const [history] = await tx
+    .select({ id: slugHistory.id, entryId: slugHistory.entryId })
+    .from(slugHistory)
+    .where(sql`lower(${slugHistory.slug}) = ${newSlug}`)
+    .limit(1);
+  if (history && history.entryId !== entryId) throw new Error("Slug is taken");
+  // The history slug is unique on lower(slug): reclaiming the entry's own old slug drops that redirect.
+  if (history)
+    await tx.delete(slugHistory).where(eq(slugHistory.id, history.id));
+
   await tx.insert(slugHistory).values({ entryId, slug: current.slug });
   await tx.update(entry).set({ slug: newSlug }).where(eq(entry.id, entryId));
 }

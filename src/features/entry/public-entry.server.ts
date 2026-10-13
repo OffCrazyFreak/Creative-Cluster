@@ -27,7 +27,11 @@ export async function findEntryForPage(
       .innerJoin(entry, eq(entry.id, slugHistory.entryId))
       .where(sql`lower(${slugHistory.slug}) = lower(${slug})`)
       .limit(1);
-    if (old && ["published", "suspended"].includes(old.status))
+    if (
+      old &&
+      old.kind !== "outside_partner" &&
+      ["published", "suspended"].includes(old.status)
+    )
       return { status: "redirect", slug: old.slug };
     return { status: "missing" };
   }

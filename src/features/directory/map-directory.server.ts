@@ -38,7 +38,7 @@ async function buildMapDirectory(): Promise<IMapDirectory> {
   const indexBySlug = new Map<string, number>();
   const entries: IDirectoryEntry[] = rows.map((row) => {
     // Visitor view only: members-only fields never enter this shared, cacheable payload.
-    const location = publicLocation({ ...row, visibility: {} }, false);
+    const location = publicLocation(row, false);
     const tags = (tagsByEntry.get(row.id) ?? []).map((item) => {
       let index = indexBySlug.get(item.slug);
       if (index === undefined) {

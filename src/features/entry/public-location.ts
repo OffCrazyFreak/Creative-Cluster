@@ -13,28 +13,28 @@ export interface ILocationRow {
   visibility: VisibilityMap;
 }
 
-// People are stored at an offset town point already; organizations that chose "town"
-// are rounded to about 1 km so the street never leaks through the coordinates.
+// People are stored at an offset town point already. Everyone else is rounded to about 1 km
+// unless the entry shows its exact place AND the viewer may see the address, so a hidden
+// address cannot be read back from the pin.
 export function publicLocation(
   row: ILocationRow,
   isMember: boolean,
 ): IPublicLocation {
   const townOnly = row.kind === "person" || row.locationDisplay === "town";
+  const addressVisible = canSeeField(row.visibility, "address", isMember);
   const hasPin = !row.onlineOnly && row.lat !== null && row.lng !== null;
-  function round(value: number) {
-    return row.kind === "person" ? value : Math.round(value * 100) / 100;
+  function pin(value: number) {
+    if (row.kind === "person" || (!townOnly && addressVisible)) return value;
+    return Math.round(value * 100) / 100;
   }
 
   return {
     onlineOnly: row.onlineOnly,
     city: row.city,
     countryCode: row.countryCode?.toUpperCase() ?? null,
-    addressText:
-      !townOnly && canSeeField(row.visibility, "address", isMember)
-        ? row.addressText
-        : null,
-    lat: hasPin ? (townOnly ? round(row.lat as number) : row.lat) : null,
-    lng: hasPin ? (townOnly ? round(row.lng as number) : row.lng) : null,
+    addressText: !townOnly && addressVisible ? row.addressText : null,
+    lat: hasPin ? pin(row.lat as number) : null,
+    lng: hasPin ? pin(row.lng as number) : null,
     townOnly,
   };
 }

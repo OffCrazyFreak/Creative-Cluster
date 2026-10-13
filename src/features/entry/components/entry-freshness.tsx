@@ -11,9 +11,10 @@ export default function EntryFreshness({
   lastConfirmedAt,
 }: IEntryFreshnessProps) {
   function format(value: string) {
-    return new Intl.DateTimeFormat(getLocale(), { dateStyle: "medium" }).format(
-      new Date(value),
-    );
+    return new Intl.DateTimeFormat(getLocale(), {
+      dateStyle: "medium",
+      timeZone: "UTC",
+    }).format(new Date(value));
   }
 
   return (

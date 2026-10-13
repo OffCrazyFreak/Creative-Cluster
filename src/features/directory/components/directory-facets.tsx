@@ -14,6 +14,15 @@ interface IDirectoryFacetsProps {
 // Plain links to the tag and country pages: they are what search engines crawl.
 export default function DirectoryFacets({ facets }: IDirectoryFacetsProps) {
   const locale = getLocale();
+  const tags = [...facets.tags].sort((a, b) =>
+    tagLabel(a, locale).localeCompare(tagLabel(b, locale), locale),
+  );
+  const countries = [...facets.countries].sort((a, b) =>
+    countryName(a.key, locale).localeCompare(
+      countryName(b.key, locale),
+      locale,
+    ),
+  );
   return (
     <div className="grid gap-6 sm:grid-cols-2">
       <section aria-labelledby="facet-tags" className="flex flex-col gap-2">
@@ -21,7 +30,7 @@ export default function DirectoryFacets({ facets }: IDirectoryFacetsProps) {
           {m.directory_browse_tags()}
         </h2>
         <ul className="flex flex-wrap gap-x-4 gap-y-1">
-          {facets.tags.map((item) => (
+          {tags.map((item) => (
             <li key={item.slug}>
               <Link to="/directory/tag/$tag" params={{ tag: item.slug }}>
                 {tagLabel(item, locale)} ({item.count})
@@ -38,7 +47,7 @@ export default function DirectoryFacets({ facets }: IDirectoryFacetsProps) {
           {m.directory_browse_countries()}
         </h2>
         <ul className="flex flex-wrap gap-x-4 gap-y-1">
-          {facets.countries.map((item) => (
+          {countries.map((item) => (
             <li key={item.key}>
               <Link
                 to="/directory/country/$country"

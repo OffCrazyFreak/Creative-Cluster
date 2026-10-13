@@ -84,6 +84,23 @@ describe("redactEntry", () => {
     expect(entry.location.countryCode).toBe("HR");
   });
 
+  it("rounds the pin of an exact entry whose address the viewer may not see", () => {
+    const hidden = redactEntry(
+      row({ visibility: { address: "hidden" } }),
+      [],
+      true,
+    );
+    expect(hidden.location.addressText).toBeNull();
+    expect(hidden.location.lat).toBe(45.81);
+    const open = redactEntry(
+      row({ visibility: { address: "public" } }),
+      [],
+      false,
+    );
+    expect(open.location.addressText).toBe("Example Street 1");
+    expect(open.location.lat).toBe(45.81234);
+  });
+
   it("treats people as town-level and online-only entries as pinless", () => {
     const person = redactEntry(
       row({ kind: "person", visibility: { address: "public" } }),

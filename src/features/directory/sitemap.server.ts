@@ -71,12 +71,17 @@ export async function buildSitemap(): Promise<string> {
 }
 
 export function buildRobots(): string {
+  // The second language lives under /en or /hr, so every private path is listed with its prefix too.
+  const private_ = ["/admin", "/account", "/api", "/img"];
+  const prefixes = [
+    "",
+    ...LOCALES.filter((l) => l !== site.baseLocale).map((l) => `/${l}`),
+  ];
   return [
     "User-agent: *",
-    "Disallow: /admin",
-    "Disallow: /account",
-    "Disallow: /api",
-    "Disallow: /img",
+    ...prefixes.flatMap((prefix) =>
+      private_.map((path) => `Disallow: ${prefix}${path}`),
+    ),
     "",
     `Sitemap: ${new URL("/sitemap.xml", site.origin).href}`,
     "",

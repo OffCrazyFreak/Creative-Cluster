@@ -19,6 +19,15 @@ import {
 import { DNZ_PLACES, EU_PLACES } from "./fake/places";
 import { createRandom, type Random } from "./fake/random";
 
+// Fake entries go live in the public directory, so only a local database is allowed.
+const host = new URL(process.env.DATABASE_URL ?? "postgres://invalid").hostname;
+if (!["localhost", "127.0.0.1", "::1", "[::1]"].includes(host)) {
+  console.error(
+    `Refusing to seed fake data into ${host}: local databases only.`,
+  );
+  process.exit(1);
+}
+
 const { db } = await import("@/db/client.server");
 const { entry, entryTag, slugHistory, tag } = await import("@/db/schema");
 const { site } = await import("@/sites");
