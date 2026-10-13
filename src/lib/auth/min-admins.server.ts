@@ -7,7 +7,8 @@ import { user } from "@/db/schema";
 
 export const MIN_ADMINS_CODE = "MIN_ADMINS";
 
-// Locks every unbanned admin row so two concurrent demotions are checked one after the other.
+// Gives the admin a clear message before better-auth writes. The lock only covers this check, so
+// migration 0002 (a trigger) is what makes the rule hold when two demotions race.
 export async function assertAdminsRemain(targetUserId: string) {
   await db.transaction(async (tx) => {
     const admins = await tx
