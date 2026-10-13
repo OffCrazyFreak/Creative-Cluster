@@ -18,6 +18,7 @@ function row(patch: Partial<IEntryRow> = {}): IEntryRow {
     contactName: "Contact",
     contactEmail: "a@example.com",
     contactPhone: "+385 1",
+    contactEmailInvalid: false,
     extra: { legal_status: "Cooperative" },
     publishedAt: null,
     updatedAt: new Date("2026-01-01"),
@@ -82,6 +83,11 @@ describe("redactEntry", () => {
     expect(entry.location.lat).toBe(45.81);
     expect(entry.location.lng).toBe(15.99);
     expect(entry.location.countryCode).toBe("HR");
+  });
+
+  it("offers no contact channel when the address bounced", () => {
+    const entry = redactEntry(row({ contactEmailInvalid: true }), [], false);
+    expect(entry.hasContactChannel).toBe(false);
   });
 
   it("rounds the pin of an exact entry whose address the viewer may not see", () => {

@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { setResponseHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import { publicGuard } from "@/server/guards";
@@ -14,13 +13,7 @@ import { getMapDirectory } from "./map-directory.server";
 export const getPublishedDirectory = createServerFn({ method: "GET" })
   .middleware([publicGuard])
   .inputValidator(z.void())
-  .handler(async () => {
-    setResponseHeader(
-      "Cache-Control",
-      "public, max-age=60, stale-while-revalidate=600",
-    );
-    return getMapDirectory();
-  });
+  .handler(() => getMapDirectory());
 
 export const getDirectoryList = createServerFn({ method: "GET" })
   .middleware([publicGuard])

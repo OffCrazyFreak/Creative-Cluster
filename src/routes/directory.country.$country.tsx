@@ -2,10 +2,11 @@ import {
   createFileRoute,
   Link,
   notFound,
+  redirect,
   stripSearchParams,
 } from "@tanstack/react-router";
 
-import { countryName } from "@/features/directory/country-name";
+import { countryName, isKnownCountry } from "@/features/directory/country-name";
 import DirectoryListPage from "@/features/directory/components/directory-list-page";
 import { directoryHead } from "@/features/directory/directory-head";
 import {
@@ -17,15 +18,19 @@ import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 import { site } from "@/sites";
 
-const COUNTRY_CODE = /^[a-zA-Z]{2}$/;
-
 export const Route = createFileRoute("/directory/country/$country")({
   validateSearch: directoryListSearchSchema,
   // Without stripping, the defaulted ?page=1 would be added to the URL by a redirect.
   search: { middlewares: [stripSearchParams(DIRECTORY_LIST_SEARCH_DEFAULTS)] },
   loaderDeps: ({ search }) => ({ page: search.page }),
   loader: ({ params, deps }) => {
-    if (!COUNTRY_CODE.test(params.country)) throw notFound();
+    if (!isKnownCountry(params.country)) throw notFound();
+    if (params.country !== params.country.toLowerCase())
+      throw redirect({
+        to: "/directory/country/$country",
+        params: { country: params.country.toLowerCase() },
+        statusCode: 301,
+      });
     return loadDirectoryList({ country: params.country, page: deps.page });
   },
   head: ({ params, match }) =>

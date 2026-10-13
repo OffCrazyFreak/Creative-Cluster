@@ -1,14 +1,15 @@
 import { eq, sql } from "drizzle-orm";
 
-import { RESERVED_SLUGS } from "@/constants/slugs";
+import type { ChangeSource } from "@/constants/moderation";
 import type { DbOrTx, Tx } from "@/db/client.server";
 import { entry, slugHistory } from "@/db/schema";
+import { writeChange } from "@/lib/change-log/write-change.server";
 import { slugify } from "@/utils/slugify";
 
-const reserved = new Set<string>(RESERVED_SLUGS);
+import { isReservedSlug, normalizeSlug } from "./slug-format";
 
 async function isTaken(db: DbOrTx, slug: string): Promise<boolean> {
-  if (reserved.has(slug)) return true;
+  if (isReservedSlug(slug)) return true;
   const [current] = await db
     .select({ id: entry.id })
     .from(entry)
@@ -32,20 +33,26 @@ export async function allocateSlug(db: DbOrTx, name: string): Promise<string> {
   }
 }
 
+interface IChangeSlugActor {
+  userId: string | null;
+  source: ChangeSource;
+}
+
 // Slugs are frozen after publishing except when an admin changes one; the old one then redirects.
-// Throws when the new slug is reserved, used by another entry or redirecting to another entry.
+// The input is normalized, then must be free (case-insensitively) and not redirect to another entry.
 export async function changeEntrySlug(
   tx: Tx,
   entryId: string,
-  newSlug: string,
+  input: string,
+  actor: IChangeSlugActor,
 ): Promise<void> {
+  const newSlug = normalizeSlug(input);
   const [current] = await tx
     .select({ slug: entry.slug })
     .from(entry)
     .where(eq(entry.id, entryId))
     .limit(1);
   if (!current || current.slug === newSlug) return;
-  if (reserved.has(newSlug)) throw new Error("Slug is reserved");
 
   const [other] = await tx
     .select({ id: entry.id })
@@ -66,4 +73,12 @@ export async function changeEntrySlug(
 
   await tx.insert(slugHistory).values({ entryId, slug: current.slug });
   await tx.update(entry).set({ slug: newSlug }).where(eq(entry.id, entryId));
+  await writeChange(tx, {
+    entityType: "entry",
+    entityId: entryId,
+    ...actor,
+    action: "update",
+    before: { slug: current.slug },
+    after: { slug: newSlug },
+  });
 }

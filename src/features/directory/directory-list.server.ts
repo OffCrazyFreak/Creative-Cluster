@@ -28,7 +28,7 @@ async function findActiveTag(slug: string) {
   const [row] = await db
     .select()
     .from(tag)
-    .where(sql`${tag.slug} = ${slug}`)
+    .where(sql`lower(${tag.slug}) = lower(${slug})`)
     .limit(1);
   if (!row) return null;
   if (row.canonicalId) {
@@ -90,7 +90,15 @@ export async function listPublicEntries(
   if (input.country && total === 0) return { status: "missing" };
 
   const rows = await db
-    .select()
+    .select({
+      id: entry.id,
+      slug: entry.slug,
+      name: entry.name,
+      kind: entry.kind,
+      city: entry.city,
+      countryCode: entry.countryCode,
+      descriptionText: entry.descriptionText,
+    })
     .from(entry)
     .where(where)
     .orderBy(asc(sql`lower(${entry.name})`), asc(entry.id))

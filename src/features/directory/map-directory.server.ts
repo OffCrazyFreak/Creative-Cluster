@@ -15,7 +15,8 @@ import type {
   IMapDirectory,
 } from "./directory-schemas";
 
-const CACHE_MS = 60_000;
+// Worst case a suspended or archived entry stays on the map for this long on another server instance.
+export const MAP_DIRECTORY_CACHE_MS = 30_000;
 let cache: { at: number; value: IMapDirectory } | null = null;
 
 // Mutation services call this after a publish, edit, suspend or archive.
@@ -25,7 +26,21 @@ export function invalidateMapDirectory() {
 
 async function buildMapDirectory(): Promise<IMapDirectory> {
   const rows = await db
-    .select()
+    .select({
+      id: entry.id,
+      slug: entry.slug,
+      name: entry.name,
+      kind: entry.kind,
+      descriptionText: entry.descriptionText,
+      extra: entry.extra,
+      onlineOnly: entry.onlineOnly,
+      city: entry.city,
+      countryCode: entry.countryCode,
+      lat: entry.lat,
+      lng: entry.lng,
+      locationDisplay: entry.locationDisplay,
+      visibility: entry.visibility,
+    })
     .from(entry)
     .where(publicEntryCondition())
     .orderBy(asc(sql`lower(${entry.name})`), asc(entry.id));
@@ -38,7 +53,7 @@ async function buildMapDirectory(): Promise<IMapDirectory> {
   const indexBySlug = new Map<string, number>();
   const entries: IDirectoryEntry[] = rows.map((row) => {
     // Visitor view only: members-only fields never enter this shared, cacheable payload.
-    const location = publicLocation(row, false);
+    const location = publicLocation({ ...row, addressText: null }, false);
     const tags = (tagsByEntry.get(row.id) ?? []).map((item) => {
       let index = indexBySlug.get(item.slug);
       if (index === undefined) {
@@ -76,7 +91,8 @@ async function buildMapDirectory(): Promise<IMapDirectory> {
 }
 
 export async function getMapDirectory(): Promise<IMapDirectory> {
-  if (cache && Date.now() - cache.at < CACHE_MS) return cache.value;
+  if (cache && Date.now() - cache.at < MAP_DIRECTORY_CACHE_MS)
+    return cache.value;
   const value = await buildMapDirectory();
   cache = { at: Date.now(), value };
   return value;

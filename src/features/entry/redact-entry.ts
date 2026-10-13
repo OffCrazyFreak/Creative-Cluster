@@ -15,6 +15,7 @@ export interface IEntryRow extends ILocationRow {
   contactName: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
+  contactEmailInvalid: boolean;
   extra: Record<string, unknown>;
   publishedAt: Date | null;
   updatedAt: Date;
@@ -48,7 +49,7 @@ export function redactEntry(
     contactEmail,
     contactPhone,
     // The contact relay goes through the server, so it works even when the address is hidden.
-    hasContactChannel: Boolean(row.contactEmail),
+    hasContactChannel: Boolean(row.contactEmail) && !row.contactEmailInvalid,
     legalStatus: typeof legalStatus === "string" ? legalStatus : null,
     location: publicLocation(row, isMember),
     tags,
