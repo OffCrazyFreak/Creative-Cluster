@@ -1,0 +1,1 @@
+ALTER TABLE "image" ADD CONSTRAINT "image_mime_check" CHECK ("image"."mime" in ('image/jpeg', 'image/png', 'image/webp'));
