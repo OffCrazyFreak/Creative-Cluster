@@ -9,9 +9,9 @@ import {
   setRoleSchema,
   userIdSchema,
 } from "./admin-users-schemas";
+import { inviteUser } from "./invite-user.server";
 import {
   banUser,
-  inviteUser,
   listUsers,
   removeUser,
   setUserRole,

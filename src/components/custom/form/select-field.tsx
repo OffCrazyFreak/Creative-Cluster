@@ -28,8 +28,12 @@ export default function SelectField({ label, options }: ISelectFieldProps) {
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
       <Select
         items={options}
+        name={field.name}
         value={field.state.value}
         onValueChange={(value) => field.handleChange(value ?? "")}
+        onOpenChange={(open) => {
+          if (!open) field.handleBlur();
+        }}
       >
         <SelectTrigger id={field.name} aria-invalid={invalid}>
           <SelectValue />

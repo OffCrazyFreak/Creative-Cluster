@@ -15,19 +15,25 @@ function errorText(error: UserActionError): string {
 }
 
 // Every action reports in a toast and refreshes the list; the 2-admin rule shows its own message.
+// A rejected call (expired session, network) is shown as a failure instead of escaping the click.
 export function useUserActions() {
   const queryClient = useQueryClient();
   return async function perform(
     action: Promise<UserActionResult>,
     successText: string,
   ): Promise<boolean> {
-    const result = await action;
-    if (result.ok) {
+    try {
+      const result = await action;
+      if (!result.ok) {
+        toast.error(errorText(result.error));
+        return false;
+      }
       toast.success(successText);
       await queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY });
-    } else {
-      toast.error(errorText(result.error));
+      return true;
+    } catch {
+      toast.error(m.admin_users_failed());
+      return false;
     }
-    return result.ok;
   };
 }

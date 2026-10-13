@@ -1,6 +1,6 @@
 import { useAppForm } from "@/components/custom/form/app-form";
 import { FieldGroup } from "@/components/ui/field";
-import { LOCALES } from "@/constants/locales";
+import { LOCALES, LOCALE_NAMES } from "@/constants/locales";
 import { USER_ROLES } from "@/constants/roles";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
@@ -74,7 +74,7 @@ export default function InviteForm() {
               label={m.admin_users_invite_locale()}
               options={LOCALES.map((locale) => ({
                 value: locale,
-                label: locale === "hr" ? "Hrvatski" : "English",
+                label: LOCALE_NAMES[locale],
               }))}
             />
           )}

@@ -3,21 +3,30 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { m } from "@/paraglide/messages";
 
-import type { IAdminUserRow } from "../admin-users-schemas";
+import type { IAdminUserRow, UserActionResult } from "../admin-users-schemas";
 import { setAdminUserRole, unbanAdminUser } from "../admin-users.functions";
 import { useUserActions } from "../hooks/use-user-actions";
-import BanDialog from "./ban-dialog";
-import RemoveDialog from "./remove-dialog";
 
 interface IUserActionsProps {
   user: IAdminUserRow;
+  onBan: (user: IAdminUserRow) => void;
+  onRemove: (user: IAdminUserRow) => void;
 }
 
-export default function UserActions({ user }: IUserActionsProps) {
+export default function UserActions({
+  user,
+  onBan,
+  onRemove,
+}: IUserActionsProps) {
   const perform = useUserActions();
-  const [banOpen, setBanOpen] = useState(false);
-  const [removeOpen, setRemoveOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
   const isAdmin = user.role === "admin";
+
+  async function run(action: Promise<UserActionResult>, text: string) {
+    setBusy(true);
+    await perform(action, text);
+    setBusy(false);
+  }
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -25,8 +34,9 @@ export default function UserActions({ user }: IUserActionsProps) {
         type="button"
         size="sm"
         variant="outline"
+        disabled={busy}
         onClick={() =>
-          void perform(
+          void run(
             setAdminUserRole({
               data: { userId: user.id, role: isAdmin ? "member" : "admin" },
             }),
@@ -41,8 +51,9 @@ export default function UserActions({ user }: IUserActionsProps) {
           type="button"
           size="sm"
           variant="outline"
+          disabled={busy}
           onClick={() =>
-            void perform(
+            void run(
               unbanAdminUser({ data: { userId: user.id } }),
               m.admin_users_unbanned(),
             )
@@ -55,7 +66,7 @@ export default function UserActions({ user }: IUserActionsProps) {
           type="button"
           size="sm"
           variant="outline"
-          onClick={() => setBanOpen(true)}
+          onClick={() => onBan(user)}
         >
           {m.admin_users_ban()}
         </Button>
@@ -64,16 +75,10 @@ export default function UserActions({ user }: IUserActionsProps) {
         type="button"
         size="sm"
         variant="destructive"
-        onClick={() => setRemoveOpen(true)}
+        onClick={() => onRemove(user)}
       >
         {m.admin_users_remove()}
       </Button>
-      <BanDialog user={user} open={banOpen} onOpenChange={setBanOpen} />
-      <RemoveDialog
-        user={user}
-        open={removeOpen}
-        onOpenChange={setRemoveOpen}
-      />
     </div>
   );
 }
