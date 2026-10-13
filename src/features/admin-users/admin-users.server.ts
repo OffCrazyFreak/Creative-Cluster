@@ -5,6 +5,7 @@ import type { UserRole } from "@/constants/roles";
 import { db } from "@/db/client.server";
 import { user } from "@/db/schema";
 import { auth } from "@/lib/auth/auth.server";
+import { assertAdminsRemain } from "@/lib/auth/min-admins.server";
 
 import type { IAdminUsersData } from "./admin-users-schemas";
 import { pluginRole } from "./plugin-role";
@@ -56,8 +57,14 @@ export function unbanUser(userId: string) {
   );
 }
 
+// better-auth revokes the sessions before it deletes, so a refused removal would still log the
+// person out; checking the rule first avoids that.
 export function removeUser(userId: string) {
-  return runUserAction(() =>
-    auth.api.removeUser({ body: { userId }, headers: getRequestHeaders() }),
-  );
+  return runUserAction(async () => {
+    await assertAdminsRemain(userId);
+    await auth.api.removeUser({
+      body: { userId },
+      headers: getRequestHeaders(),
+    });
+  });
 }
