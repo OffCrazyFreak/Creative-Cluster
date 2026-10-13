@@ -26,7 +26,7 @@ describe.skipIf(!temp)("matching speed", () => {
     await temp?.drop();
   });
 
-  it("answers in under 20 ms on 400 entries", async () => {
+  it("answers 400 entries well inside the 20 ms target (guard: 40 ms)", async () => {
     const random = prng(7);
     function pick(list: string[], n: number) {
       return Array.from(

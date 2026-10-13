@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useId } from "react";
 
 import type { AppLocale } from "@/constants/locales";
 import { m } from "@/paraglide/messages";
@@ -18,15 +19,13 @@ export default function CollaborationCards({
   entryId,
   locale = getLocale(),
 }: ICollaborationCardsProps) {
+  const headingId = useId();
   const { data } = useQuery(collaborationQuery(entryId));
   if (!data || data.cards.length === 0) return null;
 
   return (
-    <section
-      aria-labelledby="collaboration-heading"
-      className="flex flex-col gap-3"
-    >
-      <h2 id="collaboration-heading" className="text-lg font-semibold">
+    <section aria-labelledby={headingId} className="flex flex-col gap-3">
+      <h2 id={headingId} className="text-lg font-semibold">
         {data.mode === "collaborate"
           ? m.matching_heading_collaborate()
           : m.matching_heading_similar()}

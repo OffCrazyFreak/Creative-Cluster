@@ -1,7 +1,10 @@
 import type { Db } from "@/db/client.server";
-import type { EntryKind } from "@/constants/entry";
 
-import { MAX_REASON_TAGS, STRONG_SCORE } from "./matching-constants";
+import {
+  MAX_REASON_TAGS,
+  MUTUAL_BONUS,
+  STRONG_SCORE,
+} from "./matching-constants";
 import { matchQuery } from "./matching-sql.server";
 import type {
   ICollaborationCard,
@@ -15,24 +18,19 @@ interface IMatchRow {
   entryId: string;
   slug: string;
   name: string;
-  kind: EntryKind;
   city: string | null;
   countryCode: string | null;
-  logoImageId: string | null;
-  hasExchange: boolean;
+  useExchange: boolean;
   offersW: number;
   seeksW: number;
-  score: number;
   shared: Array<IMatchTag & { relation: MatchRelation }>;
 }
 
 const RELATION_ORDER: MatchRelation[] = ["offers", "seeks", "topic"];
 
-function reasonsOf(shared: IMatchRow["shared"], hasExchange: boolean) {
-  const relations = hasExchange
-    ? RELATION_ORDER.slice(0, 2)
-    : ["topic" as const];
-  return relations.flatMap<IMatchReason>((relation) => {
+// Topic lines show in both modes because topics also decide the order of exchange cards.
+function reasonsOf(shared: IMatchRow["shared"]) {
+  return RELATION_ORDER.flatMap<IMatchReason>((relation) => {
     const tags = shared
       .filter((item) => item.relation === relation)
       .slice(0, MAX_REASON_TAGS)
@@ -43,18 +41,16 @@ function reasonsOf(shared: IMatchRow["shared"], hasExchange: boolean) {
 
 function toCard(row: IMatchRow): ICollaborationCard {
   const mutual = row.offersW > 0 && row.seeksW > 0;
-  const strong = mutual || row.score >= STRONG_SCORE;
+  const exchange = row.offersW + row.seeksW + (mutual ? MUTUAL_BONUS : 0);
+  const strong = mutual || exchange >= STRONG_SCORE;
   return {
     entryId: row.entryId,
     slug: row.slug,
     name: row.name,
-    kind: row.kind,
     city: row.city,
     countryCode: row.countryCode,
-    logoImageId: row.logoImageId,
-    score: row.score,
-    strength: row.hasExchange ? (strong ? "strong" : "possible") : null,
-    reasons: reasonsOf(row.shared, row.hasExchange),
+    strength: row.useExchange ? (strong ? "strong" : "possible") : null,
+    reasons: reasonsOf(row.shared),
   };
 }
 
@@ -66,6 +62,6 @@ export async function findCollaborators(
   const { rows } = (await db.execute(matchQuery(entryId))) as {
     rows: IMatchRow[];
   };
-  const mode = rows[0] && !rows[0].hasExchange ? "similar" : "collaborate";
+  const mode = rows[0] && !rows[0].useExchange ? "similar" : "collaborate";
   return { mode, cards: rows.map(toCard) };
 }

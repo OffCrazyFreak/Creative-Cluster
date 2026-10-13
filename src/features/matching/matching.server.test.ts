@@ -61,7 +61,30 @@ describe.skipIf(!temp)("findCollaborators", () => {
         seeking: [everyone],
       }),
     };
-    for (const [key, row] of Object.entries(entries)) ids[key] = row.id;
+    const rare = [
+      await tag("rare-a"),
+      await tag("rare-b"),
+      await tag("rare-c"),
+    ];
+    const niche = await tag("niche-need");
+    const origami = await tag("origami");
+    const extra = {
+      weakSeeker: await addEntry(db, "Weak seeker", {
+        seeking: [everyone],
+        topic: rare,
+      }),
+      topicHeavy: await addEntry(db, "Topic heavy", {
+        offering: [everyone],
+        topic: rare,
+      }),
+      nicheSeeker: await addEntry(db, "Niche seeker", {
+        seeking: [niche],
+        topic: [origami],
+      }),
+      folder: await addEntry(db, "Folder", { topic: [origami] }),
+    };
+    for (const [key, row] of Object.entries({ ...entries, ...extra }))
+      ids[key] = row.id;
 
     for (let i = 0; i < 20; i += 1) {
       await addEntry(db, `Filler ${i}`, { offering: [everyone] });
@@ -99,6 +122,7 @@ describe.skipIf(!temp)("findCollaborators", () => {
     expect(cards[0].reasons.map((r) => [r.relation, r.tags[0].slug])).toEqual([
       ["offers", "grant-writing"],
       ["seeks", "3d-printing"],
+      ["topic", "robotics"],
     ]);
   });
 
@@ -136,6 +160,18 @@ describe.skipIf(!temp)("findCollaborators", () => {
       "Topic only",
     ]);
     expect(result.cards.every((c) => c.strength === null)).toBe(true);
+  });
+
+  it("does not let topic overlap lift a weak exchange over the threshold", async () => {
+    const result = await findCollaborators(db, ids.weakSeeker);
+    expect(result.mode).toBe("similar");
+    expect(result.cards.map((c) => c.name)).toContain("Topic heavy");
+  });
+
+  it("falls back to similar entries when nothing offers what the entry seeks", async () => {
+    const result = await findCollaborators(db, ids.nicheSeeker);
+    expect(result.mode).toBe("similar");
+    expect(result.cards.map((c) => c.name)).toEqual(["Folder"]);
   });
 
   it("returns nothing for an entry that opted out", async () => {
