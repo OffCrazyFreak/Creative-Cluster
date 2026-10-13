@@ -15,7 +15,11 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm generate && tsc --noEmit",
     "test": "vitest run",
-    "generate": "tsx scripts/generate.ts && tsr generate"
+    "generate": "tsx scripts/generate.ts && tsr generate",
+    "db:up": "docker compose up -d db",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:check": "drizzle-kit check"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
