@@ -58,7 +58,12 @@ export async function addUser(db: Db, name: string, role = "member") {
   counter += 1;
   const [row] = await db
     .insert(schema.user)
-    .values({ name, email: `${name}-${counter}@example.test`, role })
+    .values({
+      name,
+      email: `${name}-${counter}@example.test`,
+      role,
+      locale: "en",
+    })
     .returning();
   return row;
 }
