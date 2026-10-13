@@ -13,7 +13,7 @@ To decide an item:
 
 1. Open it and read it. Check duplicates in the entries list.
 2. Choose "Approve" or "Reject".
-3. To reject, pick a reason code and add a short note. The applicant gets an email in their language with your reason and note.
+3. To reject, pick a reason code and add a short note. The applicant gets an email in their language with your reason and note (not for spam, see the codes below).
 4. For many items, tick them and use bulk approve or bulk reject.
 
 Reason codes: incomplete, duplicate, out of scope, unverifiable, spam (no email is sent), other. Each one sends its own short email text, plus your note. Write the note as you would to a neighbour: say what is wrong and what they can fix.

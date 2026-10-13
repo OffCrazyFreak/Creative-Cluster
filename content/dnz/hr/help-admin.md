@@ -13,7 +13,7 @@ Odluka o stavci:
 
 1. Otvori je i pročitaj. U popisu unosa provjeri ima li duplikata.
 2. Odaberi "Odobri" ili "Odbij".
-3. Za odbijanje odaberi šifru razloga i dodaj kratku napomenu. Prijavitelj dobiva e-poruku na svom jeziku s razlogom i napomenom.
+3. Za odbijanje odaberi šifru razloga i dodaj kratku napomenu. Prijavitelj dobiva e-poruku na svom jeziku s razlogom i napomenom (osim za neželjeni sadržaj, vidi šifre ispod).
 4. Za više stavki označi ih i upotrijebi skupno odobravanje ili odbijanje.
 
 Šifre razloga: nepotpuno, duplikat, izvan opsega, ne može se provjeriti, neželjeni sadržaj (e-poruka se ne šalje), ostalo. Svaka šalje svoj kratki tekst e-poruke, uz tvoju napomenu. Napomenu piši kao susjedu: reci što nije u redu i što mogu ispraviti.
