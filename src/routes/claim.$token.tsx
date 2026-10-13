@@ -1,7 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import PagePlaceholder from "@/components/custom/layout/page-placeholder";
+import { getClaimInvite } from "@/features/auth/auth.functions";
+import AuthPage from "@/features/auth/components/auth-page";
+import ClaimPanel from "@/features/auth/components/claim-panel";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/claim/$token")({
-  component: () => <PagePlaceholder title="Claim" />,
+  loader: ({ params }) => getClaimInvite({ data: { token: params.token } }),
+  component: ClaimRoute,
 });
+
+function ClaimRoute() {
+  const { token } = Route.useParams();
+  const invite = Route.useLoaderData();
+  return (
+    <AuthPage title={m.auth_claim_title()}>
+      {invite ? (
+        <ClaimPanel
+          token={token}
+          entryName={invite.entryName}
+          email={invite.email}
+        />
+      ) : (
+        <p>{m.auth_claim_invalid()}</p>
+      )}
+    </AuthPage>
+  );
+}

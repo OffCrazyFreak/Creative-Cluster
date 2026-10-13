@@ -1,0 +1,105 @@
+import { createHash } from "node:crypto";
+
+import { and, eq, gt, isNull, sql } from "drizzle-orm";
+
+import { INVITE_TOKEN_TTL_SECONDS } from "@/constants/email";
+import { LOCALES } from "@/constants/locales";
+import { db } from "@/db/client.server";
+import { claimInvite, entry, user } from "@/db/schema";
+import { writeChange } from "@/lib/change-log/write-change.server";
+import { createPasswordToken } from "@/lib/auth/password-token.server";
+import { site } from "@/sites";
+
+export type ClaimResult =
+  | { status: "ok"; passwordToken: string | null }
+  | { status: "invalid" }
+  | { status: "taken" };
+
+// Only the hash is stored, so a leaked database cannot be used to claim listings.
+export function hashClaimToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+function usableInvite(tokenHash: string) {
+  return and(
+    eq(claimInvite.tokenHash, tokenHash),
+    isNull(claimInvite.usedAt),
+    gt(claimInvite.expiresAt, sql`now()`),
+  );
+}
+
+export async function getClaimPreview(token: string) {
+  const [row] = await db
+    .select({ entryName: entry.name, email: claimInvite.email })
+    .from(claimInvite)
+    .innerJoin(entry, eq(entry.id, claimInvite.entryId))
+    .where(and(usableInvite(hashClaimToken(token)), isNull(entry.ownerUserId)))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function claimListing(token: string): Promise<ClaimResult> {
+  return db.transaction(async (tx) => {
+    const [invite] = await tx
+      .select()
+      .from(claimInvite)
+      .where(usableInvite(hashClaimToken(token)))
+      .limit(1)
+      .for("update");
+    if (!invite) return { status: "invalid" };
+
+    const [listing] = await tx
+      .select()
+      .from(entry)
+      .where(eq(entry.id, invite.entryId))
+      .limit(1)
+      .for("update");
+    if (!listing) return { status: "invalid" };
+    if (listing.ownerUserId) return { status: "taken" };
+
+    const email = invite.email.toLowerCase();
+    const [existing] = await tx
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.email, email))
+      .limit(1);
+    const locale = LOCALES.find((l) => l === listing.sourceLocale);
+    const [created] = existing
+      ? []
+      : await tx
+          .insert(user)
+          .values({
+            email,
+            name: listing.contactName ?? listing.name,
+            // The emailed claim link proves the address belongs to the owner.
+            emailVerified: true,
+            locale: locale ?? site.baseLocale,
+          })
+          .returning({ id: user.id });
+    const ownerId = existing?.id ?? created.id;
+
+    await tx
+      .update(entry)
+      .set({ ownerUserId: ownerId })
+      .where(eq(entry.id, listing.id));
+    await tx
+      .update(claimInvite)
+      .set({ usedAt: new Date() })
+      .where(eq(claimInvite.id, invite.id));
+    await writeChange(tx, {
+      entityType: "entry",
+      entityId: listing.id,
+      userId: ownerId,
+      source: "owner",
+      action: "update",
+      before: { ownerUserId: null },
+      after: { ownerUserId: ownerId },
+    });
+
+    // A returning account keeps its password; only a brand new account needs one set.
+    const passwordToken = created
+      ? await createPasswordToken(tx, ownerId, INVITE_TOKEN_TTL_SECONDS)
+      : null;
+    return { status: "ok", passwordToken };
+  });
+}
