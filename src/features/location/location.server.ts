@@ -1,3 +1,5 @@
+import { sql } from "drizzle-orm";
+
 import { db } from "@/db/client.server";
 import { env } from "@/env.server";
 import { createBreaker, withBreaker } from "@/lib/geocoding/breaker";
@@ -35,12 +37,21 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// The public Nominatim server allows one request a second across the whole app.
+// The public Nominatim server allows one request a second across the whole app. Each caller reserves the
+// next free slot in one statement, so concurrent searches queue one second apart instead of racing a window.
+const NOMINATIM_MAX_WAIT_MS = 3000;
+
 async function acquireNominatim() {
-  const slot = { key: "nominatim:global", max: 1, windowSeconds: 1 };
-  if (await hitLimit(slot)) return;
-  await sleep(1100);
-  if (!(await hitLimit(slot))) throw new GeocodeError("rate_limited");
+  const result = await db.execute(sql`
+    insert into usage_counter (key, window_start, count) values ('nominatim:slot', now(), 0)
+    on conflict (key) do update
+      set window_start = greatest(usage_counter.window_start + interval '1 second', now())
+    returning extract(epoch from (window_start - now())) * 1000 as wait_ms`);
+  const wait = Number(
+    (result as { rows: { wait_ms: string }[] }).rows[0]?.wait_ms ?? 0,
+  );
+  if (wait > NOMINATIM_MAX_WAIT_MS) throw new GeocodeError("rate_limited");
+  if (wait > 0) await sleep(wait);
 }
 
 async function spendGeoapify() {
@@ -78,12 +89,13 @@ function cacheable(hits: GeoHit[]) {
   return hits.every((hit) => hit.source !== "dgu");
 }
 
-async function cachedList(
-  op: "suggest" | "search",
+// Only submitted searches are cached: every typed prefix would otherwise become a row nobody reads again,
+// and the browser's query cache already absorbs repeated keystrokes.
+async function cachedSearch(
   input: SuggestInput,
-  run: () => ReturnType<typeof suggestChain>,
+  run: () => ReturnType<typeof searchChain>,
 ): Promise<IGeocodeOutcome<GeoHit[]>> {
-  const key = cacheKey(op, input.countryCode, input.text);
+  const key = cacheKey("search", input.countryCode, input.text);
   const cached = await readCache(db, key);
   if (cached) return { hits: cached, degraded: false };
   const { value, degraded } = await run();
@@ -94,14 +106,16 @@ async function cachedList(
 
 export async function suggestAddresses(userKey: string, input: SuggestInput) {
   await enforceLimits([{ key: `geo:suggest:${userKey}`, ...LIMITS.suggest }]);
-  return cachedList("suggest", input, () =>
-    suggestChain(geocoders(), { ...input, limit: 5 }),
-  );
+  const { value, degraded } = await suggestChain(geocoders(), {
+    ...input,
+    limit: 5,
+  });
+  return { hits: value, degraded };
 }
 
 export async function searchAddresses(userKey: string, input: SuggestInput) {
   await enforceLimits([{ key: `geo:search:${userKey}`, ...LIMITS.search }]);
-  return cachedList("search", input, () =>
+  return cachedSearch(input, () =>
     searchChain(geocoders(), { ...input, limit: 5 }),
   );
 }

@@ -13,7 +13,8 @@ const countryCode = z
 
 export const suggestInputSchema = z.object({
   text: z.string().trim().min(3).max(200),
-  countryCode: countryCode.optional(),
+  // Required: without a country the DGU table is skipped and Photon has no box to filter by.
+  countryCode,
 });
 export const searchInputSchema = suggestInputSchema;
 

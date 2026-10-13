@@ -145,17 +145,51 @@ describe("circuit breaker", () => {
     expect(call).toHaveBeenCalledTimes(2);
   });
 
-  it("does not open on other errors", async () => {
-    const call = vi.fn(failing("rate_limited"));
+  it("pauses a rate-limited provider for a minute and an unavailable one for 30 seconds", async () => {
+    let now = 0;
+    const limited = vi.fn(failing("rate_limited"));
     const guarded = withBreaker(
-      adapter("photon", call),
-      createBreaker(() => 0),
+      adapter("photon", limited),
+      createBreaker(() => now),
     );
     await expect(guarded.search(query)).rejects.toMatchObject({
       code: "rate_limited",
     });
     await expect(guarded.search(query)).rejects.toMatchObject({
+      code: "unavailable",
+    });
+    expect(limited).toHaveBeenCalledTimes(1);
+    now = 60_000;
+    await expect(guarded.search(query)).rejects.toMatchObject({
       code: "rate_limited",
+    });
+    expect(limited).toHaveBeenCalledTimes(2);
+
+    now = 0;
+    const down = vi.fn(failing("unavailable"));
+    const flaky = withBreaker(
+      adapter("photon", down),
+      createBreaker(() => now),
+    );
+    await expect(flaky.search(query)).rejects.toMatchObject({
+      code: "unavailable",
+    });
+    now = 29_999;
+    await flaky.search(query).catch(() => undefined);
+    expect(down).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not open on bad_request", async () => {
+    const call = vi.fn(failing("bad_request"));
+    const guarded = withBreaker(
+      adapter("photon", call),
+      createBreaker(() => 0),
+    );
+    await expect(guarded.search(query)).rejects.toMatchObject({
+      code: "bad_request",
+    });
+    await expect(guarded.search(query)).rejects.toMatchObject({
+      code: "bad_request",
     });
     expect(call).toHaveBeenCalledTimes(2);
   });

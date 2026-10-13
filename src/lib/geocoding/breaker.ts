@@ -2,10 +2,12 @@ import { GeocodeError } from "./errors";
 import type { Geocoder } from "./types";
 
 export const BREAKER_MS = 10 * 60 * 1000;
+const RATE_LIMIT_PAUSE_MS = 60 * 1000;
+const OUTAGE_PAUSE_MS = 30 * 1000;
 
 export interface IBreaker {
   isOpen(): boolean;
-  trip(): void;
+  trip(ms?: number): void;
 }
 
 export function createBreaker(
@@ -15,13 +17,14 @@ export function createBreaker(
   let openUntil = 0;
   return {
     isOpen: () => now() < openUntil,
-    trip: () => {
-      openUntil = now() + openMs;
+    trip: (ms = openMs) => {
+      openUntil = now() + ms;
     },
   };
 }
 
 // A 403 means we were banned or the key is dead: stop calling that provider for ten minutes.
+// Rate limits and outages get a short pause, so a struggling provider is not hit on every keystroke.
 export async function guarded<T>(
   breaker: IBreaker,
   call: () => Promise<T>,
@@ -30,7 +33,11 @@ export async function guarded<T>(
   try {
     return await call();
   } catch (error) {
-    if (error instanceof GeocodeError && error.code === "auth") breaker.trip();
+    if (error instanceof GeocodeError) {
+      if (error.code === "auth") breaker.trip();
+      if (error.code === "rate_limited") breaker.trip(RATE_LIMIT_PAUSE_MS);
+      if (error.code === "unavailable") breaker.trip(OUTAGE_PAUSE_MS);
+    }
     throw error;
   }
 }

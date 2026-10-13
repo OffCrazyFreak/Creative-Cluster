@@ -3,7 +3,7 @@ import type { GeoHit, Geocoder, IGeoQuery, IReverseQuery } from "./types";
 
 export interface IChainResult<T> {
   value: T;
-  // True when every adapter that was tried failed, so an empty value means "unknown", not "none".
+  // True when the value is empty and at least one adapter failed: "unknown", not "none".
   degraded: boolean;
 }
 
@@ -19,14 +19,12 @@ async function walk<T>(
   isEmpty: (value: T) => boolean,
   empty: T,
 ): Promise<IChainResult<T>> {
-  let answered = false;
   let failures = 0;
   for (const geocoder of geocoders) {
     try {
       const pending = attempt(geocoder);
       if (!pending) continue;
       const value = await pending;
-      answered = true;
       if (!isEmpty(value)) return { value, degraded: false };
     } catch (error) {
       const failure = asGeocodeError(error);
@@ -34,7 +32,8 @@ async function walk<T>(
       failures += 1;
     }
   }
-  return { value: empty, degraded: !answered && failures > 0 };
+  // A provider that failed may have held the answer, so an empty result is not trustworthy (and not cached).
+  return { value: empty, degraded: failures > 0 };
 }
 
 export function suggestChain(geocoders: Geocoder[], query: IGeoQuery) {

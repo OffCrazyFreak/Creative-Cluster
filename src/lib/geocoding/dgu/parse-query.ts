@@ -11,7 +11,7 @@ export interface IDguQuery {
 
 // "3", "3a", "69/7" or "105a/1" as a whole word. Five digits never match, so postcodes stay out.
 const HOUSE_NUMBER =
-  /(?:^|\s)(\d{1,4})\s?([a-zA-Z]{0,2})(?:\s?\/\s?(\d{1,3}[a-zA-Z]?))?(?=[\s,]|$)/g;
+  /(?:^|\s)(\d{1,4})([a-zA-Z]?)(?:\s?\/\s?(\d{1,3}[a-zA-Z]?))?(?=[\s,]|$)/g;
 
 export function parseAddressQuery(text: string): IDguQuery {
   for (const match of text.matchAll(HOUSE_NUMBER)) {

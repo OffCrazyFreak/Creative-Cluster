@@ -17,7 +17,7 @@ export function cacheKey(
 }
 
 export function reverseKey(lat: number, lng: number) {
-  return `reverse:${lat.toFixed(4)},${lng.toFixed(4)}`;
+  return `reverse:${lat.toFixed(5)},${lng.toFixed(5)}`;
 }
 
 // Provider results may be stored (Geoapify terms, ODbL) and Nominatim's policy asks for it;
