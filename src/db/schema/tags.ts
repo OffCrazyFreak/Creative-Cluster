@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   check,
   index,
@@ -5,6 +6,7 @@ import {
   primaryKey,
   text,
   uuid,
+  uniqueIndex,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
@@ -23,7 +25,7 @@ export const tag = pgTable(
   "tag",
   {
     id: id(),
-    slug: text().notNull().unique(),
+    slug: text().notNull(),
     labelEn: text().notNull(),
     labelHr: text().notNull(),
     aliasesEn: text().array().notNull().default([]),
@@ -39,7 +41,13 @@ export const tag = pgTable(
     suggestedBy: uuid().references(() => user.id, { onDelete: "set null" }),
     createdAt: createdAt(),
   },
-  (t) => [check("tag_status_check", oneOf(t.status, TAG_STATUSES))],
+  (t) => [
+    uniqueIndex("tag_slug_lower_idx").on(sql`lower(${t.slug})`),
+    index().on(t.parentId),
+    index().on(t.canonicalId),
+    index().on(t.suggestedBy),
+    check("tag_status_check", oneOf(t.status, TAG_STATUSES)),
+  ],
 );
 
 export const entryTag = pgTable(

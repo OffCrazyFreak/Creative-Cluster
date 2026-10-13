@@ -19,6 +19,7 @@ import {
   type OpportunityStatus,
   type OpportunityType,
 } from "@/constants/opportunities";
+import { LOCALES } from "@/constants/locales";
 import type { RichTextDoc } from "@/typings/rich-text";
 
 import { createdAt, id, oneOf, timestamptz, updatedAt } from "../columns";
@@ -52,6 +53,7 @@ export const opportunity = pgTable(
   (t) => [
     index().on(t.status, t.expiresAt),
     index().on(t.entryId),
+    check("opportunity_source_locale_check", oneOf(t.sourceLocale, LOCALES)),
     check("opportunity_type_check", oneOf(t.type, OPPORTUNITY_TYPES)),
     check(
       "opportunity_category_check",

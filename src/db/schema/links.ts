@@ -6,13 +6,14 @@ import {
   integer,
   pgTable,
   text,
-  unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
 import {
   LINK_KINDS,
   LINK_STATUSES,
+  SYMMETRIC_LINK_KINDS,
   type LinkKind,
   type LinkStatus,
 } from "@/constants/links";
@@ -48,7 +49,13 @@ export const link = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [
-    unique("link_from_to_kind_unique").on(t.fromId, t.toId, t.kind),
+    // Rejected and withdrawn rows stay as history, so only live links are unique.
+    uniqueIndex("link_live_unique")
+      .on(t.fromId, t.toId, t.kind)
+      .where(sql`${t.status} in ('proposed', 'confirmed')`),
+    index().on(t.proposedBy),
+    index().on(t.proposedByEntryId),
+    index().on(t.decidedBy),
     index().on(t.fromId),
     index().on(t.toId),
     check("link_not_self_check", sql`${t.fromId} <> ${t.toId}`),
@@ -57,6 +64,10 @@ export const link = pgTable(
       sql`not ${t.symmetric} or ${t.fromId} < ${t.toId}`,
     ),
     check("link_kind_check", oneOf(t.kind, LINK_KINDS)),
+    check(
+      "link_symmetric_kind_check",
+      sql`${t.symmetric} = (${oneOf(t.kind, SYMMETRIC_LINK_KINDS)})`,
+    ),
     check("link_status_check", oneOf(t.status, LINK_STATUSES)),
   ],
 );

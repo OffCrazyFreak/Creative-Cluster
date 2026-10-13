@@ -37,6 +37,7 @@ export const contactMessage = pgTable(
   (t) => [
     index().on(t.senderHash, t.createdAt),
     index().on(t.entryId, t.createdAt),
+    index().on(t.createdAt),
   ],
 );
 

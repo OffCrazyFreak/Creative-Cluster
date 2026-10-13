@@ -4,6 +4,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   real,
   text,
 } from "drizzle-orm/pg-core";
@@ -46,5 +47,5 @@ export const hrAddress = pgTable(
     lon: real().notNull(),
     lat: real().notNull(),
   },
-  (t) => [index().on(t.streetId, t.houseNumber)],
+  (t) => [primaryKey({ columns: [t.streetId, t.houseNumber, t.suffix] })],
 );

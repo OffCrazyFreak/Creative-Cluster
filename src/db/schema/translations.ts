@@ -6,6 +6,7 @@ import {
   type TranslatableEntity,
   type TranslationOrigin,
 } from "@/constants/translations";
+import { LOCALES } from "@/constants/locales";
 
 import { id, oneOf, updatedAt } from "../columns";
 
@@ -34,6 +35,7 @@ export const translation = pgTable(
       "translation_entity_check",
       oneOf(t.entityType, TRANSLATABLE_ENTITIES),
     ),
+    check("translation_locale_check", oneOf(t.locale, LOCALES)),
     check("translation_origin_check", oneOf(t.origin, TRANSLATION_ORIGINS)),
   ],
 );

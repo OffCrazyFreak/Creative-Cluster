@@ -39,3 +39,12 @@ export const CHANGE_ACTIONS = [
 export type ChangeAction = (typeof CHANGE_ACTIONS)[number];
 
 export const REVIEW_STALE_DAYS = 7;
+
+export const MODERATED_ENTITIES = [
+  "entry",
+  "opportunity",
+  "link",
+  "tag",
+  "user",
+] as const;
+export type ModeratedEntity = (typeof MODERATED_ENTITIES)[number];
