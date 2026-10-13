@@ -29,7 +29,7 @@ export async function seedTags(db: Db, seed: readonly ITagSeed[]) {
       ? await tx
           .select({ id: tag.id, slug: tag.slug })
           .from(tag)
-          .where(inArray(tag.slug, parentSlugs))
+          .where(and(inArray(tag.slug, parentSlugs), isNull(tag.canonicalId)))
       : [];
     const parentId = new Map(parents.map((row) => [row.slug, row.id]));
     for (const item of seed) {

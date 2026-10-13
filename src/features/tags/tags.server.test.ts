@@ -83,6 +83,24 @@ describe.skipIf(!temp)("tag services", () => {
       expect(rows.find((r) => r.slug === "music-live")?.parentId).toBe(
         parent?.id,
       );
+      const merged = await db
+        .insert(schema.tag)
+        .values({
+          slug: "ghost",
+          labelEn: "Ghost",
+          labelHr: "Duh",
+          canonicalId: parent!.id,
+        })
+        .returning();
+      await seedTags(db, [
+        { slug: "ghost-child", labelEn: "G", labelHr: "G", parent: "ghost" },
+      ]);
+      const [orphan] = await db
+        .select()
+        .from(schema.tag)
+        .where(eq(schema.tag.slug, "ghost-child"));
+      expect(orphan.parentId).toBeNull();
+      expect(merged).toHaveLength(1);
       await db.delete(schema.tag);
     });
   });
