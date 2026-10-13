@@ -19,7 +19,7 @@ export const banUserSchema = userIdSchema.extend({
   reason: z.string().trim().min(1).max(500),
 });
 
-export type UserActionError = "min_admins" | "exists" | "failed";
+export type UserActionError = "min_admins" | "exists" | "self" | "failed";
 export type UserActionResult =
   { ok: true } | { ok: false; error: UserActionError };
 

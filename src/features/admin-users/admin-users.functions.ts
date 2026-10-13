@@ -31,7 +31,12 @@ export const inviteAdminUser = createServerFn({ method: "POST" })
 export const setAdminUserRole = createServerFn({ method: "POST" })
   .middleware([adminGuard])
   .inputValidator(setRoleSchema)
-  .handler(({ data }) => setUserRole(data.userId, data.role));
+  .handler(({ data, context }) =>
+    // Ban and remove on yourself are refused by better-auth; a role change is not.
+    data.userId === context.user.id
+      ? Promise.resolve({ ok: false as const, error: "self" as const })
+      : setUserRole(data.userId, data.role),
+  );
 
 export const banAdminUser = createServerFn({ method: "POST" })
   .middleware([adminGuard])

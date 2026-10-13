@@ -5,14 +5,10 @@ import { USER_ROLES } from "@/constants/roles";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
+import { roleLabel } from "../role-label";
 import { inviteUserSchema } from "../admin-users-schemas";
 import { inviteAdminUser } from "../admin-users.functions";
 import { useUserActions } from "../hooks/use-user-actions";
-
-const ROLE_LABELS = {
-  admin: () => m.admin_users_role_admin(),
-  member: () => m.admin_users_role_member(),
-};
 
 export default function InviteForm() {
   const perform = useUserActions();
@@ -63,7 +59,7 @@ export default function InviteForm() {
               label={m.admin_users_invite_role()}
               options={USER_ROLES.map((role) => ({
                 value: role,
-                label: ROLE_LABELS[role](),
+                label: roleLabel(role),
               }))}
             />
           )}

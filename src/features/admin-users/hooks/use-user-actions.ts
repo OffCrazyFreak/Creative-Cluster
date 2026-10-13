@@ -10,6 +10,7 @@ import { ADMIN_USERS_QUERY_KEY } from "../admin-users-queries";
 function errorText(error: UserActionError): string {
   if (error === "min_admins")
     return m.admin_users_min_admins({ min: MIN_ADMINS });
+  if (error === "self") return m.admin_users_self_blocked();
   if (error === "exists") return m.admin_users_invite_exists();
   return m.admin_users_failed();
 }

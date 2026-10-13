@@ -1,5 +1,3 @@
-import { randomBytes } from "node:crypto";
-
 import { eq } from "drizzle-orm";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
@@ -7,6 +5,7 @@ import { INVITE_EXPIRY, INVITE_TOKEN_TTL_SECONDS } from "@/constants/email";
 import { db } from "@/db/client.server";
 import { user } from "@/db/schema";
 import { auth } from "@/lib/auth/auth.server";
+import { runInBackground } from "@/lib/auth/background-task.server";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { createPasswordToken } from "@/lib/auth/password-token.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
@@ -22,7 +21,12 @@ async function queueInvite(
   invitedBy: string,
 ) {
   await db.transaction(async (tx) => {
-    await tx.update(user).set({ invitedBy }).where(eq(user.id, created.id));
+    // Created as a member and promoted here: an admin row would trip the 2-admin trigger if the
+    // cleanup below ever had to delete it.
+    await tx
+      .update(user)
+      .set({ invitedBy, role: input.role })
+      .where(eq(user.id, created.id));
     const token = await createPasswordToken(
       tx,
       created.id,
@@ -44,7 +48,7 @@ async function queueInvite(
   });
 }
 
-// The random password is never shown or mailed: the invitee sets their own through the link.
+// No password is set here: the invitee chooses one through the link, which creates the credential.
 export async function inviteUser(
   input: InviteUserInput,
   invitedBy: string,
@@ -54,8 +58,7 @@ export async function inviteUser(
       body: {
         email: input.email,
         name: input.name,
-        password: randomBytes(32).toString("base64url"),
-        role: pluginRole(input.role),
+        role: pluginRole("member"),
         data: { emailVerified: true, locale: input.locale },
       },
       headers: getRequestHeaders(),
@@ -69,6 +72,7 @@ export async function inviteUser(
       throw error;
     }
   });
-  if (result.ok) await triggerDrain();
+  // Delivery is not part of the click; the 15 minute schedule is the fallback.
+  if (result.ok) runInBackground(triggerDrain());
   return result;
 }

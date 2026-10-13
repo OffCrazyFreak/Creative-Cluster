@@ -66,6 +66,7 @@ export default function UserActions({
           type="button"
           size="sm"
           variant="outline"
+          disabled={busy}
           onClick={() => onBan(user)}
         >
           {m.admin_users_ban()}
@@ -75,6 +76,7 @@ export default function UserActions({
         type="button"
         size="sm"
         variant="destructive"
+        disabled={busy}
         onClick={() => onRemove(user)}
       >
         {m.admin_users_remove()}

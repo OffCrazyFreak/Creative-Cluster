@@ -17,6 +17,7 @@ import {
 import { m } from "@/paraglide/messages";
 
 import type { IAdminUserRow } from "../admin-users-schemas";
+import { roleLabel } from "../role-label";
 import BanDialog from "./ban-dialog";
 import RemoveDialog from "./remove-dialog";
 import UserActions from "./user-actions";
@@ -46,18 +47,18 @@ export default function UsersTable({ users, viewerId }: IUsersTableProps) {
         helper.accessor("email", { header: () => m.admin_users_col_email() }),
         helper.accessor("role", {
           header: () => m.admin_users_col_role(),
-          cell: ({ row }) =>
-            row.original.role === "admin"
-              ? m.admin_users_role_admin()
-              : m.admin_users_role_member(),
+          cell: ({ row }) => roleLabel(row.original.role),
         }),
         helper.accessor("banned", {
           header: () => m.admin_users_col_status(),
           cell: ({ row }) =>
             row.original.banned ? (
-              <Badge variant="destructive">
-                {m.admin_users_status_banned()}
-              </Badge>
+              <div className="flex flex-col gap-1">
+                <Badge variant="destructive">
+                  {m.admin_users_status_banned()}
+                </Badge>
+                <span className="text-xs">{row.original.banReason}</span>
+              </div>
             ) : (
               <Badge variant="secondary">{m.admin_users_status_active()}</Badge>
             ),
