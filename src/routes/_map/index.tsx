@@ -5,7 +5,7 @@ import MapResultsList from "@/features/map/components/map-results-list";
 import { hasActiveFilters } from "@/features/map/map-search";
 import { m } from "@/paraglide/messages";
 import { site } from "@/sites";
-import { absoluteUrl, indexableLinks } from "@/utils/seo-links";
+import { absoluteUrl, canonicalLink, indexableLinks } from "@/utils/seo-links";
 import { serializeJsonLd } from "@/utils/json-ld";
 
 export const Route = createFileRoute("/_map/")({
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_map/")({
         },
         ...(variant ? [{ name: "robots", content: "noindex, follow" }] : []),
       ],
-      links: indexableLinks("/"),
+      links: variant ? [canonicalLink("/")] : indexableLinks("/"),
       scripts: [
         {
           type: "application/ld+json",

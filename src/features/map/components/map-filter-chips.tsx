@@ -1,5 +1,3 @@
-import { XIcon } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { countryName } from "@/features/directory/country-name";
 import { tagLabel } from "@/features/directory/tag-label";
@@ -9,27 +7,9 @@ import { getLocale } from "@/paraglide/runtime";
 import { useMapFacets } from "../hooks/use-map-facets";
 import { useUpdateMapSearch } from "../hooks/use-update-map-search";
 import { useMapFrame } from "../map-frame-context";
+import MapRemovableChip from "./map-removable-chip";
 
 const POPULAR_TAGS = 6;
-
-interface IRemovableChipProps {
-  label: string;
-  onRemove: () => void;
-}
-
-function RemovableChip({ label, onRemove }: IRemovableChipProps) {
-  return (
-    <Button
-      variant="secondary"
-      size="sm"
-      aria-label={m.map_chip_remove({ label })}
-      onClick={onRemove}
-    >
-      {label}
-      <XIcon aria-hidden="true" />
-    </Button>
-  );
-}
 
 export default function MapFilterChips() {
   const { directory, filters, areaBounds, setAreaBounds } = useMapFrame();
@@ -75,7 +55,7 @@ export default function MapFilterChips() {
         )
         .map((slug) => (
           <li key={slug} className="shrink-0">
-            <RemovableChip
+            <MapRemovableChip
               label={labelOf(slug)}
               onRemove={() => toggleTag(slug)}
             />
@@ -83,7 +63,7 @@ export default function MapFilterChips() {
         ))}
       {filters.q ? (
         <li className="shrink-0">
-          <RemovableChip
+          <MapRemovableChip
             label={m.map_chip_text({ text: filters.q })}
             onRemove={() => void update({ q: "" })}
           />
@@ -91,7 +71,7 @@ export default function MapFilterChips() {
       ) : null}
       {filters.country ? (
         <li className="shrink-0">
-          <RemovableChip
+          <MapRemovableChip
             label={countryName(filters.country, locale)}
             onRemove={() => void update({ country: "" })}
           />
@@ -99,7 +79,7 @@ export default function MapFilterChips() {
       ) : null}
       {filters.legal ? (
         <li className="shrink-0">
-          <RemovableChip
+          <MapRemovableChip
             label={filters.legal}
             onRemove={() => void update({ legal: "" })}
           />
@@ -107,7 +87,7 @@ export default function MapFilterChips() {
       ) : null}
       {filters.near && filters.radiusKm > 0 ? (
         <li className="shrink-0">
-          <RemovableChip
+          <MapRemovableChip
             label={m.map_chip_near({ km: filters.radiusKm })}
             onRemove={() => void update({ near: "", radius: 0 })}
           />
@@ -115,7 +95,7 @@ export default function MapFilterChips() {
       ) : null}
       {areaBounds ? (
         <li className="shrink-0">
-          <RemovableChip
+          <MapRemovableChip
             label={m.map_chip_area()}
             onRemove={() => setAreaBounds(null)}
           />

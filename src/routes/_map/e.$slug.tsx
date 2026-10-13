@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_map/e/$slug")({
       });
     return result;
   },
-  staleTime: 0,
+  staleTime: 30_000,
   head: ({ loaderData, params }) => {
     if (!loaderData || loaderData.status === "gone")
       return {

@@ -23,7 +23,9 @@ export default function MapSearchBar() {
   useEffect(() => {
     if (draft === null) return;
     const timer = setTimeout(() => {
-      void update({ q: draft }).then(() => setDraft(null));
+      void update({ q: draft }).then(() =>
+        setDraft((current) => (current === draft ? null : current)),
+      );
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [draft, update]);
@@ -34,7 +36,9 @@ export default function MapSearchBar() {
       aria-label={m.map_search_label()}
       onSubmit={(event) => {
         event.preventDefault();
-        void update({ q: value }).then(() => setDraft(null));
+        void update({ q: value }).then(() =>
+          setDraft((current) => (current === value ? null : current)),
+        );
       }}
     >
       <InputGroup>

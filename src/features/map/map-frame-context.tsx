@@ -20,8 +20,6 @@ export interface IMapFrameValue {
   listed: IDirectoryEntry[];
   mapStatus: MapStatus;
   requestMap: () => void;
-  hoveredSlug: string | null;
-  setHoveredSlug: (slug: string | null) => void;
   listOverride: string[] | null;
   setListOverride: (slugs: string[] | null) => void;
   areaBounds: IBounds | null;
@@ -35,3 +33,8 @@ export function useMapFrame(): IMapFrameValue {
   if (!value) throw new Error("useMapFrame must be used inside the map frame");
   return value;
 }
+
+// Hover has its own context, with a stable setter, so hovering never re-renders the whole list.
+export const SetHoveredSlugContext = createContext<
+  (slug: string | null) => void
+>(() => undefined);

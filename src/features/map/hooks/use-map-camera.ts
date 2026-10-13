@@ -34,16 +34,18 @@ export function useMapCamera({
   duration,
   getPadding,
 }: IUseMapCameraInput) {
-  const skipFirstFit = useRef(hasInitialViewport);
-  const skipFirstFocus = useRef(hasInitialViewport);
+  // Remounts toggle `ready` again; these refs make sure only a real change moves the camera.
+  const lastFitKey = useRef<string | null>(null);
+  const lastFocus = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     const map = getMap();
     if (!ready || !map) return;
-    if (skipFirstFit.current) {
-      skipFirstFit.current = false;
-      return;
-    }
+    const first = lastFitKey.current === null;
+    if (lastFitKey.current === fitKey) return;
+    lastFitKey.current = fitKey;
+    // A shared link with a viewport keeps that viewport instead of fitting on first load.
+    if (first && hasInitialViewport) return;
     const bounds = boundsOf(pins);
     if (!bounds) return;
     const padding = getPadding();
@@ -56,11 +58,11 @@ export function useMapCamera({
 
   useEffect(() => {
     const map = getMap();
-    if (!ready || !map || !focusSlug) return;
-    if (skipFirstFocus.current) {
-      skipFirstFocus.current = false;
-      return;
-    }
+    if (!ready || !map) return;
+    const first = lastFocus.current === undefined;
+    if (lastFocus.current === focusSlug) return;
+    lastFocus.current = focusSlug;
+    if (!focusSlug || (first && hasInitialViewport)) return;
     const entry = allEntries.find((item) => item.slug === focusSlug);
     if (!entry || entry.lat === null || entry.lng === null) return;
     map.easeTo({

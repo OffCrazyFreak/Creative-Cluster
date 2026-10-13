@@ -4,6 +4,7 @@ import { lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 
+import MapFailureReporter from "./map-failure-reporter";
 import type { IMapViewProps } from "./map-view.client";
 
 // Every MapLibre import lives in map-view.client.tsx; this chunk loads only after the list has painted.
@@ -13,18 +14,12 @@ interface IMapLazyProps extends IMapViewProps {
   onFailed: () => void;
 }
 
-function FailureReporter({ onFailed }: { onFailed: () => void }) {
-  // Rendering the fallback means MapLibre threw (for example no WebGL context): hand over to the list.
-  queueMicrotask(onFailed);
-  return null;
-}
-
 export default function MapLazy({ onFailed, ...props }: IMapLazyProps) {
   return (
     <ClientOnly fallback={null}>
       <CatchBoundary
         getResetKey={() => "map"}
-        errorComponent={() => <FailureReporter onFailed={onFailed} />}
+        errorComponent={() => <MapFailureReporter onFailed={onFailed} />}
       >
         <Suspense
           fallback={

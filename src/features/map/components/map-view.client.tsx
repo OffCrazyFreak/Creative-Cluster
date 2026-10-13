@@ -20,7 +20,10 @@ import { site } from "@/sites";
 
 import type { IBounds } from "../geo";
 import { useFeatureState } from "../hooks/use-feature-state";
-import { usePrefersReducedMotion } from "../hooks/use-media-query";
+import {
+  useMediaQuery,
+  usePrefersReducedMotion,
+} from "../hooks/use-media-query";
 import { useMapCamera } from "../hooks/use-map-camera";
 import { handleMapClick } from "../map-click";
 import { buildGeoJson, buildSlugIds, SOURCE_ID } from "../map-geojson";
@@ -68,6 +71,7 @@ export default function MapView(props: IMapViewProps) {
   const [mapKey, setMapKey] = useState(0);
   const [cursor, setCursor] = useState("");
   const reducedMotion = usePrefersReducedMotion();
+  const wide = useMediaQuery("(min-width: 768px)");
   const duration = reducedMotion ? 0 : 600;
   const styleUrl = MAP_STYLES[site.map.style];
 
@@ -154,7 +158,7 @@ export default function MapView(props: IMapViewProps) {
       ref={containerRef}
       role="region"
       aria-label={m.map_region_label()}
-      className="size-full max-md:[&_.maplibregl-ctrl-bottom-right]:bottom-28 max-md:[&_.maplibregl-ctrl-top-right]:top-32"
+      className="size-full max-md:[&_.maplibregl-ctrl-top-left]:top-32 max-md:[&_.maplibregl-ctrl-top-right]:top-32"
     >
       <Map
         key={mapKey}
@@ -184,7 +188,11 @@ export default function MapView(props: IMapViewProps) {
         onMouseLeave={() => setCursor("")}
       >
         <NavigationControl position="top-right" showCompass={false} />
-        <AttributionControl position="bottom-right" compact={false} />
+        {/* On phones the sheet covers the bottom, so attribution moves below the search block. */}
+        <AttributionControl
+          position={wide ? "bottom-right" : "top-left"}
+          compact={false}
+        />
         <Source
           id={SOURCE_ID}
           type="geojson"

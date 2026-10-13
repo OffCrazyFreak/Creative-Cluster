@@ -32,7 +32,12 @@ export default function MapDistanceFilter() {
   }
   function pickMyLocation() {
     navigator.geolocation.getCurrentPosition(
-      ({ coords }) => setPoint({ lat: coords.latitude, lng: coords.longitude }),
+      ({ coords }) =>
+        // About 1 km: the point ends up in the URL, history and logs.
+        setPoint({
+          lat: Math.round(coords.latitude * 100) / 100,
+          lng: Math.round(coords.longitude * 100) / 100,
+        }),
       () => setDenied(true),
     );
   }

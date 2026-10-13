@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { memo, useContext } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { countryName } from "@/features/directory/country-name";
@@ -10,7 +11,7 @@ import { tagLabel } from "@/features/directory/tag-label";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
-import { useMapFrame } from "../map-frame-context";
+import { SetHoveredSlugContext } from "../map-frame-context";
 
 interface IMapResultItemProps {
   entry: IDirectoryEntry;
@@ -19,8 +20,8 @@ interface IMapResultItemProps {
 
 const MAX_TAGS = 3;
 
-export default function MapResultItem({ entry, tags }: IMapResultItemProps) {
-  const { setHoveredSlug } = useMapFrame();
+function MapResultItem({ entry, tags }: IMapResultItemProps) {
+  const setHoveredSlug = useContext(SetHoveredSlugContext);
   const locale = getLocale();
   const kind =
     entry.kind === "person"
@@ -65,3 +66,5 @@ export default function MapResultItem({ entry, tags }: IMapResultItemProps) {
     </li>
   );
 }
+
+export default memo(MapResultItem);

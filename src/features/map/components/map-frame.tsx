@@ -5,7 +5,7 @@ import {
   useNavigate,
   useSearch,
 } from "@tanstack/react-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { publishedDirectoryQueryOptions } from "@/features/directory/directory-queries";
 import { m } from "@/paraglide/messages";
@@ -18,6 +18,7 @@ import { useOrderSeed } from "../hooks/use-order-seed";
 import { useSignatureState } from "../hooks/use-signature-state";
 import {
   MapFrameContext,
+  SetHoveredSlugContext,
   type IMapFrameValue,
   type MapStatus,
 } from "../map-frame-context";
@@ -95,34 +96,61 @@ export default function MapFrame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
+  // Panning writes `v` often; one debounced replace keeps history and loaders quiet.
+  const viewportTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(viewportTimer.current), []);
   const writeViewport = useCallback(
-    (viewport: IViewport) =>
-      void navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, v: formatViewport(viewport) }),
-        replace: true,
-      }),
+    (viewport: IViewport) => {
+      window.clearTimeout(viewportTimer.current);
+      viewportTimer.current = window.setTimeout(
+        () =>
+          void navigate({
+            to: ".",
+            search: (prev) => ({ ...prev, v: formatViewport(viewport) }),
+            replace: true,
+          }),
+        400,
+      );
+    },
     [navigate],
   );
 
-  const value: IMapFrameValue = {
-    directory,
-    search,
-    filters,
-    pins,
-    listed,
-    mapStatus: status,
-    requestMap,
-    hoveredSlug,
-    setHoveredSlug,
-    listOverride,
-    setListOverride,
-    areaBounds,
-    setAreaBounds: (bounds) => {
+  const applyAreaBounds = useCallback(
+    (bounds: IBounds | null) => {
       setAreaBounds(bounds);
       setPendingBounds(null);
     },
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filterSignature],
+  );
+  const value = useMemo<IMapFrameValue>(
+    () => ({
+      directory,
+      search,
+      filters,
+      pins,
+      listed,
+      mapStatus: status,
+      requestMap,
+      listOverride,
+      setListOverride,
+      areaBounds,
+      setAreaBounds: applyAreaBounds,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      directory,
+      search,
+      filters,
+      pins,
+      listed,
+      status,
+      requestMap,
+      listOverride,
+      areaBounds,
+      applyAreaBounds,
+    ],
+  );
 
   const outlet = <Outlet />;
   const live = directory ? (
@@ -134,58 +162,62 @@ export default function MapFrame() {
   if (status !== "active" || !directory) {
     return (
       <MapFrameContext.Provider value={value}>
-        {live}
-        <MapListLayout
-          status={status}
-          canShowMap={Boolean(entryMatch) && status === "idle"}
-          onShowMap={requestMap}
-        >
-          {outlet}
-        </MapListLayout>
+        <SetHoveredSlugContext.Provider value={setHoveredSlug}>
+          {live}
+          <MapListLayout
+            status={status}
+            canShowMap={Boolean(entryMatch) && status === "idle"}
+            onShowMap={requestMap}
+          >
+            {outlet}
+          </MapListLayout>
+        </SetHoveredSlugContext.Provider>
       </MapFrameContext.Provider>
     );
   }
 
   return (
     <MapFrameContext.Provider value={value}>
-      {live}
-      <MapOverlayLayout
-        wide={wide}
-        status={status}
-        frameRef={frameRef}
-        panelRef={panelRef}
-        sheetRef={sheetRef}
-        map={
-          <MapLazy
-            allEntries={directory.entries}
-            pins={pins}
-            initialViewport={initialViewport}
-            getPadding={getPadding}
-            focusSlug={focusSlug}
-            hoveredSlug={hoveredSlug}
-            fitKey={filterSignature}
-            onViewportChange={writeViewport}
-            onUserMove={setPendingBounds}
-            onSelectSlug={(slug) =>
-              void navigate({ to: "/e/$slug", params: { slug } })
-            }
-            onListSlugs={(slugs) => {
-              setListOverride(slugs);
-              void navigate({ to: "/", search: (prev) => prev });
-            }}
-            onFailed={() => setStatus("failed")}
-          />
-        }
-        searchArea={
-          pendingBounds ? (
-            <MapSearchAreaButton
-              onClick={() => value.setAreaBounds(pendingBounds)}
+      <SetHoveredSlugContext.Provider value={setHoveredSlug}>
+        {live}
+        <MapOverlayLayout
+          wide={wide}
+          status={status}
+          frameRef={frameRef}
+          panelRef={panelRef}
+          sheetRef={sheetRef}
+          map={
+            <MapLazy
+              allEntries={directory.entries}
+              pins={pins}
+              initialViewport={initialViewport}
+              getPadding={getPadding}
+              focusSlug={focusSlug}
+              hoveredSlug={hoveredSlug}
+              fitKey={filterSignature}
+              onViewportChange={writeViewport}
+              onUserMove={setPendingBounds}
+              onSelectSlug={(slug) =>
+                void navigate({ to: "/e/$slug", params: { slug } })
+              }
+              onListSlugs={(slugs) => {
+                setListOverride(slugs);
+                void navigate({ to: "/", search: (prev) => prev });
+              }}
+              onFailed={() => setStatus("failed")}
             />
-          ) : null
-        }
-      >
-        {outlet}
-      </MapOverlayLayout>
+          }
+          searchArea={
+            pendingBounds ? (
+              <MapSearchAreaButton
+                onClick={() => value.setAreaBounds(pendingBounds)}
+              />
+            ) : null
+          }
+        >
+          {outlet}
+        </MapOverlayLayout>
+      </SetHoveredSlugContext.Provider>
     </MapFrameContext.Provider>
   );
 }

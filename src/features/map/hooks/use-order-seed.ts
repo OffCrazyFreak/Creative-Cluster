@@ -8,13 +8,21 @@ function subscribe() {
   return () => undefined;
 }
 
+let fallbackSeed: number | null = null;
+
 function readSeed(): number {
-  let stored = sessionStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    stored = String(Math.floor(Math.random() * 2 ** 31) + 2);
-    sessionStorage.setItem(STORAGE_KEY, stored);
+  try {
+    let stored = sessionStorage.getItem(STORAGE_KEY);
+    if (!stored) {
+      stored = String(Math.floor(Math.random() * 2 ** 31) + 2);
+      sessionStorage.setItem(STORAGE_KEY, stored);
+    }
+    return Number(stored);
+  } catch {
+    // Storage can be blocked; the order then lasts for the page load.
+    fallbackSeed ??= Math.floor(Math.random() * 2 ** 31) + 2;
+    return fallbackSeed;
   }
-  return Number(stored);
 }
 
 // One shuffled order per browser session, so the list does not rearrange on every navigation.
