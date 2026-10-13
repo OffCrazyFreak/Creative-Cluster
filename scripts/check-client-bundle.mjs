@@ -14,6 +14,18 @@ const FORBIDDEN = [
   "better-auth/adapters",
 ];
 
+// Secret values from .env.ci too: a value inlined as a literal would carry no name.
+const SECRET_KEYS = /SECRET|TOKEN|PASSWORD|DATABASE_URL|API_KEY/;
+const envCiValues = readFileSync(".env.ci", "utf8")
+  .split("\n")
+  .map((line) => line.match(/^([A-Z_]+)=(.+)$/))
+  .filter(
+    (match) =>
+      match && SECRET_KEYS.test(match[1]) && !match[1].startsWith("VITE_"),
+  )
+  .map((match) => match[2]);
+FORBIDDEN.push(...envCiValues);
+
 function files(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((item) =>
     item.isDirectory() ? files(join(dir, item.name)) : [join(dir, item.name)],

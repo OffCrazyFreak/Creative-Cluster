@@ -17,11 +17,13 @@ jobs:
     container: postgres:18
     steps:
       - name: Dump and encrypt
+        shell: bash
         env:
           URL_RPCC: ${{ secrets.DATABASE_URL_UNPOOLED_RPCC }}
           URL_DNZ: ${{ secrets.DATABASE_URL_UNPOOLED_DNZ }}
           AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
         run: |
+          set -euo pipefail
           url="$([ "${{ matrix.site }}" = rpcc ] && echo "$URL_RPCC" || echo "$URL_DNZ")"
           if [ -z "$url" ] || [ -z "$AGE_RECIPIENT" ]; then echo "Backup secrets not set yet."; exit 0; fi
           apt-get update -qq && apt-get install -y -qq age > /dev/null

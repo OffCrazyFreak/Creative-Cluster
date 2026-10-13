@@ -8,26 +8,22 @@ import { defineConfig, loadEnv } from "vite";
 import { paraglideOptions } from "./src/sites/paraglide-options.ts";
 import { parseSiteId } from "./src/sites/site-id.ts";
 
-const siteId = parseSiteId(process.env.VITE_SITE_ID);
-process.env.VITE_SITE_ID = siteId;
-
-// The client falls back to Cloudflare's always-pass test key, which the production
-// secret rejects, so a production build without a real key must fail here instead.
-function requireProductionKeys(command: string, mode: string) {
+// Production builds must name their site (both Netlify sites share one build command)
+// and a real Turnstile key (the client falls back to the always-pass test key).
+function resolveSiteId(command: string, mode: string) {
   const env = loadEnv(mode, process.cwd(), "VITE_");
-  if (
-    command === "build" &&
-    mode === "production" &&
-    !env.VITE_TURNSTILE_SITE_KEY
-  ) {
-    throw new Error(
-      "VITE_TURNSTILE_SITE_KEY is required for a production build",
-    );
+  if (command === "build" && mode === "production") {
+    for (const key of ["VITE_SITE_ID", "VITE_TURNSTILE_SITE_KEY"]) {
+      if (!env[key])
+        throw new Error(`${key} is required for a production build`);
+    }
   }
+  return parseSiteId(env.VITE_SITE_ID);
 }
 
 export default defineConfig(({ command, mode }) => {
-  requireProductionKeys(command, mode);
+  const siteId = resolveSiteId(command, mode);
+  process.env.VITE_SITE_ID = siteId;
 
   return {
     resolve: { tsconfigPaths: true },

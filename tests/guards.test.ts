@@ -13,6 +13,7 @@ const ALLOWED_SERVER_ROUTES = [
   "src/routes/sitemap[.]xml.ts",
   "src/routes/robots[.]txt.ts",
   "src/routes/healthz.ts",
+  "src/routes/[.]well-known/security[.]txt.ts",
 ];
 
 function sourceFiles(dir: string): string[] {
