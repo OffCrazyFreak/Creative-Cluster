@@ -46,4 +46,15 @@ describe("server function guards", () => {
       "server route not in the allowlist",
     ]);
   });
+
+  it("sees through aliases, double guards and look-alike guards", () => {
+    const rules = analyze("tests/fixtures/sneaky.functions.ts").map(
+      (v) => v.rule,
+    );
+    expect(rules).toEqual([
+      "first call must be .middleware([<guard>, ...])",
+      "exactly one guard per server function",
+      "first call must be .middleware([<guard>, ...])",
+    ]);
+  });
 });

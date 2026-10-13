@@ -16,15 +16,15 @@ export async function hitLimit({
   max,
   windowSeconds,
 }: ILimit): Promise<boolean> {
-  const window = sql.raw(`interval '${Math.floor(windowSeconds)} seconds'`);
+  const expired = sql`${usageCounter.windowStart} < now() - make_interval(secs => ${windowSeconds})`;
   const [row] = await db
     .insert(usageCounter)
     .values({ key, count: 1 })
     .onConflictDoUpdate({
       target: usageCounter.key,
       set: {
-        count: sql`case when ${usageCounter.windowStart} < now() - ${window} then 1 else ${usageCounter.count} + 1 end`,
-        windowStart: sql`case when ${usageCounter.windowStart} < now() - ${window} then now() else ${usageCounter.windowStart} end`,
+        count: sql`case when ${expired} then 1 else ${usageCounter.count} + 1 end`,
+        windowStart: sql`case when ${expired} then now() else ${usageCounter.windowStart} end`,
       },
     })
     .returning({ count: usageCounter.count });

@@ -1,14 +1,11 @@
 import ts from "typescript";
 
-import { checkServerFn, type IViolation } from "./server-fn-rules";
-
-function isCreateServerFn(node: ts.Node): node is ts.CallExpression {
-  return (
-    ts.isCallExpression(node) &&
-    ts.isIdentifier(node.expression) &&
-    node.expression.text === "createServerFn"
-  );
-}
+import { importBindings } from "./import-bindings";
+import {
+  checkServerFn,
+  isCreateServerFn,
+  type IViolation,
+} from "./server-fn-rules";
 
 // A route with a `server: { handlers }` block is a raw HTTP endpoint with no guard.
 function isServerRouteBlock(node: ts.Node): boolean {
@@ -38,20 +35,23 @@ export function analyzeFile(
     true,
   );
   const violations: IViolation[] = [];
+  const bindings = importBindings(sourceFile);
 
   function lineOf(node: ts.Node) {
     return sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
   }
 
   function visit(node: ts.Node) {
-    if (isCreateServerFn(node)) {
-      for (const rule of checkServerFn(node, file)) {
+    if (isCreateServerFn(node, bindings)) {
+      for (const rule of checkServerFn(node, file, bindings)) {
         violations.push({ file, line: lineOf(node), rule });
       }
     }
     if (
       isServerRouteBlock(node) &&
-      !allowedServerRoutes.some((route) => file.endsWith(route))
+      !allowedServerRoutes.some((route) =>
+        file.replaceAll("\\", "/").endsWith(route),
+      )
     ) {
       violations.push({
         file,

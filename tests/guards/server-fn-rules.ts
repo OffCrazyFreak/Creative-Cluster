@@ -1,6 +1,6 @@
 import ts from "typescript";
 
-export const GUARDS = ["publicGuard", "memberGuard", "adminGuard"];
+import type { IBindings } from "./import-bindings";
 
 export interface IViolation {
   file: string;
@@ -8,13 +8,19 @@ export interface IViolation {
   rule: string;
 }
 
-function guardName(node: ts.Expression | undefined): string | null {
-  if (!node) return null;
-  if (ts.isIdentifier(node)) return node.text;
-  if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-    return node.expression.text;
-  }
-  return null;
+export function isCreateServerFn(
+  node: ts.Node,
+  bindings: IBindings,
+): node is ts.CallExpression {
+  if (!ts.isCallExpression(node)) return false;
+  const callee = node.expression;
+  if (ts.isIdentifier(callee)) return bindings.serverFnNames.has(callee.text);
+  return (
+    ts.isPropertyAccessExpression(callee) &&
+    ts.isIdentifier(callee.expression) &&
+    bindings.startNamespaces.has(callee.expression.text) &&
+    callee.name.text === "createServerFn"
+  );
 }
 
 // Collects the builder chain createServerFn(...).a(...).b(...) as [{ name, args }].
@@ -34,21 +40,46 @@ function chainOf(call: ts.CallExpression) {
   return steps;
 }
 
-export function checkServerFn(call: ts.CallExpression, file: string): string[] {
+function isGuard(
+  node: ts.Expression | undefined,
+  bindings: IBindings,
+): boolean {
+  return (
+    node !== undefined &&
+    ts.isIdentifier(node) &&
+    bindings.guardNames.has(node.text)
+  );
+}
+
+function guardProblem(
+  steps: ReturnType<typeof chainOf>,
+  bindings: IBindings,
+): string | null {
+  const first = steps[0];
+  const list = first?.name === "middleware" ? first.args[0] : undefined;
+  if (
+    !list ||
+    !ts.isArrayLiteralExpression(list) ||
+    !isGuard(list.elements[0], bindings)
+  ) {
+    return "first call must be .middleware([<guard>, ...])";
+  }
+  const guards = list.elements.filter((element) => isGuard(element, bindings));
+  return guards.length === 1 ? null : "exactly one guard per server function";
+}
+
+export function checkServerFn(
+  call: ts.CallExpression,
+  file: string,
+  bindings: IBindings,
+): string[] {
   const problems: string[] = [];
   if (!file.endsWith(".functions.ts"))
     problems.push("outside a *.functions.ts file");
 
   const steps = chainOf(call);
-  const first = steps[0];
-  const middleware = first?.name === "middleware" ? first.args[0] : undefined;
-  const firstGuard =
-    middleware && ts.isArrayLiteralExpression(middleware)
-      ? guardName(middleware.elements[0])
-      : null;
-  if (!firstGuard || !GUARDS.includes(firstGuard)) {
-    problems.push("first call must be .middleware([<guard>, ...])");
-  }
+  const guard = guardProblem(steps, bindings);
+  if (guard) problems.push(guard);
 
   const names = steps.map((step) => step.name);
   const validator = names.indexOf("inputValidator");

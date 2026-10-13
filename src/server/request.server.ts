@@ -2,9 +2,15 @@ import { getRequestHeader } from "@tanstack/react-start/server";
 
 import { env } from "@/env.server";
 
-// Netlify sets its own client IP header; x-forwarded-for is the local fallback.
+export const UNKNOWN_IP = "unknown";
+
+// Production trusts only the platform header: x-forwarded-for is client-controlled
+// and would hand an attacker a fresh rate-limit key per request.
 export function clientIp(): string {
-  const direct = getRequestHeader(env.CLIENT_IP_HEADER);
-  const forwarded = getRequestHeader("x-forwarded-for")?.split(",")[0];
-  return (direct ?? forwarded ?? "unknown").trim();
+  const platform = getRequestHeader(env.CLIENT_IP_HEADER)?.trim();
+  if (platform) return platform;
+  if (env.NODE_ENV === "production") return UNKNOWN_IP;
+  return (
+    getRequestHeader("x-forwarded-for")?.split(",")[0]?.trim() || UNKNOWN_IP
+  );
 }

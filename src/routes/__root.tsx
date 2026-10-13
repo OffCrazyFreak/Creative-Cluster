@@ -5,7 +5,7 @@ import ErrorPage from "@/components/custom/errors/error-page";
 import NotFoundPage from "@/components/custom/errors/not-found-page";
 import AppShell from "@/components/custom/layout/app-shell";
 import RootDocument from "@/components/custom/layout/root-document";
-import { viewerQueryOptions } from "@/features/session/viewer-query";
+import { viewerQueryOptions } from "@/features/session/session-queries";
 import { site } from "@/sites";
 
 import appCss from "../styles.css?url";

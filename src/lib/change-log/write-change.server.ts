@@ -1,3 +1,5 @@
+import { dequal } from "dequal";
+
 import type { DbOrTx } from "@/db/client.server";
 import { changeLog } from "@/db/schema";
 import type {
@@ -6,6 +8,7 @@ import type {
   ModeratedEntity,
 } from "@/constants/moderation";
 
+// Callers pass before and after in the same shape (both from the database or both from input).
 export interface IWriteChange {
   entityType: ModeratedEntity;
   entityId: string;
@@ -25,9 +28,7 @@ function changedFields(
     ...Object.keys(before ?? {}),
     ...Object.keys(after ?? {}),
   ]);
-  return [...keys].filter(
-    (key) => JSON.stringify(before?.[key]) !== JSON.stringify(after?.[key]),
-  );
+  return [...keys].filter((key) => !dequal(before?.[key], after?.[key]));
 }
 
 export async function writeChange(tx: DbOrTx, input: IWriteChange) {
