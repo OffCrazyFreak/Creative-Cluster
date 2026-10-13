@@ -1,0 +1,38 @@
+[build]
+  command = "pnpm build"
+  publish = "dist/client"
+  # Cancels every build except build hooks, which Netlify never cancels
+  # (https://docs.netlify.com/build/configure-builds/ignore-builds/). Deploys come only
+  # from the manual Deploy action and its Saturday schedule.
+  ignore = "exit 0"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# Static files only; SSR responses get the same headers from src/server/security-headers.ts.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(self), interest-cohort=()"
+    X-Frame-Options = "DENY"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# PostHog through our own domain so ad blockers and third-party cookies never apply.
+[[redirects]]
+  from = "/ingest-cc/static/*"
+  to = "https://eu-assets.i.posthog.com/static/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/ingest-cc/*"
+  to = "https://eu.i.posthog.com/:splat"
+  status = 200
+  force = true

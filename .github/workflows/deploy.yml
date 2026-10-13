@@ -1,0 +1,32 @@
+name: Deploy
+
+# Production deploys only come from here: a manual run or the Saturday schedule.
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: Which site to deploy
+        type: choice
+        options: [both, rpcc, dnz]
+        default: both
+  schedule:
+    - cron: "0 6 * * 6"
+
+permissions: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        site: [rpcc, dnz]
+    steps:
+      - name: Call the Netlify build hook
+        if: ${{ github.event_name == 'schedule' || inputs.site == 'both' || inputs.site == matrix.site }}
+        env:
+          HOOK_RPCC: ${{ secrets.NETLIFY_BUILD_HOOK_RPCC }}
+          HOOK_DNZ: ${{ secrets.NETLIFY_BUILD_HOOK_DNZ }}
+        run: |
+          hook="$([ "${{ matrix.site }}" = rpcc ] && echo "$HOOK_RPCC" || echo "$HOOK_DNZ")"
+          if [ -z "$hook" ]; then echo "No build hook secret for ${{ matrix.site }} yet."; exit 0; fi
+          curl -fsS -X POST -d '{}' "$hook?trigger_title=deploy-action"

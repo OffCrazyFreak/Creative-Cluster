@@ -1,0 +1,37 @@
+name: Backup
+
+on:
+  schedule:
+    - cron: "30 2 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        site: [rpcc, dnz]
+    container: postgres:18
+    steps:
+      - name: Dump and encrypt
+        shell: bash
+        env:
+          URL_RPCC: ${{ secrets.DATABASE_URL_UNPOOLED_RPCC }}
+          URL_DNZ: ${{ secrets.DATABASE_URL_UNPOOLED_DNZ }}
+          AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+        run: |
+          set -euo pipefail
+          url="$([ "${{ matrix.site }}" = rpcc ] && echo "$URL_RPCC" || echo "$URL_DNZ")"
+          if [ -z "$url" ] || [ -z "$AGE_RECIPIENT" ]; then echo "Backup secrets not set yet."; exit 0; fi
+          apt-get update -qq && apt-get install -y -qq age > /dev/null
+          mkdir -p backup
+          pg_dump -Fc --no-owner "$url" | age -r "$AGE_RECIPIENT" > "backup/${{ matrix.site }}-$(date -u +%F).dump.age"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backup-${{ matrix.site }}-${{ github.run_id }}
+          path: backup/
+          retention-days: 90
+          if-no-files-found: ignore
