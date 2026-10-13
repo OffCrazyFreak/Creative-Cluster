@@ -10,9 +10,9 @@ import { loadTowns } from "./town-search";
 export const MIN_QUERY_LENGTH = 3;
 
 // TanStack Query passes its abort signal, so a stale keystroke cancels its request.
-export function suggestQueryOptions(text: string, countryCode?: string) {
+export function suggestQueryOptions(text: string, countryCode: string) {
   return queryOptions({
-    queryKey: ["location", "suggest", countryCode ?? "", text],
+    queryKey: ["location", "suggest", countryCode, text],
     queryFn: ({ signal }) =>
       suggestAddressFn({ data: { text, countryCode }, signal }),
     enabled: text.length >= MIN_QUERY_LENGTH,
@@ -21,9 +21,9 @@ export function suggestQueryOptions(text: string, countryCode?: string) {
   });
 }
 
-export function searchQueryOptions(text: string, countryCode?: string) {
+export function searchQueryOptions(text: string, countryCode: string) {
   return queryOptions({
-    queryKey: ["location", "search", countryCode ?? "", text],
+    queryKey: ["location", "search", countryCode, text],
     queryFn: ({ signal }) =>
       searchAddressFn({ data: { text, countryCode }, signal }),
     enabled: text.length >= MIN_QUERY_LENGTH,

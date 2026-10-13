@@ -20,11 +20,11 @@ export function useAddressSearch(inputValue: string, countryCode?: string) {
   const typing = debounced === picked ? "" : debounced;
 
   const suggest = useQuery({
-    ...suggestQueryOptions(typing, countryCode),
+    ...suggestQueryOptions(typing, countryCode ?? ""),
     enabled: Boolean(countryCode) && typing.length >= MIN_QUERY_LENGTH,
   });
   const search = useQuery({
-    ...searchQueryOptions(submitted ?? "", countryCode),
+    ...searchQueryOptions(submitted ?? "", countryCode ?? ""),
     enabled:
       Boolean(countryCode) && (submitted?.length ?? 0) >= MIN_QUERY_LENGTH,
   });
