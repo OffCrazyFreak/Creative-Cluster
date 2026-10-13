@@ -1,3 +1,19 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "legal_title_privacy": "Politika privatnosti",
+  "legal_title_terms": "Uvjeti korištenja",
+  "legal_title_imprint": "Impresum",
+  "legal_title_accessibility": "Izjava o pristupačnosti",
+  "legal_title_about": "O nama",
+  "legal_title_help": "Pomoć",
+  "legal_description_privacy": "Koje osobne podatke prikupljamo, zašto, koliko ih čuvamo i što možeš učiniti.",
+  "legal_description_terms": "Pravila korištenja ovog imenika i objave unosa.",
+  "legal_description_imprint": "Tko vodi ovu stranicu i kako ih kontaktirati.",
+  "legal_description_accessibility": "Kako smo stranicu izgradili za sve i gdje još zaostaje.",
+  "legal_description_about": "Što je ova stranica, tko je vodi i kako sudjelovati.",
+  "legal_description_help": "Upute korak po korak za vlasnike unosa i administratore.",
+  "legal_help_owner_tab": "Upute za vlasnike",
+  "legal_help_admin_tab": "Upute za administratore",
+  "legal_help_guides_label": "Upute",
+  "legal_eu_emblem_alt": "Sufinancira Europska unija"
 }
