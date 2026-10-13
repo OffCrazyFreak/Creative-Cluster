@@ -12,6 +12,11 @@ interface IMailRecipient {
   locale?: string | null;
 }
 
+// better-auth types the callback user without our additional fields, so the cast lives here once.
+export function toRecipient(user: { email: string }): IMailRecipient {
+  return { email: user.email, locale: (user as { locale?: string }).locale };
+}
+
 export function recipientLocale(user: IMailRecipient): AppLocale {
   return LOCALES.find((locale) => locale === user.locale) ?? site.baseLocale;
 }

@@ -9,7 +9,11 @@ import * as schema from "@/db/schema";
 import { env } from "@/env.server";
 import { site } from "@/sites";
 
-import { queueResetEmail, queueVerificationEmail } from "./auth-email.server";
+import {
+  queueResetEmail,
+  queueVerificationEmail,
+  toRecipient,
+} from "./auth-email.server";
 import { runInBackground } from "./background-task.server";
 import { guardAdminUpdate, assertAdminsRemain } from "./min-admins.server";
 import { passwordPolicyHook } from "./password-hook.server";
@@ -66,20 +70,14 @@ export const auth = betterAuth({
     maxPasswordLength: PASSWORD_BACKSTOP_LENGTH,
     resetPasswordTokenExpiresIn: AUTH_LINK_TTL_SECONDS,
     sendResetPassword: async ({ user, token }) => {
-      await queueResetEmail(
-        { email: user.email, locale: (user as { locale?: string }).locale },
-        token,
-      );
+      await queueResetEmail(toRecipient(user), token);
     },
   },
   emailVerification: {
     expiresIn: AUTH_LINK_TTL_SECONDS,
     sendVerificationEmail: async ({ user, url, token }) => {
       await queueVerificationEmail({
-        user: {
-          email: user.email,
-          locale: (user as { locale?: string }).locale,
-        },
+        user: toRecipient(user),
         emailVerified: user.emailVerified,
         link: url,
         expiry: AUTH_LINK_EXPIRY,
