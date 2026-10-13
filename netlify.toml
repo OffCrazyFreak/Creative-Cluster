@@ -1,12 +1,15 @@
 [build]
   command = "pnpm build"
   publish = "dist/client"
-  # Merges to main never deploy; only build hooks (manual Deploy action, Saturday schedule) do.
-  ignore = "node scripts/netlify-ignore.mjs"
+  # Cancels every build except build hooks, which Netlify never cancels
+  # (https://docs.netlify.com/build/configure-builds/ignore-builds/). Deploys come only
+  # from the manual Deploy action and its Saturday schedule.
+  ignore = "exit 0"
 
 [build.environment]
   NODE_VERSION = "24"
 
+# Static files only; SSR responses get the same headers from src/server/security-headers.ts.
 [[headers]]
   for = "/*"
   [headers.values]

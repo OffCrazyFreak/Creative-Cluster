@@ -1,10 +1,14 @@
 import handler from "@tanstack/react-start/server-entry";
 
 import { paraglideMiddleware } from "@/paraglide/server";
+import { withSecurityHeaders } from "@/server/security-headers";
 
 export default {
-  fetch(request: Request): Promise<Response> {
+  async fetch(request: Request): Promise<Response> {
     // The router rewrites localized URLs itself, so the original request goes on.
-    return paraglideMiddleware(request, () => handler.fetch(request));
+    const response = await paraglideMiddleware(request, () =>
+      handler.fetch(request),
+    );
+    return withSecurityHeaders(response);
   },
 };
