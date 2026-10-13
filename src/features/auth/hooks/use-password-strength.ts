@@ -10,16 +10,20 @@ export function usePasswordStrength(password: string) {
   useEffect(() => {
     if (!requested || password === "") return;
     let stale = false;
-    void loadStrengthChecker()
-      .then((checker) => checker.checkAsync(password.slice(0, 128)))
-      .then((checked) => {
-        if (!stale) setResult({ password, score: checked.score });
-      })
-      .catch(() => {
-        // The bar is advisory; without it the form still works.
-      });
+    // Wait for a pause in typing: each check walks the full dictionaries.
+    const timer = setTimeout(() => {
+      void loadStrengthChecker()
+        .then((checker) => checker.checkAsync(password.slice(0, 128)))
+        .then((checked) => {
+          if (!stale) setResult({ password, score: checked.score });
+        })
+        .catch(() => {
+          // The bar is advisory; without it the form still works.
+        });
+    }, 200);
     return () => {
       stale = true;
+      clearTimeout(timer);
     };
   }, [requested, password]);
 

@@ -8,6 +8,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { authClient } from "@/lib/auth/auth-client";
 import { m } from "@/paraglide/messages";
 
+import { useRefreshViewer } from "../hooks/use-refresh-viewer";
 import { safeAuthCall } from "../safe-auth-call";
 import { newPasswordSchema } from "../auth-schemas";
 import FormError from "./form-error";
@@ -22,6 +23,7 @@ export default function NewPasswordForm({
   token,
   mode,
 }: INewPasswordFormProps) {
+  const refreshViewer = useRefreshViewer();
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +37,8 @@ export default function NewPasswordForm({
       );
       setError(message);
       setDone(!message);
+      // Saving a password signs every session out, so drop the cached viewer too.
+      if (!message) await refreshViewer();
     },
   });
 

@@ -5,7 +5,7 @@ import { and, eq, gt, isNull, sql } from "drizzle-orm";
 import { INVITE_TOKEN_TTL_SECONDS } from "@/constants/email";
 import { LOCALES } from "@/constants/locales";
 import { db, type DbOrTx } from "@/db/client.server";
-import { claimInvite, entry, user } from "@/db/schema";
+import { account, claimInvite, entry, user } from "@/db/schema";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { createPasswordToken } from "@/lib/auth/password-token.server";
 import { site } from "@/sites";
@@ -35,6 +35,17 @@ async function userIdByEmail(tx: DbOrTx, email: string) {
     .where(eq(user.email, email))
     .limit(1);
   return row?.id;
+}
+
+async function hasPassword(tx: DbOrTx, userId: string) {
+  const [row] = await tx
+    .select({ id: account.id })
+    .from(account)
+    .where(
+      and(eq(account.userId, userId), eq(account.providerId, "credential")),
+    )
+    .limit(1);
+  return Boolean(row);
 }
 
 export async function getClaimPreview(token: string) {
@@ -105,10 +116,11 @@ export async function claimListing(token: string): Promise<ClaimResult> {
       after: { ownerUserId: ownerId },
     });
 
-    // A returning account keeps its password; only a brand new account needs one set.
-    const passwordToken = created
-      ? await createPasswordToken(tx, ownerId, INVITE_TOKEN_TTL_SECONDS)
-      : null;
+    // An account that already has a password keeps it; one without (new, or invited but never
+    // set up) needs the link that lets the owner choose one.
+    const passwordToken = (await hasPassword(tx, ownerId))
+      ? null
+      : await createPasswordToken(tx, ownerId, INVITE_TOKEN_TTL_SECONDS);
     return { status: "ok", passwordToken };
   });
 }

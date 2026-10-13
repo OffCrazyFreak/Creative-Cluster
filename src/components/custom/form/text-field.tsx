@@ -25,7 +25,10 @@ export default function TextField({
 }: ITextFieldProps) {
   const field = useFieldContext<string>();
   const invalid = field.state.meta.isTouched && !field.state.meta.isValid;
-  const describedBy = description ? `${field.name}-description` : undefined;
+  const descriptionId = description ? `${field.name}-description` : undefined;
+  const errorId = invalid ? `${field.name}-error` : undefined;
+  const describedBy =
+    [descriptionId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
     <Field data-invalid={invalid}>
@@ -43,9 +46,9 @@ export default function TextField({
         onChange={(event) => field.handleChange(event.target.value)}
       />
       {description && (
-        <FieldDescription id={describedBy}>{description}</FieldDescription>
+        <FieldDescription id={descriptionId}>{description}</FieldDescription>
       )}
-      {invalid && <FieldError errors={field.state.meta.errors} />}
+      {invalid && <FieldError id={errorId} errors={field.state.meta.errors} />}
     </Field>
   );
 }
