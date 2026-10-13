@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, lt, or, lte } from "drizzle-orm";
+import { and, asc, eq, inArray, lt, or, lte, sql } from "drizzle-orm";
 
 import { JOB_MAX_ATTEMPTS } from "@/constants/jobs";
 import { db } from "@/db/client.server";
@@ -6,6 +6,7 @@ import { job } from "@/db/schema";
 
 import "./job-handlers.server";
 import {
+  PermanentJobError,
   jobHandlerFor,
   registeredJobTypes,
   type IJobContext,
@@ -28,41 +29,52 @@ export function backoffMs(attempts: number): number {
 }
 
 // SKIP LOCKED lets overlapping drains (save-triggered and scheduled) never take the same job.
-async function claimBatch(
-  now: Date,
-  types: ReturnType<typeof registeredJobTypes>,
-) {
+function claimBatch(now: Date, types: ReturnType<typeof registeredJobTypes>) {
   const staleBefore = new Date(now.getTime() - STALE_LOCK_MS);
-  return db.transaction(async (tx) => {
-    const candidates = await tx
-      .select({ id: job.id })
-      .from(job)
-      .where(
-        and(
-          inArray(job.type, types),
-          or(
-            and(eq(job.status, "queued"), lte(job.runAt, now)),
-            and(eq(job.status, "running"), lt(job.lockedAt, staleBefore)),
-          ),
+  const claimable = db
+    .select({ id: job.id })
+    .from(job)
+    .where(
+      and(
+        inArray(job.type, types),
+        or(
+          and(eq(job.status, "queued"), lte(job.runAt, now)),
+          and(eq(job.status, "running"), lt(job.lockedAt, staleBefore)),
         ),
-      )
-      .orderBy(asc(job.priority), asc(job.runAt))
-      .limit(BATCH_SIZE)
-      .for("update", { skipLocked: true });
-    if (candidates.length === 0) return [];
-    const ids = candidates.map((row) => row.id);
-    const rows = await tx.select().from(job).where(inArray(job.id, ids));
-    for (const row of rows) {
-      await tx
-        .update(job)
-        .set({ status: "running", lockedAt: now, attempts: row.attempts + 1 })
-        .where(eq(job.id, row.id));
-    }
-    return rows.map((row) => ({ ...row, attempts: row.attempts + 1 }));
-  });
+      ),
+    )
+    .orderBy(asc(job.priority), asc(job.runAt))
+    .limit(BATCH_SIZE)
+    .for("update", { skipLocked: true });
+  return db
+    .update(job)
+    .set({
+      status: "running",
+      lockedAt: now,
+      attempts: sql`${job.attempts} + 1`,
+    })
+    .where(inArray(job.id, claimable))
+    .returning();
 }
 
 type ClaimedJob = Awaited<ReturnType<typeof claimBatch>>[number];
+
+// Jobs claimed but not started when time runs out go back without losing an attempt.
+async function releaseJobs(rows: ClaimedJob[]) {
+  await db
+    .update(job)
+    .set({
+      status: "queued",
+      lockedAt: null,
+      attempts: sql`${job.attempts} - 1`,
+    })
+    .where(
+      inArray(
+        job.id,
+        rows.map((row) => row.id),
+      ),
+    );
+}
 
 async function runJob(row: ClaimedJob, result: IDrainResult) {
   const handler = jobHandlerFor(row.type);
@@ -94,16 +106,22 @@ async function runJob(row: ClaimedJob, result: IDrainResult) {
     result.done += 1;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    const exhausted = row.attempts >= JOB_MAX_ATTEMPTS;
-    await db
-      .update(job)
-      .set({
-        status: exhausted ? "failed" : "queued",
-        error: message,
-        lockedAt: null,
-        runAt: new Date(Date.now() + backoffMs(row.attempts)),
-      })
-      .where(eq(job.id, row.id));
+    const exhausted =
+      error instanceof PermanentJobError || row.attempts >= JOB_MAX_ATTEMPTS;
+    try {
+      await db
+        .update(job)
+        .set({
+          status: exhausted ? "failed" : "queued",
+          error: message,
+          lockedAt: null,
+          runAt: new Date(Date.now() + backoffMs(row.attempts)),
+        })
+        .where(eq(job.id, row.id));
+    } catch (updateError) {
+      // The stale-lock reclaim picks the job up later; one bad write must not strand the batch.
+      console.error("could not record a job failure", row.id, updateError);
+    }
     if (exhausted) result.failed += 1;
     else result.retried += 1;
   }
@@ -116,7 +134,13 @@ export async function drainJobs(maxMs = 20_000): Promise<IDrainResult> {
   while (Date.now() < deadline) {
     const batch = await claimBatch(new Date(), types);
     if (batch.length === 0) break;
-    for (const row of batch) await runJob(row, result);
+    for (const [index, row] of batch.entries()) {
+      if (Date.now() >= deadline) {
+        await releaseJobs(batch.slice(index));
+        break;
+      }
+      await runJob(row, result);
+    }
   }
   return result;
 }

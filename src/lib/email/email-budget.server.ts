@@ -1,4 +1,4 @@
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, ne, or, sql } from "drizzle-orm";
 
 import { EMAIL_SOFT_CAP_RATIO, EMAIL_PRIORITY } from "@/constants/email";
 import { db } from "@/db/client.server";
@@ -17,14 +17,19 @@ export function startOfNextUtcDay(now: Date): Date {
   return next;
 }
 
-export async function countSentToday(now: Date): Promise<number> {
+// Mail being sent by an overlapping drain counts too, or both would pass the cap check.
+export async function countSentToday(
+  now: Date,
+  excludeJobId: string,
+): Promise<number> {
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(job)
     .where(
       and(
         eq(job.type, "email"),
-        eq(job.status, "done"),
+        ne(job.id, excludeJobId),
+        or(eq(job.status, "running"), eq(job.status, "done")),
         gte(job.updatedAt, startOfUtcDay(now)),
       ),
     );

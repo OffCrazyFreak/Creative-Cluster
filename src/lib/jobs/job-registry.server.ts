@@ -15,6 +15,9 @@ export type JobHandler = (
   job: IJobContext,
 ) => Promise<JobResult>;
 
+// Throw this when retrying cannot help (malformed payload): the job fails at once.
+export class PermanentJobError extends Error {}
+
 const handlers = new Map<JobType, JobHandler>();
 
 export function registerJobHandler(type: JobType, handler: JobHandler) {

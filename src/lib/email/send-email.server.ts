@@ -1,7 +1,7 @@
 import { env } from "@/env.server";
 
 import { consoleTransport } from "./console-transport.server";
-import type { IEmailAdapter } from "./email-adapter";
+import type { IEmailAdapter, ISendEmailInput } from "./email-adapter";
 import { createResendTransport } from "./resend-transport.server";
 
 function pickAdapter(): IEmailAdapter {
@@ -9,6 +9,12 @@ function pickAdapter(): IEmailAdapter {
   return createResendTransport(env.RESEND_API_KEY, env.EMAIL_FROM);
 }
 
-export const emailAdapter = pickAdapter();
+const adapter = pickAdapter();
 
-export const sendEmail = emailAdapter.sendEmail.bind(emailAdapter);
+// The console transport prints reset links into the logs, so it must never stand in for Resend in production.
+export function sendEmail(input: ISendEmailInput): Promise<void> {
+  if (env.NODE_ENV === "production" && !env.RESEND_API_KEY) {
+    return Promise.reject(new Error("RESEND_API_KEY is not set"));
+  }
+  return adapter.sendEmail(input);
+}

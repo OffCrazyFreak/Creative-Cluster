@@ -3,7 +3,10 @@ import {
   type EmailTemplateName,
 } from "@/constants/email";
 import type { IEmailJobPayload } from "@/emails/email-types";
-import type { JobHandler } from "@/lib/jobs/job-registry.server";
+import {
+  PermanentJobError,
+  type JobHandler,
+} from "@/lib/jobs/job-registry.server";
 
 import {
   countSentToday,
@@ -25,12 +28,13 @@ function isEmailPayload(payload: unknown): payload is IEmailJobPayload {
 export async function handleEmailJob(
   ...[payload, job]: Parameters<JobHandler>
 ): ReturnType<JobHandler> {
-  if (!isEmailPayload(payload)) throw new Error("Malformed email job payload");
+  if (!isEmailPayload(payload))
+    throw new PermanentJobError("Malformed email job payload");
   const now = new Date();
-  if (!maySend(job.priority, await countSentToday(now))) {
+  if (!maySend(job.priority, await countSentToday(now, job.id))) {
     return { deferUntil: startOfNextUtcDay(now) };
   }
-  const { react, text, subject } = await renderEmail(
+  const { react, html, text, subject } = await renderEmail(
     payload.template,
     payload.props,
   );
@@ -38,6 +42,7 @@ export async function handleEmailJob(
     to: payload.to,
     subject,
     react,
+    html,
     text,
     replyTo: payload.replyTo,
     idempotencyKey: job.idempotencyKey ?? `job:${job.id}`,

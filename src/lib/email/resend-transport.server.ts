@@ -8,9 +8,9 @@ export function createResendTransport(
 ): IEmailAdapter {
   const client = new Resend(apiKey);
   return {
-    async sendEmail({ to, subject, react, text, replyTo, idempotencyKey }) {
+    async sendEmail({ to, subject, html, text, replyTo, idempotencyKey }) {
       const { error } = await client.emails.send(
-        { from, to, subject, react, text, replyTo },
+        { from, to, subject, html, text, replyTo },
         { idempotencyKey },
       );
       if (error) throw new Error(`Resend: ${error.name}: ${error.message}`);
