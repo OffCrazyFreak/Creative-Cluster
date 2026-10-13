@@ -39,6 +39,18 @@ function sameDoc(a: unknown, b: unknown) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function editorAttributes(label: string, invalid?: boolean, lang?: string) {
+  return {
+    role: "textbox",
+    "aria-multiline": "true",
+    "aria-label": label,
+    "aria-invalid": invalid ? "true" : "false",
+    "data-slot": "input-group-control",
+    class: `min-h-32 w-full px-2.5 py-2 outline-none ${RICH_TEXT_CLASSES}`,
+    ...(lang ? { lang } : {}),
+  };
+}
+
 export default function RichTextEditorBody({
   value,
   onChange,
@@ -59,15 +71,7 @@ export default function RichTextEditorBody({
     editable: !disabled,
     immediatelyRender: false,
     editorProps: {
-      attributes: {
-        role: "textbox",
-        "aria-multiline": "true",
-        "aria-label": label,
-        "aria-invalid": invalid ? "true" : "false",
-        "data-slot": "input-group-control",
-        class: `min-h-32 w-full px-2.5 py-2 outline-none ${RICH_TEXT_CLASSES}`,
-        ...(lang ? { lang } : {}),
-      },
+      attributes: editorAttributes(label, invalid, lang),
       transformPastedHTML: cleanPastedHtml,
     },
     onUpdate: ({ editor: current }) =>
@@ -80,6 +84,17 @@ export default function RichTextEditorBody({
       editor.setEditable(!disabled, false);
     }
   }, [editor, disabled]);
+
+  // useEditor reads editorProps once, so label and validation changes are pushed in by hand.
+  useEffect(() => {
+    if (!editor) return;
+    editor.setOptions({
+      editorProps: {
+        ...editor.options.editorProps,
+        attributes: editorAttributes(label, invalid, lang),
+      },
+    });
+  }, [editor, label, invalid, lang]);
 
   // Form reset, discard or another entry: take the new value without echoing it back as an edit.
   useEffect(() => {
