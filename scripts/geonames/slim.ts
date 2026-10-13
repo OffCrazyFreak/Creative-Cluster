@@ -25,7 +25,9 @@ export function addLine(
     Math.round(Number(c[5]) * 1e4) / 1e4,
     Number(c[14] ?? 0),
   ];
-  into.set(country, [...(into.get(country) ?? []), row]);
+  const rows = into.get(country) ?? [];
+  rows.push(row);
+  into.set(country, rows);
 }
 
 export function toCountryFiles(into: Map<string, TownRow[]>): ICountryTowns[] {

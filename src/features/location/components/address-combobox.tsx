@@ -50,7 +50,10 @@ export default function AddressCombobox({
         inputValue={inputValue}
         open={open}
         onOpenChange={onOpenChange}
-        onInputValueChange={onInputChange}
+        // Only typing counts: picking an item makes Base UI blank the input, and AddressField sets the full text itself.
+        onInputValueChange={(text, details) => {
+          if (details.reason === "input-change") onInputChange(text);
+        }}
         onValueChange={(option) => option && onPick(option)}
         itemToStringLabel={(option) => option?.label ?? ""}
         isItemEqualToValue={(a, b) => a?.id === b?.id}

@@ -70,7 +70,21 @@ export default function TownPicker({
           filter={null}
           value={null as ITown | null}
           inputValue={text}
-          onInputValueChange={setText}
+          onInputValueChange={(next) => {
+            setText(next);
+            // Editing after a pick must not leave the old town's coordinates behind.
+            if (value.lat !== null && next !== value.city)
+              onChange({
+                ...value,
+                addressText: null,
+                lat: null,
+                lng: null,
+                city: null,
+                precision: null,
+                source: null,
+                townPopulation: undefined,
+              });
+          }}
           onValueChange={(town) => {
             if (!town) return;
             setText(town.name);

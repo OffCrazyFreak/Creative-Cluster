@@ -15,12 +15,18 @@ export interface IPinPickerProps {
   onChange: (value: LocationValue) => void;
 }
 
+let webgl2: boolean | undefined;
+
+// Probed once: every probe allocates a GL context, and browsers drop the oldest past about 16.
 function supportsWebGL2(): boolean {
-  try {
-    return Boolean(document.createElement("canvas").getContext("webgl2"));
-  } catch {
-    return false;
-  }
+  webgl2 ??= (() => {
+    try {
+      return Boolean(document.createElement("canvas").getContext("webgl2"));
+    } catch {
+      return false;
+    }
+  })();
+  return webgl2;
 }
 
 export default function PinPicker({ value, onChange }: IPinPickerProps) {

@@ -33,7 +33,16 @@ export default function CoordinateFields({
     if (rawLat === "" || rawLng === "") return;
     const a = Number(rawLat);
     const b = Number(rawLng);
-    if (Math.abs(a) <= 90 && Math.abs(b) <= 180) onChange(a, b);
+    if (Math.abs(a) > 90 || Math.abs(b) > 180) return;
+    // Tabbing through untouched fields must not turn a geocoded pin into a hand-placed one.
+    if (
+      lat !== null &&
+      lng !== null &&
+      Math.abs(a - lat) < 1e-6 &&
+      Math.abs(b - lng) < 1e-6
+    )
+      return;
+    onChange(a, b);
   }
 
   return (

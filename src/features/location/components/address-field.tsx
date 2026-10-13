@@ -4,7 +4,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { m } from "@/paraglide/messages";
 
-import type { LocationValue } from "../location-schemas";
+import { emptyLocation, type LocationValue } from "../location-schemas";
 import {
   valueFromHit,
   valueFromManual,
@@ -96,7 +96,12 @@ export default function AddressField({
         <CountrySelect
           id={`${base}-country`}
           value={countryCode}
-          onChange={(code) => onChange({ ...value, countryCode: code })}
+          onChange={(code) => {
+            // A new country invalidates the old pick, so nothing stale is saved under it.
+            setInputValue("");
+            setManual(false);
+            onChange({ ...emptyLocation(code), display: value.display });
+          }}
         />
       </Field>
       <Field>
@@ -147,6 +152,7 @@ export default function AddressField({
       <AddressAttribution
         countryCode={countryCode ?? undefined}
         hits={search.hits}
+        source={value.source}
       />
     </div>
   );
