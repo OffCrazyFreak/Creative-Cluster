@@ -226,18 +226,12 @@ importers:
       pg:
         specifier: 8.23.1
         version: 8.23.1
-      proj4:
-        specifier: ^2.22.0
-        version: 2.22.0
       react:
         specifier: 19.3.0
         version: 19.3.0
       react-dom:
         specifier: 19.3.0
         version: 19.3.0(react@19.3.0)
-      saxes:
-        specifier: ^6.0.0
-        version: 6.0.0
       shadcn:
         specifier: ^4.21.4
         version: 4.21.4(supports-color@7.2.0)
@@ -253,9 +247,6 @@ importers:
       uuid:
         specifier: ^14.0.3
         version: 14.0.3
-      yauzl:
-        specifier: ^3.4.0
-        version: 3.4.0
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -284,9 +275,6 @@ importers:
       '@types/pg':
         specifier: ^8.23.1
         version: 8.23.1
-      '@types/proj4':
-        specifier: ^2.19.0
-        version: 2.19.0
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
@@ -329,6 +317,12 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.8.1
         version: 0.8.1(prettier@3.9.10)
+      proj4:
+        specifier: ^2.22.0
+        version: 2.22.0
+      saxes:
+        specifier: ^6.0.0
+        version: 6.0.0
       tsx:
         specifier: ^4.23.15
         version: 4.23.15
@@ -344,6 +338,9 @@ importers:
       vitest:
         specifier: ^5.0.3
         version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@24.19.2)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+      yauzl:
+        specifier: ^3.4.0
+        version: 3.4.0
 
 packages:
 
@@ -2475,10 +2472,6 @@ packages:
 
   '@types/pg@8.23.1':
     resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
-
-  '@types/proj4@2.19.0':
-    resolution: {integrity: sha512-mirdnXu5sW9+IphQ4r+ZVii2JVLDbXgMp1lxqbiCppdgL22EwMwL4Dy/cyHVaJ2y/mi7LUQHghpILd3w3j2bnA==}
-    deprecated: This is a stub types definition. proj4 provides its own type definitions, so you do not need this installed.
 
   '@types/react-dom@19.3.0':
     resolution: {integrity: sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==}
@@ -8387,12 +8380,6 @@ snapshots:
       '@types/node': 24.19.2
       pg-protocol: 1.16.1
       pg-types: 2.2.0
-
-  '@types/proj4@2.19.0':
-    dependencies:
-      proj4: 2.22.0
-    transitivePeerDependencies:
-      - geotiff
 
   '@types/react-dom@19.3.0(@types/react@19.3.0)':
     dependencies:

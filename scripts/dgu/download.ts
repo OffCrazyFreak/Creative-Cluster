@@ -10,6 +10,9 @@ const FEED_URL = "https://geoportal.dgu.hr/services/atom/ad/xml";
 const ZIP_URL =
   "https://geoportal.dgu.hr/services/atom/INSPIRE_Addresses_(AD).zip";
 
+// A stalled body would otherwise hold the job until the workflow timeout.
+const DOWNLOAD_TIMEOUT_MS = 20 * 60 * 1000;
+
 export interface IDownload {
   zipPath: string;
   updated: string;
@@ -50,7 +53,9 @@ export async function downloadDguZip(
     }
   }
 
-  const response = await fetch(ZIP_URL);
+  const response = await fetch(ZIP_URL, {
+    signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
+  });
   if (!response.ok || !response.body)
     throw new Error(`DGU zip answered ${response.status}`);
   const partial = `${zipPath}.part`;

@@ -52,6 +52,10 @@ export function toAddress(
   if (!street) return undefined;
 
   const { lon, lat } = laeaPosToLonLat(pos);
+  // One bad row must not abort a 2.6 GB import (int4 overflow, NaN stored in a real column).
+  const houseNumber = Number(match[1]);
+  if (!Number.isFinite(lon) || !Number.isFinite(lat) || houseNumber > 99_999)
+    return undefined;
   // "105A/1": the extension letter, then a slash and the second extension (a flat or entrance).
   const second = numbers.get("addressNumber2ndExtension");
   const suffix = `${match[2]}${numbers.get("addressNumberExtension") ?? ""}${second ? `/${second}` : ""}`;
@@ -60,7 +64,7 @@ export function toAddress(
     settlement: settlement ?? postal?.name ?? "",
     postcode: postal?.code ?? "",
     postName: postal?.name ?? "",
-    houseNumber: Number(match[1]),
+    houseNumber,
     suffix: suffix.replace(/\s+/g, "").toUpperCase(),
     lon,
     lat,

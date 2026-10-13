@@ -33,9 +33,12 @@ export function openEntry(
       zip.on("end", () => reject(new Error(`${entryName} not in ${zipPath}`)));
       zip.on("entry", (entry: yauzl.Entry) => {
         if (entry.fileName !== entryName) return zip.readEntry();
-        zip.openReadStream(entry, (streamError, stream) =>
-          streamError ? reject(streamError) : resolve(stream),
-        );
+        zip.openReadStream(entry, (streamError, stream) => {
+          if (streamError) return reject(streamError);
+          // yauzl only closes the file on its own `end`, which never comes once the entry is found.
+          stream.once("close", () => zip.close());
+          resolve(stream);
+        });
       });
       zip.readEntry();
     });
@@ -82,9 +85,15 @@ export async function* gmlMembers(
     yield* batch;
   }
   parser.close();
+  // saxes reports truncated XML on close; a half-read file must fail the import, not shrink it.
+  if (failure) throw failure;
 }
 
 export async function* zipEntryMembers(zipPath: string, entryName: string) {
   const stream = await openEntry(zipPath, entryName);
-  yield* gmlMembers(stream);
+  try {
+    yield* gmlMembers(stream);
+  } finally {
+    stream.destroy();
+  }
 }

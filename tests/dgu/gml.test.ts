@@ -75,3 +75,10 @@ describe("DGU GML parsing", () => {
     expect(row.searchText).toBe("brezna ulica andrasevec oroslavje 49243");
   });
 });
+
+describe("truncated input", () => {
+  it("fails instead of ending quietly", async () => {
+    const cut = ADDRESS.slice(0, ADDRESS.indexOf("</ad:Address>"));
+    await expect(members(cut, 1000)).rejects.toThrow();
+  });
+});
