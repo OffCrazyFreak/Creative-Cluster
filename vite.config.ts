@@ -1,4 +1,5 @@
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
+import { sentryTanstackStart } from "@sentry/tanstackstart-react/vite";
 import netlify from "@netlify/vite-plugin-tanstack-start";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -41,6 +42,14 @@ export default defineConfig(({ command, mode }) => {
       // Netlify's local emulation (edge functions on Deno, a local database) is not needed for dev.
       command === "build" && netlify(),
       viteReact(),
+      // Uploads source maps only when the token exists; SENTRY_ORG and SENTRY_PROJECT come from the environment. Must stay last.
+      command === "build" && Boolean(process.env.SENTRY_AUTH_TOKEN)
+        ? sentryTanstackStart({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            // The auto-instrumentation rewrites start.ts and the server functions with static Sentry imports, which pull the browser SDK into the initial bundle.
+            autoInstrumentMiddleware: false,
+          })
+        : null,
     ],
   };
 });
