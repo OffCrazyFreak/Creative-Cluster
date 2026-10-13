@@ -19,7 +19,8 @@
     "db:up": "docker compose up -d db",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:check": "drizzle-kit check"
+    "db:check": "drizzle-kit check",
+    "admin:create": "tsx scripts/create-admin.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
