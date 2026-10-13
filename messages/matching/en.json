@@ -1,3 +1,10 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "matching_heading_collaborate": "Could collaborate with",
+  "matching_heading_similar": "Similar entries",
+  "matching_strength_strong": "Strong match",
+  "matching_strength_possible": "Possible match",
+  "matching_reason_offers": "They offer {tags}, which you seek.",
+  "matching_reason_seeks": "They seek {tags}, which you offer.",
+  "matching_reason_topic": "Shared topics: {tags}."
 }
