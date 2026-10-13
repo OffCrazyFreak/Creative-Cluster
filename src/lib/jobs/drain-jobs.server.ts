@@ -12,8 +12,8 @@ import {
 } from "./job-registry.server";
 
 const BATCH_SIZE = 10;
-// A job still "running" after this long belongs to a function that died.
-const STALE_LOCK_MS = 10 * 60 * 1000;
+// Longer than a background function may run (15 minutes), so a live drain never loses its job.
+const STALE_LOCK_MS = 20 * 60 * 1000;
 const BACKOFF_BASE_MS = 30_000;
 
 export interface IDrainResult {
