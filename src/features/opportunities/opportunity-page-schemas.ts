@@ -47,11 +47,14 @@ export interface IOpportunityPage {
   deadline: string | null;
   expiresAt: string;
   entry: {
+    id: string;
     slug: string;
     name: string;
     city: string | null;
     country: string | null;
     logo: IImageRef | null;
+    // Same rule as the entry page: the relay form exists only for a working contact address.
+    hasContactChannel: boolean;
   };
   tags: IOpportunityTagRef[];
   // Only when the reader's language differs from the owner's and a translation is stored.

@@ -120,7 +120,7 @@
   "opportunities_detail_banner_filled": "This opportunity has been filled. It stays here for reference for a while.",
   "opportunities_detail_posted_by": "Posted by",
   "opportunities_detail_can_help": "I can help",
-  "opportunities_detail_can_help_hint": "Open the listing of {name} to get in touch about this post.",
+  "opportunities_detail_can_help_hint": "Send {name} a message about this post.",
   "opportunities_detail_section_about": "About this opportunity",
   "opportunities_detail_remote": "Can be done remotely",
   "opportunities_detail_gone_title": "This opportunity is no longer available",
@@ -129,14 +129,8 @@
   "opportunities_report_button": "Report this opportunity",
   "opportunities_report_title": "Report this opportunity",
   "opportunities_report_body": "Tell us what is wrong. An admin reads every report. Nothing is hidden until an admin decides.",
-  "opportunities_report_message": "What is wrong? (optional)",
-  "opportunities_report_submit": "Send report",
-  "opportunities_report_sent": "Thank you. We received your report.",
-  "opportunities_report_error_wait": "Wait a moment for the check to finish, then try again.",
-  "opportunities_report_error_captcha": "The check failed. Try again.",
-  "opportunities_report_error_limit": "Too many reports. Try again later.",
-  "opportunities_report_error": "The report could not be sent. Try again.",
   "opportunities_review_note_none": "Your next opportunity is published at once.",
   "opportunities_filter_tags_several": "{count} tags",
-  "opportunities_board_truncated": "Showing the first {shown}. Use the filters to narrow the list."
+  "opportunities_board_truncated": "Showing the first {shown}. Use the filters to narrow the list.",
+  "opportunities_detail_view_listing": "View the listing"
 }

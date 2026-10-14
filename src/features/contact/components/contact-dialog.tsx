@@ -17,9 +17,15 @@ import ContactSent from "./contact-sent";
 interface IContactDialogProps {
   entryId: string;
   name: string;
+  // Defaults to the plain "Contact" label.
+  triggerLabel?: string;
 }
 
-export default function ContactDialog({ entryId, name }: IContactDialogProps) {
+export default function ContactDialog({
+  entryId,
+  name,
+  triggerLabel,
+}: IContactDialogProps) {
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -33,7 +39,7 @@ export default function ContactDialog({ entryId, name }: IContactDialogProps) {
     // A stray tap outside must not throw away a long message; Escape and Close still work.
     <Dialog open={open} onOpenChange={changeOpen} disablePointerDismissal>
       <DialogTrigger render={<Button type="button" />}>
-        {m.contact_button()}
+        {triggerLabel ?? m.contact_button()}
       </DialogTrigger>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>

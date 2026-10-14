@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import type { AppLocale } from "@/constants/locales";
 import { countryName } from "@/features/directory/country-name";
+import ContactDialog from "@/features/contact/components/contact-dialog";
 import EntryImage from "@/features/images/components/entry-image";
 import { tagLabel } from "@/features/tags/tag-label";
 import { fromSerializableDoc } from "@/features/translation/translation-schemas";
@@ -17,7 +18,7 @@ import { formatDate } from "@/utils/format-date";
 
 import { categoryLabel, typeLabel } from "../opportunity-labels";
 import type { IOpportunityPage } from "../opportunity-page-schemas";
-import OpportunityReportDialog from "./opportunity-report-dialog";
+import OpportunityReportButton from "./opportunity-report-button";
 import OpportunityTranslationNotice from "./opportunity-translation-notice";
 
 interface IOpportunityDetailProps {
@@ -151,19 +152,28 @@ export default function OpportunityDetail({
             <p className="text-sm">
               {m.opportunities_detail_can_help_hint({ name: entry.name })}
             </p>
-            <Link
-              to="/e/$slug"
-              params={{ slug: entry.slug }}
-              hash="entry-contact"
-              className={cn(buttonVariants(), "self-start")}
-            >
-              {m.opportunities_detail_can_help()}
-            </Link>
+            {entry.hasContactChannel ? (
+              <div className="flex self-start">
+                <ContactDialog
+                  entryId={entry.id}
+                  name={entry.name}
+                  triggerLabel={m.opportunities_detail_can_help()}
+                />
+              </div>
+            ) : (
+              <Link
+                to="/e/$slug"
+                params={{ slug: entry.slug }}
+                className={cn(buttonVariants(), "self-start")}
+              >
+                {m.opportunities_detail_view_listing()}
+              </Link>
+            )}
           </>
         ) : null}
       </section>
       <div className="flex flex-wrap gap-2">
-        <OpportunityReportDialog id={opportunity.id} />
+        <OpportunityReportButton id={opportunity.id} />
       </div>
     </article>
   );

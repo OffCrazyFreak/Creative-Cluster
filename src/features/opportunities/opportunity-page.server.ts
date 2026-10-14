@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import type { AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
@@ -25,8 +25,10 @@ export async function findOpportunityForPage(
   const [found] = await db
     .select({
       opp: opportunity,
+      entryId: entry.id,
       slug: entry.slug,
       name: entry.name,
+      hasContactChannel: sql<boolean>`${entry.contactEmail} is not null and ${entry.contactEmail} <> '' and not ${entry.contactEmailInvalid}`,
       kind: entry.kind,
       entryStatus: entry.status,
       city: entry.city,
@@ -76,7 +78,9 @@ export async function findOpportunityForPage(
     deadline: opp.deadline,
     expiresAt: opp.expiresAt.toISOString(),
     entry: {
+      id: found.entryId,
       slug: found.slug,
+      hasContactChannel: found.hasContactChannel,
       name: found.name,
       city: found.city,
       country: found.country,

@@ -29,11 +29,23 @@ import {
 } from "@/constants/review";
 import { m } from "@/paraglide/messages";
 
-import { reportEntryFn } from "../review.functions";
+export interface IReportSubmission {
+  reason: ReportReason;
+  message: string;
+  turnstileToken: string;
+  fax: string;
+}
 
 interface IReportDialogProps {
-  entryId: string;
-  name: string;
+  trigger: string;
+  title: string;
+  description: string;
+  // Opportunity reports carry only a message; entry reports also pick a reason.
+  withReason?: boolean;
+  messageMax?: number;
+  send: (
+    submission: IReportSubmission,
+  ) => Promise<"sent" | "captcha" | "limited">;
 }
 
 function reasonText(reason: ReportReason): string {
@@ -44,7 +56,14 @@ function reasonText(reason: ReportReason): string {
   return m.review_report_reason_other();
 }
 
-export default function ReportDialog({ entryId, name }: IReportDialogProps) {
+export default function ReportDialog({
+  trigger,
+  title,
+  description,
+  withReason = false,
+  messageMax = REPORT_MESSAGE_MAX,
+  send,
+}: IReportDialogProps) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ReportReason>("inaccurate");
   const [message, setMessage] = useState("");
@@ -54,8 +73,8 @@ export default function ReportDialog({ entryId, name }: IReportDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  function resetCheck(message: string) {
-    setError(message);
+  function resetCheck(text: string | null) {
+    setError(text);
     // A Turnstile token works once, so every attempt needs a fresh widget.
     setToken(null);
     setWidgetKey((key) => key + 1);
@@ -69,25 +88,19 @@ export default function ReportDialog({ entryId, name }: IReportDialogProps) {
     }
     setBusy(true);
     try {
-      const result = await reportEntryFn({
-        data: {
-          entryId,
-          reason,
-          message,
-          turnstileToken: token,
-          fax: honeypot,
-        },
+      const result = await send({
+        reason,
+        message,
+        turnstileToken: token,
+        fax: honeypot,
       });
-      if (result.status === "captcha")
-        resetCheck(m.review_report_error_captcha());
-      else if (result.status === "limited")
-        resetCheck(m.review_report_error_limit());
+      if (result === "captcha") resetCheck(m.review_report_error_captcha());
+      else if (result === "limited") resetCheck(m.review_report_error_limit());
       else {
         toast.success(m.review_report_sent());
         setOpen(false);
         setMessage("");
-        setToken(null);
-        setWidgetKey((key) => key + 1);
+        resetCheck(null);
       }
     } catch {
       resetCheck(m.review_report_error());
@@ -97,43 +110,52 @@ export default function ReportDialog({ entryId, name }: IReportDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        // The widget unmounts with the dialog, so a token kept from before would be stale on reopening.
+        if (!next) resetCheck(null);
+      }}
+    >
       <DialogTrigger render={<Button type="button" variant="outline" />}>
-        {m.entry_report_button()}
+        {trigger}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{m.review_report_title({ name })}</DialogTitle>
-          <DialogDescription>{m.review_report_body()}</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <Field>
-          <FieldLabel htmlFor="report-reason">
-            {m.review_report_reason()}
-          </FieldLabel>
-          <Select
-            items={REPORT_REASONS.map((item) => ({
-              value: item,
-              label: reasonText(item),
-            }))}
-            value={reason}
-            onValueChange={(next) =>
-              setReason(
-                REPORT_REASONS.find((item) => item === next) ?? "inaccurate",
-              )
-            }
-          >
-            <SelectTrigger id="report-reason" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {REPORT_REASONS.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {reasonText(item)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
+        {withReason && (
+          <Field>
+            <FieldLabel htmlFor="report-reason">
+              {m.review_report_reason()}
+            </FieldLabel>
+            <Select
+              items={REPORT_REASONS.map((item) => ({
+                value: item,
+                label: reasonText(item),
+              }))}
+              value={reason}
+              onValueChange={(next) =>
+                setReason(
+                  REPORT_REASONS.find((item) => item === next) ?? "inaccurate",
+                )
+              }
+            >
+              <SelectTrigger id="report-reason" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {REPORT_REASONS.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {reasonText(item)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
         <Field>
           <FieldLabel htmlFor="report-message">
             {m.review_report_message()}
@@ -141,7 +163,7 @@ export default function ReportDialog({ entryId, name }: IReportDialogProps) {
           <Textarea
             id="report-message"
             value={message}
-            maxLength={REPORT_MESSAGE_MAX}
+            maxLength={messageMax}
             onChange={(event) => setMessage(event.target.value)}
           />
         </Field>
