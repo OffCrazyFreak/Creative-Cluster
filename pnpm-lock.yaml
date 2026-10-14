@@ -280,6 +280,9 @@ importers:
       isbot:
         specifier: ^5.2.2
         version: 5.2.2
+      linkifyjs:
+        specifier: ^4.3.3
+        version: 4.3.3
       lucide-react:
         specifier: ^1.55.0
         version: 1.55.0(@types/react@19.3.0)(react@19.3.0)

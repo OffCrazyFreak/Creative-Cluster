@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth/auth.server";
 import { assertAdminsRemain } from "@/lib/auth/min-admins.server";
 
 import type { IAdminUsersData } from "./admin-users-schemas";
+import { sendBlockedNotice } from "./blocked-notice.server";
 import { pluginRole } from "./plugin-role";
 import { runUserAction } from "./user-action.server";
 
@@ -42,13 +43,15 @@ export function setUserRole(userId: string, role: UserRole) {
   );
 }
 
-export function banUser(userId: string, banReason: string) {
-  return runUserAction(() =>
+export async function banUser(userId: string, banReason: string) {
+  const result = await runUserAction(() =>
     auth.api.banUser({
       body: { userId, banReason },
       headers: getRequestHeaders(),
     }),
   );
+  if (result.ok) await sendBlockedNotice(userId, banReason);
+  return result;
 }
 
 export function unbanUser(userId: string) {

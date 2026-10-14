@@ -159,7 +159,7 @@ export default function MapView(props: IMapViewProps) {
       ref={containerRef}
       role="region"
       aria-label={m.map_region_label()}
-      className="size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-top-left]:top-32! max-md:[&_.maplibregl-ctrl-top-right]:top-32!"
+      className="size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-right]:bottom-[min(var(--map-sheet-covered,50dvh),50dvh)]! max-md:[&_.maplibregl-ctrl-top-right]:top-32!"
     >
       <Map
         key={mapKey}
@@ -189,10 +189,11 @@ export default function MapView(props: IMapViewProps) {
         onMouseLeave={() => setCursor("")}
       >
         <NavigationControl position="top-right" showCompass={false} />
-        {/* On phones the sheet covers the bottom, so attribution moves below the search block. */}
+        {/* On phones the control collapses to an info button that rides above the results sheet. */}
         <AttributionControl
-          position={wide ? "bottom-right" : "top-left"}
-          compact={false}
+          key={String(wide)}
+          position="bottom-right"
+          compact={!wide}
         />
         <MapConnectionArcs allEntries={allEntries} selectedSlug={focusSlug} />
         <Source
