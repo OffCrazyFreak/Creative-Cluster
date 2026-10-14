@@ -1,6 +1,6 @@
 import {
   and,
-  desc,
+  asc,
   eq,
   ilike,
   isNotNull,
@@ -71,14 +71,20 @@ export async function listAdminEntries(
       .from(entry)
       .leftJoin(user, eq(user.id, entry.ownerUserId))
       .where(where)
-      .orderBy(desc(entry.updatedAt), desc(entry.id))
+      .orderBy(asc(entry.name), asc(entry.id))
       .limit(ADMIN_ENTRIES_PAGE_SIZE)
       .offset((input.page - 1) * ADMIN_ENTRIES_PAGE_SIZE),
-    db
-      .select({ total: sql<number>`count(*)::int` })
-      .from(entry)
-      .leftJoin(user, eq(user.id, entry.ownerUserId))
-      .where(where),
+    // Only the text search reads the owner's email, so the count joins the user table only then.
+    input.q
+      ? db
+          .select({ total: sql<number>`count(*)::int` })
+          .from(entry)
+          .leftJoin(user, eq(user.id, entry.ownerUserId))
+          .where(where)
+      : db
+          .select({ total: sql<number>`count(*)::int` })
+          .from(entry)
+          .where(where),
   ]);
   return {
     rows: rows.map((row) => ({

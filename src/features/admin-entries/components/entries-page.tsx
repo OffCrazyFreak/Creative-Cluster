@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import PageContainer from "@/components/custom/layout/page-container";
 import { m } from "@/paraglide/messages";
 
@@ -46,7 +47,19 @@ export default function EntriesPage({ search }: IEntriesPageProps) {
       />
       <p role="status">{m.admin_entries_count({ count: data?.total ?? 0 })}</p>
       {data && data.rows.length === 0 ? (
-        <p>{m.admin_entries_none()}</p>
+        <div className="flex flex-col items-start gap-3">
+          <p>{m.admin_entries_none()}</p>
+          {search.page > 1 && (
+            <Button
+              type="button"
+              variant="outline"
+              className="max-sm:min-h-11"
+              onClick={() => update({ page: 1 })}
+            >
+              {m.admin_entries_first_page()}
+            </Button>
+          )}
+        </div>
       ) : (
         <EntriesTable
           rows={data?.rows ?? []}

@@ -6,6 +6,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ENTRY_KINDS, ENTRY_STATUSES } from "@/constants/entry";
 import { LOCATION_COUNTRIES } from "@/constants/countries";
+import { countryName } from "@/features/directory/country-name";
 import FilterSelect from "@/features/review/components/filter-select";
 import { statusLabel } from "@/features/lifecycle/status-label";
 import { m } from "@/paraglide/messages";
@@ -26,11 +27,11 @@ function pick<T extends string>(list: readonly T[], value: string) {
 }
 
 function countryOptions() {
-  const names = new Intl.DisplayNames([getLocale()], { type: "region" });
+  const locale = getLocale();
   return LOCATION_COUNTRIES.map((code) => ({
     value: code,
-    label: names.of(code) ?? code,
-  })).sort((a, b) => a.label.localeCompare(b.label, getLocale()));
+    label: countryName(code, locale),
+  })).sort((a, b) => a.label.localeCompare(b.label, locale));
 }
 
 interface IToggleProps {
