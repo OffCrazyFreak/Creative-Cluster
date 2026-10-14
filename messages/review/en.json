@@ -129,5 +129,6 @@
   "review_remove_confirm": "Remove post",
   "review_expired": "{count} posts could not be approved because their deadline has passed. Reject them with a reason instead.",
   "review_no_account": "{count} posts were handled, but their entries have no account, so no email was sent. Tell the owners yourself.",
-  "review_open_post": "Open post"
+  "review_open_post": "Open post",
+  "review_reason_spam_removed": "Spam"
 }

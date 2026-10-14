@@ -8,14 +8,11 @@ import { m } from "@/paraglide/messages";
 
 import { useReviewDecisions } from "../hooks/use-review-decisions";
 import { reviewQueueQueryOptions } from "../review-queries";
+import { removesPost } from "../review-rows";
 import type { IReviewRow, ReviewListInput } from "../review-schemas";
 import RejectDialog, { type IRejection } from "./reject-dialog";
 import ReviewFilters from "./review-filters";
 import ReviewTable from "./review-table";
-
-function removesPost(row: IReviewRow): boolean {
-  return row.type === "report" && row.entityType === "opportunity";
-}
 
 interface IReviewQueuePageProps {
   search: ReviewListInput;
@@ -103,7 +100,6 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
   const chosen = rows
     .filter((row) => selected.has(row.id))
     .map((row) => row.id);
-  // Taking a post down needs its own reason, so those reports are never part of a bulk run.
   function decidableIds(list: IReviewRow[]) {
     return list
       .filter((row) => row.decidable && !removesPost(row))

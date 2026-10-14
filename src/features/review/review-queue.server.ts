@@ -1,5 +1,15 @@
 import { dequal } from "dequal";
-import { and, asc, count, eq, gte, inArray, lt, type SQL } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  gte,
+  inArray,
+  lt,
+  or,
+  type SQL,
+} from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import { REVIEW_STALE_DAYS } from "@/constants/moderation";
@@ -32,8 +42,16 @@ function staleBefore(): Date {
 function filters(input: ReviewListInput): SQL {
   const conditions: SQL[] = [eq(reviewItem.status, "open")];
   if (input.type) conditions.push(eq(reviewItem.type, input.type));
-  if (input.country)
-    conditions.push(eq(entry.countryCode, input.country.toUpperCase()));
+  if (input.country) {
+    const code = input.country.toUpperCase();
+    // Opportunity items belong to the country of the entry that posted them.
+    conditions.push(
+      or(
+        eq(entry.countryCode, code),
+        eq(postingEntry.countryCode, code),
+      ) as SQL,
+    );
+  }
   if (input.age === "stale")
     conditions.push(lt(reviewItem.createdAt, staleBefore()));
   if (input.age === "fresh")
@@ -56,6 +74,7 @@ function changedFieldsOf(
 
 function summaryOf(row: {
   type: string;
+  entityType: string;
   payload: Record<string, unknown>;
   descriptionText: string | null;
   opportunityBody: string | null;
@@ -63,14 +82,17 @@ function summaryOf(row: {
 }): string {
   if (row.type === "application")
     return (row.descriptionText ?? "").slice(0, SUMMARY_MAX);
-  if (row.type === "opportunity")
-    return (row.opportunityBody ?? "").slice(0, SUMMARY_MAX);
+  // The admin judges the whole post, so its text is not shortened (the post form caps it already).
+  if (row.type === "opportunity") return row.opportunityBody ?? "";
   if (row.type === "report") {
     const { reason, message, source } = row.payload;
     // The automatic bounce text already says what happened; its fixed "other" reason adds nothing.
-    return [source === BOUNCE_SOURCE ? null : reason, message]
+    const text = [source === BOUNCE_SOURCE ? null : reason, message]
       .filter((v) => typeof v === "string" && v)
       .join(": ");
+    return row.entityType === "opportunity" && row.opportunityBody
+      ? `${text}\n\n${row.opportunityBody}`
+      : text;
   }
   if (row.type === "untrusted_edit")
     return changedFieldsOf(row.payload, row.current);
@@ -100,6 +122,8 @@ export async function listReviewItems(
       opportunityTitle: opportunity.title,
       opportunityBody: opportunity.bodyText,
       postedBy: postingEntry.name,
+      postingCountry: postingEntry.countryCode,
+      postingCity: postingEntry.city,
     })
     .from(reviewItem)
     .leftJoin(
@@ -138,6 +162,14 @@ export async function listReviewItems(
           eq(entry.id, reviewItem.entityId),
         ),
       )
+      .leftJoin(
+        opportunity,
+        and(
+          eq(reviewItem.entityType, "opportunity"),
+          eq(opportunity.id, reviewItem.entityId),
+        ),
+      )
+      .leftJoin(postingEntry, eq(postingEntry.id, opportunity.entryId))
       .where(where),
   ]);
 
@@ -164,8 +196,8 @@ export async function listReviewItems(
       automatic: row.payload.source === BOUNCE_SOURCE,
       label: row.entryName ?? row.tagLabel ?? row.opportunityTitle ?? "",
       kind: row.kind,
-      countryCode: row.countryCode,
-      city: row.city,
+      countryCode: row.countryCode ?? row.postingCountry,
+      city: row.city ?? row.postingCity,
       summary: summaryOf({ ...row, current: current.get(row.entityId) }),
       contactEmail: row.type === "application" ? row.contactEmail : null,
       createdAt: row.createdAt.toISOString(),

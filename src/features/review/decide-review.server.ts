@@ -63,12 +63,11 @@ async function decideInTx(
   decision: IDecision,
 ): Promise<DecideOutcome> {
   const { adminId } = decision;
-  // Queue items for listings always point at an entry; anything else is not ours to decide here.
-  const onOpportunity = item.entityType === "opportunity";
   if (item.type === "opportunity")
     return decideOpportunityItem(tx, item, decision);
-  if (item.type === "report" && onOpportunity)
+  if (item.type === "report" && item.entityType === "opportunity")
     return decideOpportunityReport(tx, item, decision);
+  // Queue items for listings always point at an entry; anything else is not ours to decide here.
   if (
     ["application", "untrusted_edit", "report"].includes(item.type) &&
     item.entityType !== "entry"

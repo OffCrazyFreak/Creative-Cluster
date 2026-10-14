@@ -53,6 +53,13 @@ export default function RejectDialog({
   const [busy, setBusy] = useState(false);
   const noteRequired = NOTE_REQUIRED_REASON_CODES.includes(reasonCode);
 
+  // A removal always emails the owner, spam included, so the "no email" hint would be wrong there.
+  function label(code: ReasonCode): string {
+    return mode === "remove" && code === "spam"
+      ? m.review_reason_spam_removed()
+      : reasonLabel(code);
+  }
+
   async function confirm() {
     setBusy(true);
     await onConfirm({ reasonCode, note: note.trim() });
@@ -81,7 +88,7 @@ export default function RejectDialog({
           <Select
             items={REASON_CODES.map((code) => ({
               value: code,
-              label: reasonLabel(code),
+              label: label(code),
             }))}
             value={reasonCode}
             onValueChange={(next) =>
@@ -96,7 +103,7 @@ export default function RejectDialog({
             <SelectContent>
               {REASON_CODES.map((code) => (
                 <SelectItem key={code} value={code}>
-                  {reasonLabel(code)}
+                  {label(code)}
                 </SelectItem>
               ))}
             </SelectContent>

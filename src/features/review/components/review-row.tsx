@@ -9,6 +9,7 @@ import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
 import { reviewTypeLabel } from "../review-labels";
+import { removesPost } from "../review-rows";
 import type { IReviewRow } from "../review-schemas";
 import ReviewAge from "./review-age";
 
@@ -28,7 +29,7 @@ export default function ReviewRow({
   onReject,
 }: IReviewRowProps) {
   const isReport = row.type === "report";
-  const removesPost = isReport && row.entityType === "opportunity";
+  const removes = removesPost(row);
   const place = [
     row.city,
     row.countryCode && countryName(row.countryCode, getLocale()),
@@ -38,7 +39,7 @@ export default function ReviewRow({
   return (
     <TableRow data-state={selected ? "selected" : undefined}>
       <TableCell>
-        {row.decidable && !removesPost && (
+        {row.decidable && !removes && (
           <Checkbox
             checked={selected}
             onCheckedChange={onSelect}
@@ -63,7 +64,7 @@ export default function ReviewRow({
           )}
           {(row.type === "application" ||
             row.type === "untrusted_edit" ||
-            (isReport && !removesPost)) && (
+            (isReport && !removes)) && (
             <Link
               to="/admin/entry/$id"
               params={{ id: row.entityId }}
@@ -72,7 +73,7 @@ export default function ReviewRow({
               {m.review_open_listing()}
             </Link>
           )}
-          {removesPost && (
+          {removes && (
             <Link
               to="/opportunities/$id"
               params={{ id: row.entityId }}
@@ -106,7 +107,7 @@ export default function ReviewRow({
         {row.decidable && (
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" onClick={onApprove}>
-              {removesPost
+              {removes
                 ? m.review_remove()
                 : isReport
                   ? m.review_resolve()

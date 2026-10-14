@@ -21,11 +21,27 @@ describe.skipIf(!temp)("review queue opportunity items", () => {
     await temp?.drop();
   });
 
-  async function queue(status: "pending" | "published", type: string) {
-    const owner = await addUser(db, `owner-${Math.random()}`);
+  async function queue(
+    status: "pending" | "published",
+    type: string,
+    options: {
+      withOwner?: boolean;
+      post?: Partial<typeof schema.opportunity.$inferInsert>;
+      country?: string;
+    } = {},
+  ) {
+    const { withOwner = true, post: overrides, country } = options;
+    const owner = withOwner
+      ? await addUser(db, `owner-${Math.random()}`)
+      : null;
     const admin = await addUser(db, `admin-${Math.random()}`, "admin");
-    const row = await addEntry(db, "Studio", {}, { ownerUserId: owner.id });
-    const post = await addOpportunity(db, row.id, { status });
+    const row = await addEntry(db, "Studio", {}, { ownerUserId: owner?.id });
+    if (country)
+      await db
+        .update(schema.entry)
+        .set({ countryCode: country })
+        .where(eq(schema.entry.id, row.id));
+    const post = await addOpportunity(db, row.id, { status, ...overrides });
     const [item] = await db
       .insert(schema.reviewItem)
       .values({
@@ -132,5 +148,63 @@ describe.skipIf(!temp)("review queue opportunity items", () => {
     const page = await listReviewItems({ age: "all", page: 1 });
     const listed = page.rows.find((r) => r.id === item.id);
     expect(listed).toMatchObject({ automatic: true, summary: "Mail bounced" });
+  });
+
+  it("reports a post whose deadline passed while it waited and keeps it pending", async () => {
+    const { admin, post, item } = await queue("pending", "opportunity", {
+      post: { deadline: "2020-01-01" },
+    });
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      admin.id,
+    );
+    expect(result.outcome).toBe("expired");
+    expect(await postStatus(post.id)).toBe("pending");
+    const [after] = await db
+      .select()
+      .from(schema.reviewItem)
+      .where(eq(schema.reviewItem.id, item.id));
+    expect(after.status).toBe("open");
+  });
+
+  it("says when a removed post's entry has no account to email", async () => {
+    const { admin, post, item } = await queue("published", "report", {
+      withOwner: false,
+    });
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve", reasonCode: "spam" },
+      admin.id,
+    );
+    expect(result.outcome).toBe("no_account");
+    expect(await postStatus(post.id)).toBe("removed");
+  });
+
+  it("filters opportunity items by the country of the posting entry", async () => {
+    const { item } = await queue("pending", "opportunity", { country: "HR" });
+    const inCountry = await listReviewItems({
+      age: "all",
+      page: 1,
+      country: "hr",
+    });
+    const row = inCountry.rows.find((r) => r.id === item.id);
+    expect(row?.countryCode).toBe("HR");
+    const elsewhere = await listReviewItems({
+      age: "all",
+      page: 1,
+      country: "de",
+    });
+    expect(elsewhere.rows.some((r) => r.id === item.id)).toBe(false);
+    expect(inCountry.total).toBeGreaterThan(0);
+  });
+
+  it("shows the whole post text, with the reporter's message on a report", async () => {
+    const long = "word ".repeat(150);
+    const { item } = await queue("published", "report", {
+      post: { bodyText: long },
+    });
+    const page = await listReviewItems({ age: "all", page: 1 });
+    const row = page.rows.find((r) => r.id === item.id);
+    expect(row?.summary).toContain("Looks wrong");
+    expect(row?.summary.length).toBeGreaterThan(700);
   });
 });
