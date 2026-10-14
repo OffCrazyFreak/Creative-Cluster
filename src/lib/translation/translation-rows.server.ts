@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 
 import type { AppLocale } from "@/constants/locales";
 import type { TranslatableEntity } from "@/constants/translations";
@@ -57,6 +57,36 @@ export async function saveMachineRow(
       },
       setWhere: eq(translation.origin, "machine"),
     });
+}
+
+// After the source language flips, rows in the old target language describe the wrong text.
+export async function dropMachineRowsOutsideLocale(
+  tx: DbOrTx,
+  request: ITranslateRequest,
+  keep: AppLocale,
+) {
+  await tx
+    .delete(translation)
+    .where(
+      and(
+        eq(translation.entityType, request.entityType),
+        eq(translation.entityId, request.entityId),
+        ne(translation.locale, keep),
+        eq(translation.origin, "machine"),
+      ),
+    );
+}
+
+// The entity is gone, so nothing translated from it may stay (human rows included).
+export async function dropAllRows(tx: DbOrTx, request: ITranslateRequest) {
+  await tx
+    .delete(translation)
+    .where(
+      and(
+        eq(translation.entityType, request.entityType),
+        eq(translation.entityId, request.entityId),
+      ),
+    );
 }
 
 // A machine row for text that changed or was emptied would keep showing the old translation.

@@ -1,4 +1,5 @@
 import type { AppLocale } from "@/constants/locales";
+import { stripInlineTags } from "@/lib/rich-text/inline-tags";
 import { hasMatchingTags } from "@/lib/rich-text/translation-blocks";
 
 import { detectLocale } from "./detect-locale";
@@ -31,8 +32,25 @@ function lineCount(value: string) {
   return value.split("\n").filter((line) => line.trim()).length;
 }
 
-function plain(value: string) {
-  return value.replace(/<\/?\d+>/g, "");
+const plain = stripInlineTags;
+
+// Words that could have been translated: URLs and emails alone are legitimately identical.
+function wordCount(value: string) {
+  const text = plain(value)
+    .replace(URL_PATTERN, "")
+    .replace(/\S+@\S+/g, "");
+  return (text.match(/\p{L}{2,}/gu) ?? []).length;
+}
+
+// A model that echoes a block back would pass every count check.
+function isEchoed(source: string, out: string, glossary: string[]) {
+  const same = source.trim().toLowerCase() === out.trim().toLowerCase();
+  if (!same) return false;
+  if (
+    glossary.some((term) => term.toLowerCase() === source.trim().toLowerCase())
+  )
+    return false;
+  return plain(source).length >= MIN_ECHO_CHARS && wordCount(source) >= 2;
 }
 
 // null means the translation of one field (all its blocks) may be stored.
@@ -57,18 +75,11 @@ export function validateTranslation(
     if (lineCount(block) !== lineCount(out)) return "paragraphs";
     if (urlList(block).join(" ") !== urlList(out).join(" ")) return "urls";
     if (!hasMatchingTags(block, out)) return "tags";
+    if (isEchoed(block, out, glossary)) return "unchanged";
+    // One paragraph left in the source language must not hide behind translated ones.
+    const blockLanguage = detectLocale(out);
+    if (blockLanguage && blockLanguage !== to) return "language";
   }
-
-  // A model that echoes a short field back would pass every other check.
-  const echoed = source.every(
-    (block, index) =>
-      block.trim().toLowerCase() === translated[index].trim().toLowerCase() &&
-      !glossary.some(
-        (term) => term.toLowerCase() === block.trim().toLowerCase(),
-      ),
-  );
-  if (echoed && plain(source.join("")).length >= MIN_ECHO_CHARS)
-    return "unchanged";
 
   const language = detectLocale(translated.join("\n"));
   if (language && language !== to) return "language";

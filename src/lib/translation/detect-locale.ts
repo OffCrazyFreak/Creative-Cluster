@@ -1,5 +1,6 @@
 import { detect } from "tinyld";
 
+import { stripInlineTags } from "@/lib/rich-text/inline-tags";
 import type { AppLocale } from "@/constants/locales";
 
 // tinyld has no Croatian profile and files Croatian text under its closest relatives.
@@ -10,7 +11,7 @@ export const MIN_DETECTABLE_CHARS = 40;
 
 // null when the text is too short to tell.
 export function detectLocale(text: string): AppLocale | null {
-  const plain = text.replace(/<\/?\d+>/g, "").trim();
+  const plain = stripInlineTags(text).trim();
   if (plain.length < MIN_DETECTABLE_CHARS) return null;
   const code = detect(plain, { only: ["en", ...SERBO_CROATIAN] });
   if (code === "en") return "en";

@@ -11,10 +11,13 @@ import { validateTranslation } from "./validate-translation";
 
 export type FieldOutcome =
   | { status: "ok"; text: string }
+  | { status: "out_of_time" }
   | { status: "invalid" }
   | { status: "unavailable" };
 
 interface IFieldContext {
+  // False once another model call would not finish inside the drain deadline.
+  hasTime: () => boolean;
   adapter: ITranslationAdapter;
   from: AppLocale;
   to: AppLocale;
@@ -65,6 +68,7 @@ export async function translateField(
   context: IFieldContext,
 ): Promise<FieldOutcome> {
   for (let tries = 0; tries < 2; tries++) {
+    if (!context.hasTime()) return { status: "out_of_time" };
     const result = await attempt(field, context);
     if (result === "unavailable") return { status: "unavailable" };
     if (result !== null) return { status: "ok", text: result };

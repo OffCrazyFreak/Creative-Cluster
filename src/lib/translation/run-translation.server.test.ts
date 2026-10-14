@@ -77,6 +77,11 @@ describe.skipIf(!temp)("runTranslation", () => {
       .where(eq(schema.translation.entityId, entityId));
   }
 
+  // Failed fields are kept as empty rows; "stored" is what a visitor could see.
+  async function stored(entityId: string) {
+    return (await rows(entityId)).filter((r) => r.text !== "");
+  }
+
   const answers = { [OFFERING_EN]: OFFERING_HR, [DESC_EN]: DESC_HR };
 
   it("stores validated machine rows in the other locale with the glossary sent", async () => {
@@ -164,7 +169,22 @@ describe.skipIf(!temp)("runTranslation", () => {
       entityId: id,
     });
     expect(calls).toHaveLength(4);
-    expect(await rows(id)).toHaveLength(0);
+    expect(await stored(id)).toHaveLength(0);
+  });
+
+  it("remembers a failed field and skips it until the text changes", async () => {
+    const id = await entryWithText();
+    const calls: ITranslateInput[] = [];
+    const request = { entityType: "entry" as const, entityId: id };
+    await runTranslation(db, fakeAdapter({}, calls), request);
+    await runTranslation(db, fakeAdapter({}, calls), request);
+    expect(calls).toHaveLength(4);
+    await db
+      .update(schema.entry)
+      .set({ offeringText: `${OFFERING_EN} Join us.` })
+      .where(eq(schema.entry.id, id));
+    await runTranslation(db, fakeAdapter({}, calls), request);
+    expect(calls).toHaveLength(6);
   });
 
   it("recovers on the retry when the first answer is malformed", async () => {
@@ -207,7 +227,9 @@ describe.skipIf(!temp)("runTranslation", () => {
       .where(eq(schema.entry.id, id));
     await runTranslation(db, fakeAdapter({}), request);
     const left = await rows(id);
-    expect(left.map((r) => r.field)).toEqual(["description"]);
+    expect(left.filter((r) => r.text).map((r) => r.field)).toEqual([
+      "description",
+    ]);
   });
 
   it("keeps no stale text while a changed field waits for the quota", async () => {
@@ -224,6 +246,126 @@ describe.skipIf(!temp)("runTranslation", () => {
     };
     await runTranslation(db, limited, request);
     expect((await rows(id)).map((r) => r.field)).toEqual(["description"]);
+  });
+
+  it("deletes machine rows of the old target language when the source flips, never human ones", async () => {
+    const id = await entryWithText();
+    await db.insert(schema.translation).values([
+      {
+        entityType: "entry",
+        entityId: id,
+        field: "seeking",
+        locale: "hr",
+        text: "Stari strojni.",
+        origin: "machine",
+        sourceHash: "old",
+      },
+      {
+        entityType: "entry",
+        entityId: id,
+        field: "offering",
+        locale: "hr",
+        text: "Ručno.",
+        origin: "human",
+        sourceHash: "old",
+      },
+    ]);
+    await db
+      .update(schema.entry)
+      .set({ sourceLocale: "hr" })
+      .where(eq(schema.entry.id, id));
+    await runTranslation(db, fakeAdapter({}), {
+      entityType: "entry",
+      entityId: id,
+    });
+    const inOldTarget = (await rows(id)).filter((r) => r.locale === "hr");
+    expect(inOldTarget.map((r) => [r.field, r.origin])).toEqual([
+      ["offering", "human"],
+    ]);
+  });
+
+  it("deletes all rows when the entity no longer exists", async () => {
+    const id = await entryWithText();
+    await runTranslation(db, fakeAdapter(answers), {
+      entityType: "entry",
+      entityId: id,
+    });
+    await db.delete(schema.entry).where(eq(schema.entry.id, id));
+    await runTranslation(db, fakeAdapter(answers), {
+      entityType: "entry",
+      entityId: id,
+    });
+    expect(await rows(id)).toHaveLength(0);
+  });
+
+  it("keeps escaped characters and URLs intact through the model and back", async () => {
+    const row = await addEntry(db, "Studio Plava");
+    const text =
+      "Workshops for ages < 12 and teachers, details at https://example.org/a?x=1&y=2 today.";
+    await db
+      .update(schema.entry)
+      .set({ description: doc(text), descriptionText: text })
+      .where(eq(schema.entry.id, row.id));
+    const calls: ITranslateInput[] = [];
+    const hr =
+      "Radionice za djecu dobi < 12 i učitelje, detalji na https://example.org/a?x=1&y=2 danas.";
+    function escaped(value: string) {
+      return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;");
+    }
+    await runTranslation(
+      db,
+      fakeAdapter({ [escaped(text)]: escaped(hr) }, calls),
+      {
+        entityType: "entry",
+        entityId: row.id,
+      },
+    );
+    expect(calls[0].blocks[0]).toContain("ages &lt; 12");
+    expect(calls[0].blocks[0]).toContain("x=1&amp;y=2");
+    const saved = JSON.parse((await stored(row.id))[0].text) as RichTextDoc;
+    expect(saved.content?.[0].content?.[0].text).toBe(hr);
+  });
+
+  it("rejects a translation that leaves one paragraph in the source language", async () => {
+    const row = await addEntry(db, "Studio Plava");
+    const twoParagraphs: RichTextDoc = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: DESC_EN }] },
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "We also publish a yearly magazine about local craft.",
+            },
+          ],
+        },
+      ],
+    };
+    await db
+      .update(schema.entry)
+      .set({ description: twoParagraphs, descriptionText: DESC_EN })
+      .where(eq(schema.entry.id, row.id));
+    await runTranslation(db, fakeAdapter({ [DESC_EN]: DESC_HR }), {
+      entityType: "entry",
+      entityId: row.id,
+    });
+    expect(await stored(row.id)).toHaveLength(0);
+  });
+
+  it("defers without calling the model when the drain deadline is too close", async () => {
+    const id = await entryWithText();
+    const calls: ITranslateInput[] = [];
+    const result = await runTranslation(
+      db,
+      fakeAdapter(answers, calls),
+      { entityType: "entry", entityId: id },
+      new Date(),
+      { deadline: Date.now() + 1000 },
+    );
+    expect(result).toHaveProperty("deferUntil");
+    expect(calls).toHaveLength(0);
   });
 
   it("defers to 00:05 UTC the next day on a quota error", async () => {

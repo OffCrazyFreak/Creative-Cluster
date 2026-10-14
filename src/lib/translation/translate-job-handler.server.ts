@@ -16,11 +16,13 @@ const payloadSchema = z.object({
   entityId: z.uuid(),
 });
 
-function handleTranslateJob(...[payload]: Parameters<JobHandler>) {
+function handleTranslateJob(...[payload, job]: Parameters<JobHandler>) {
   const parsed = payloadSchema.safeParse(payload);
   if (!parsed.success)
     throw new PermanentJobError("Malformed translate job payload");
-  return runTranslation(db, getTranslationAdapter(), parsed.data);
+  return runTranslation(db, getTranslationAdapter(), parsed.data, new Date(), {
+    deadline: job.deadline,
+  });
 }
 
 registerJobHandler("translate", handleTranslateJob);

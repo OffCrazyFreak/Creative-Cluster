@@ -8,32 +8,50 @@ import {
   type ITranslationAdapter,
 } from "./translation-adapter";
 import { translateField } from "./translate-field.server";
+import { REQUEST_TIMEOUT_MS } from "./workers-ai-adapter";
 import {
+  dropAllRows,
   dropMachineRows,
+  dropMachineRowsOutsideLocale,
   rowsOf,
   saveMachineRow,
   type ITranslateRequest,
 } from "./translation-rows.server";
 import {
+  loadFieldHash,
   loadTranslationSource,
   otherLocale,
 } from "./translation-source.server";
 
 export type { ITranslateRequest };
 
+// Total model time of one job, well inside the 15 minute background function limit.
+const JOB_BUDGET_MS = 4 * 60 * 1000;
+const RESUME_DELAY_MS = 60 * 1000;
+
+export interface IRunOptions {
+  // Epoch ms; defaults to no drain limit.
+  deadline?: number;
+}
+
 export async function runTranslation(
   db: DbOrTx,
   adapter: ITranslationAdapter,
   request: ITranslateRequest,
   now = new Date(),
+  { deadline = Number.POSITIVE_INFINITY }: IRunOptions = {},
 ): Promise<JobResult> {
   const source = await loadTranslationSource(
     db,
     request.entityType,
     request.entityId,
   );
-  if (!source) return;
+  if (!source) {
+    await dropAllRows(db, request);
+    return;
+  }
   const to = otherLocale(source.sourceLocale);
+  await dropMachineRowsOutsideLocale(db, request, to);
   const existing = new Map(
     (await rowsOf(db, request, to)).map((row) => [row.field, row]),
   );
@@ -49,7 +67,9 @@ export async function runTranslation(
     ...pending.map((f) => f.field),
   ]);
 
+  const limit = Math.min(deadline, now.getTime() + JOB_BUDGET_MS);
   const context = {
+    hasTime: () => Date.now() + REQUEST_TIMEOUT_MS < limit,
     adapter,
     from: source.sourceLocale,
     to,
@@ -59,23 +79,23 @@ export async function runTranslation(
     for (const field of pending) {
       const outcome = await translateField(field, context);
       if (outcome.status === "unavailable") return;
-      if (outcome.status === "invalid") continue;
+      if (outcome.status === "out_of_time")
+        return { deferUntil: new Date(Date.now() + RESUME_DELAY_MS) };
       // A newer save may have changed this field while the model was working.
-      const current = await loadTranslationSource(
+      const currentHash = await loadFieldHash(
         db,
         request.entityType,
         request.entityId,
+        field.field,
       );
-      if (
-        current?.fields.find((f) => f.field === field.field)?.hash !==
-        field.hash
-      )
-        continue;
+      if (currentHash !== field.hash) continue;
+      // A failed field is kept as an empty row with this hash, so later jobs skip it until the
+      // text changes. The page ignores empty rows.
       await saveMachineRow(db, request, to, {
         field: field.field,
-        text: outcome.text,
+        text: outcome.status === "ok" ? outcome.text : "",
         hash: field.hash,
-        provider: adapter.name,
+        provider: outcome.status === "ok" ? adapter.name : "failed",
       });
     }
   } catch (error) {

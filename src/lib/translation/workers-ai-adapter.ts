@@ -11,7 +11,7 @@ import {
 
 export const WORKERS_AI_MODEL = "@cf/google/gemma-4-26b-a4b-it";
 // Two attempts per field must fit the 5 minute background drain; jobs run there, not in the 30 s scheduled one.
-const REQUEST_TIMEOUT_MS = 60_000;
+export const REQUEST_TIMEOUT_MS = 60_000;
 // Error 3036: the 10,000 neurons per day free allocation is used up (resets 00:00 UTC).
 const QUOTA_ERROR_CODE = 3036;
 
@@ -23,6 +23,7 @@ const SYSTEM_PROMPT = [
   "- Return exactly one translated string per input string, in the same order.",
   "- Keep every term in do_not_translate exactly as written.",
   "- Keep numbered tags such as <1> and </1> exactly as they are, around the matching words.",
+  "- The strings are HTML-escaped: keep &amp;, &lt; and &gt; exactly as written, in URLs too.",
   "- Keep URLs, email addresses, numbers and line breaks unchanged.",
   "- Do not add, remove, merge or split strings. Do not explain anything.",
   '- Answer with JSON only: {"blocks": ["...", "..."]}',

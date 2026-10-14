@@ -94,6 +94,23 @@ describe("validateTranslation", () => {
     ).toBeNull();
   });
 
+  it("rejects one paragraph left in the source language among translated ones", () => {
+    expect(validateTranslation([EN, EN], [HR, `${EN} Join us.`], "hr")).toBe(
+      "language",
+    );
+  });
+
+  it("keeps escaped characters and entities in URLs", () => {
+    const source =
+      "We run workshops for ages &lt; 12, see https://example.org/a?x=1&amp;y=2 now.";
+    const good =
+      "Vodimo radionice za dob &lt; 12, vidi https://example.org/a?x=1&amp;y=2 sada.";
+    expect(validateTranslation([source], [good], "hr")).toBeNull();
+    expect(
+      validateTranslation([source], [good.replace("&amp;", "&")], "hr"),
+    ).toBe("urls");
+  });
+
   it("rejects text that is still in the source language", () => {
     expect(validateTranslation([EN], [`${EN} Join us today.`], "hr")).toBe(
       "language",

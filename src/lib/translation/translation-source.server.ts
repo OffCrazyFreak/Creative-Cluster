@@ -117,6 +117,52 @@ export async function loadTranslationSource(
   };
 }
 
+// Hash of one field read from its own column only, for the check just before a write.
+export async function loadFieldHash(
+  tx: DbOrTx,
+  entityType: TranslatableEntity,
+  entityId: string,
+  field: string,
+): Promise<string | null> {
+  if (entityType === "entry") {
+    const [row] = await tx
+      .select({
+        sourceLocale: entry.sourceLocale,
+        description: entry.description,
+        offering: entry.offeringText,
+        seeking: entry.seekingText,
+      })
+      .from(entry)
+      .where(eq(entry.id, entityId))
+      .limit(1);
+    if (!row) return null;
+    const found =
+      field === "description"
+        ? richField(field, row.description, row.sourceLocale)
+        : plainField(
+            field,
+            field === "offering" ? row.offering : row.seeking,
+            row.sourceLocale,
+          );
+    return found[0]?.hash ?? null;
+  }
+  const [row] = await tx
+    .select({
+      sourceLocale: opportunity.sourceLocale,
+      title: opportunity.title,
+      body: opportunity.body,
+    })
+    .from(opportunity)
+    .where(eq(opportunity.id, entityId))
+    .limit(1);
+  if (!row) return null;
+  const found =
+    field === "body"
+      ? richField(field, row.body, row.sourceLocale)
+      : plainField(field, row.title, row.sourceLocale);
+  return found[0]?.hash ?? null;
+}
+
 export function otherLocale(locale: AppLocale): AppLocale {
   return locale === "en" ? "hr" : "en";
 }
