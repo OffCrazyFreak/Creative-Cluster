@@ -152,6 +152,15 @@ describe.skipIf(!temp)("createOpportunity", () => {
     });
   });
 
+  it("matches duplicates of titles with s and spaces in them", async () => {
+    const { owner } = await setup();
+    await post(owner, "Tražimo tiskaru za plakate");
+    expect(await post(owner, "tražimo  tiskaru za plakate")).toEqual({
+      status: "refused",
+      code: "duplicate",
+    });
+  });
+
   it("refuses a past deadline and tags the person may not use", async () => {
     const { owner } = await setup();
     expect(await post(owner, "Late", { deadline: "2020-01-01" })).toEqual({

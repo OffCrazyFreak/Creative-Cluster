@@ -71,7 +71,7 @@ export async function findDuplicateTitle(
         eq(opportunity.entryId, entryId),
         openOpportunityCondition(),
         excludeId ? ne(opportunity.id, excludeId) : undefined,
-        sql`lower(regexp_replace(btrim(${opportunity.title}), '\s+', ' ', 'g')) = lower(${normalizeTitle(title)})`,
+        sql`lower(regexp_replace(btrim(${opportunity.title}), '[[:space:]]+', ' ', 'g')) = lower(${normalizeTitle(title)})`,
       ),
     )
     .limit(1);
