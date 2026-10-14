@@ -5,6 +5,8 @@ export interface IJobContext {
   idempotencyKey: string | null;
   priority: number;
   attempts: number;
+  // Epoch ms after which the drain stops; slow handlers check it between steps and defer.
+  deadline: number;
 }
 
 // Return deferUntil to put the job back without counting the run as a failed attempt.

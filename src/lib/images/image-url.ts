@@ -1,4 +1,3 @@
-import { clientEnv } from "@/env.client";
 import { site } from "@/sites";
 import type { IImageRef } from "@/typings/images";
 
@@ -26,8 +25,17 @@ export function cloudinaryImageUrl({
   return `https://res.cloudinary.com/${cloudName}/image/fetch/f_auto,q_auto,c_limit,w_${width}/${source}`;
 }
 
+// Read from import.meta.env directly: env.client.ts is client-only, so on the server it is a mock
+// object whose properties are truthy, which would send server-rendered images to a bogus Cloudinary URL.
+function cloudName(): string | undefined {
+  return (
+    (import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string | undefined) ||
+    undefined
+  );
+}
+
 export function isCloudinaryEnabled(): boolean {
-  return Boolean(clientEnv.VITE_CLOUDINARY_CLOUD_NAME);
+  return Boolean(cloudName());
 }
 
 // Falls back to our own URL when Cloudinary is not configured (local dev, before the account exists).
@@ -36,10 +44,10 @@ export function imageUrl({
   hash,
   width,
 }: IImageRef & { width: number }): string {
-  const cloudName = clientEnv.VITE_CLOUDINARY_CLOUD_NAME;
-  if (!cloudName) return ownImageUrl({ id, hash });
+  const name = cloudName();
+  if (!name) return ownImageUrl({ id, hash });
   return cloudinaryImageUrl({
-    cloudName,
+    cloudName: name,
     origin: site.origin,
     id,
     hash,
