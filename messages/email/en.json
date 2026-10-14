@@ -45,5 +45,13 @@
   "email_change_preheader": "A new address for your account on {siteName}.",
   "email_change_body_1": "a change of email address was requested for an account on {siteName}. This address becomes the new account address only after you confirm it. The link works for {expiry}.",
   "email_change_body_2": "If it was not you, ignore this message. The account stays on the old address.",
-  "email_change_button": "Confirm new email address"
+  "email_change_button": "Confirm new email address",
+  "email_connection_subject": "{proposerName} proposes a connection with {entryName}",
+  "email_connection_preheader": "You decide whether the connection becomes public.",
+  "email_connection_intro": "{proposerName} proposes a connection with your listing {entryName} on {siteName}.",
+  "email_connection_kind": "Kind of connection: {kind}",
+  "email_connection_year": "Year: {year}",
+  "email_connection_note": "Note: {note}",
+  "email_connection_visibility": "Until you confirm it, the connection is visible only to you, the proposer and administrators. Confirm or decline it in your account. If you do nothing, the proposal expires after 60 days.",
+  "email_connection_button": "Review the proposal"
 }

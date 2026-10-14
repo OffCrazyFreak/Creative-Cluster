@@ -1,3 +1,8 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "connections_kind_collaborated": "Collaborated",
+  "connections_kind_eu_partner": "EU project partner",
+  "connections_kind_member_of": "Member of",
+  "connections_kind_supplier": "Supplier",
+  "connections_kind_mentor": "Mentor"
 }

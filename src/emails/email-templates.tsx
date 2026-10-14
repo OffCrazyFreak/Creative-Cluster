@@ -4,6 +4,9 @@ import type { EmailTemplateName } from "@/constants/email";
 
 import ChangeEmail, { subject as changeSubject } from "./change-email";
 import ClaimEmail, { subject as claimSubject } from "./claim-email";
+import ConnectionEmail, {
+  subject as connectionSubject,
+} from "./connection-email";
 import type { EmailPropsOf } from "./email-types";
 import InviteEmail, { subject as inviteSubject } from "./invite-email";
 import ResetEmail, { subject as resetSubject } from "./reset-email";
@@ -43,5 +46,10 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <ChangeEmail {...props} />,
     subject: changeSubject,
     previewProps: ChangeEmail.PreviewProps,
+  },
+  connection: {
+    element: (props) => <ConnectionEmail {...props} />,
+    subject: connectionSubject,
+    previewProps: ConnectionEmail.PreviewProps,
   },
 };
