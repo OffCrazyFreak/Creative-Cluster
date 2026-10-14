@@ -77,6 +77,13 @@ export interface IReportDigestEmailProps extends IBaseEmailProps {
   link: string;
 }
 
+export interface IEditRevertedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  fieldGroups: string[];
+  reason: string;
+  link: string;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
@@ -88,6 +95,7 @@ export interface IEmailPropsMap {
   rejected: IRejectedEmailProps;
   application_digest: IApplicationDigestEmailProps;
   report_digest: IReportDigestEmailProps;
+  edit_reverted: IEditRevertedEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

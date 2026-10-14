@@ -10,6 +10,9 @@ import ApplicationDigestEmail, {
 } from "./application-digest-email";
 import ApprovedEmail, { subject as approvedSubject } from "./approved-email";
 import RejectedEmail, { subject as rejectedSubject } from "./rejected-email";
+import EditRevertedEmail, {
+  subject as editRevertedSubject,
+} from "./edit-reverted-email";
 import ReportDigestEmail, {
   subject as reportDigestSubject,
 } from "./report-digest-email";
@@ -79,5 +82,10 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <ReportDigestEmail {...props} />,
     subject: reportDigestSubject,
     previewProps: ReportDigestEmail.PreviewProps,
+  },
+  edit_reverted: {
+    element: (props) => <EditRevertedEmail {...props} />,
+    subject: editRevertedSubject,
+    previewProps: EditRevertedEmail.PreviewProps,
   },
 };
