@@ -30,5 +30,21 @@
   "email_application_digest_body": "od posljednjeg sažetka stiglo je prijava: {count}. Na pregled čekaju ukupno: {openTotal}. Prijave starije od {days} dana označene su u redu. Svaki redak prikazuje naziv, vrstu, državu i starost.",
   "email_report_digest_subject": "Nove prijave sadržaja: {count}",
   "email_report_digest_preheader": "Posjetitelji su prijavili unosa: {count}.",
-  "email_report_digest_body": "od posljednjeg sažetka posjetitelji su prijavili unosa: {count}. Nijedan se nije sam sakrio. Čekaju tvoju odluku. Svaki redak prikazuje unos i razlog koji je naveo posjetitelj."
+  "email_report_digest_body": "od posljednjeg sažetka posjetitelji su prijavili unosa: {count}. Nijedan se nije sam sakrio. Čekaju tvoju odluku. Svaki redak prikazuje unos i razlog koji je naveo posjetitelj.",
+  "email_edit_reverted_subject": "Administrator je vratio izmjenu unosa {entryName}",
+  "email_edit_reverted_preheader": "Pogledaj što je vraćeno i zašto.",
+  "email_edit_reverted_body_1": "administrator stranice {siteName} vratio je jednu od izmjena na tvom unosu {entryName}.",
+  "email_edit_reverted_fields": "Vraćeno: {fields}.",
+  "email_edit_reverted_reason": "Razlog: {reason}",
+  "email_edit_reverted_body_2": "Ostatak unosa nije mijenjan. Ako misliš da je ovo pogreška, odgovori na ovu poruku ili ponovno unesi izmjenu.",
+  "email_edit_reverted_button": "Otvori moj unos",
+  "email_edit_group_name": "naziv",
+  "email_edit_group_description": "opis",
+  "email_edit_group_offering": "što nudiš i što tražiš",
+  "email_edit_group_website": "mrežna stranica i društvene mreže",
+  "email_edit_group_contact": "kontaktni podaci",
+  "email_edit_group_visibility": "tko vidi koje polje",
+  "email_edit_group_images": "slike",
+  "email_edit_group_location": "mjesto",
+  "email_edit_group_other": "ostali podaci"
 }

@@ -23,3 +23,17 @@ export const REVIEW_AGE_FILTERS = ["all", "stale", "fresh"] as const;
 export type ReviewAgeFilter = (typeof REVIEW_AGE_FILTERS)[number];
 
 export { REASON_CODES };
+
+export const CHANGES_PAGE_SIZE = 30;
+export const REVERT_REASON_MAX = 500;
+// Identifiers removed from change_log rows after this many days and on erasure.
+export const CHANGE_LOG_RETENTION_DAYS = 90;
+export const CHANGE_LOG_PERSONAL_FIELDS = [
+  "contactName",
+  "contactEmail",
+  "contactPhone",
+  "addressText",
+  "lat",
+  "lng",
+  "ownerUserId",
+] as const;

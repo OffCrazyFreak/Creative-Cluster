@@ -30,5 +30,21 @@
   "email_application_digest_body": "since the last summary, {count} applications arrived. In total {openTotal} are waiting for review. Applications older than {days} days are marked in the queue. Each line shows name, kind, country and age.",
   "email_report_digest_subject": "New content reports: {count}",
   "email_report_digest_preheader": "Visitors reported {count} listings.",
-  "email_report_digest_body": "since the last summary, visitors reported {count} listings. None was hidden automatically. They wait for your decision. Each line shows the listing and the reason the visitor gave."
+  "email_report_digest_body": "since the last summary, visitors reported {count} listings. None was hidden automatically. They wait for your decision. Each line shows the listing and the reason the visitor gave.",
+  "email_edit_reverted_subject": "An administrator reverted a change to {entryName}",
+  "email_edit_reverted_preheader": "See what was reverted and why.",
+  "email_edit_reverted_body_1": "an administrator of {siteName} reverted one of the changes made to your listing {entryName}.",
+  "email_edit_reverted_fields": "Reverted: {fields}.",
+  "email_edit_reverted_reason": "Reason: {reason}",
+  "email_edit_reverted_body_2": "The rest of the listing was not changed. If you think this is a mistake, reply to this message or enter the change again.",
+  "email_edit_reverted_button": "Open my listing",
+  "email_edit_group_name": "name",
+  "email_edit_group_description": "description",
+  "email_edit_group_offering": "what you offer and seek",
+  "email_edit_group_website": "website and social links",
+  "email_edit_group_contact": "contact details",
+  "email_edit_group_visibility": "who sees which field",
+  "email_edit_group_images": "images",
+  "email_edit_group_location": "place",
+  "email_edit_group_other": "other details"
 }
