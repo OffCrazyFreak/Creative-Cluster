@@ -67,7 +67,8 @@ export async function runTranslation(
     ...pending.map((f) => f.field),
   ]);
 
-  const limit = Math.min(deadline, now.getTime() + JOB_BUDGET_MS);
+  // The budget runs on the wall clock; `now` only dates the quota reset.
+  const limit = Math.min(deadline, Date.now() + JOB_BUDGET_MS);
   const context = {
     hasTime: () => Date.now() + REQUEST_TIMEOUT_MS < limit,
     adapter,
