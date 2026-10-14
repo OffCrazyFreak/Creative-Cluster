@@ -5,7 +5,7 @@ import { TAG_FIELDS } from "@/constants/tags";
 import type { Tx } from "@/db/client.server";
 import { entry, image, reviewItem } from "@/db/schema";
 import { translatedTextChanged } from "@/features/account/save-own-listing.server";
-import { saveEntryTags } from "@/features/tags/save-entry-tags.server";
+import { saveEntryTagsInTx } from "@/features/tags/save-entry-tags.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { enqueueTranslation } from "@/lib/translation/enqueue-translation.server";
 import { NotFoundError } from "@/server/errors";
@@ -61,6 +61,7 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
     .limit(1)
     .for("update");
   if (!row) throw new NotFoundError();
+  await applyUntrustedEditTags(tx, input.entryId, input.payload);
 
   // The queued patch is a full snapshot; only what still differs from the live row is a change, so edits made
   // since (an admin fix, a revert) are not overwritten with stale values.
@@ -110,9 +111,10 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
     .where(eq(reviewItem.id, input.itemId));
 }
 
-// Tags have their own service and transaction, so they are applied first: if one fails the decision fails with
-// the item still open, and approving again is safe because saving the same tags twice changes nothing.
-export async function applyUntrustedEditTags(
+// Tags are saved inside the decision transaction, after the item lock and the published check: a stale or
+// concurrently closed item leaves no tags behind, and a failing tag rolls the whole decision back.
+async function applyUntrustedEditTags(
+  tx: Tx,
   entryId: string,
   payload: Record<string, unknown>,
 ) {
@@ -122,7 +124,7 @@ export async function applyUntrustedEditTags(
   for (const field of TAG_FIELDS) {
     const ids = tags[field];
     if (!Array.isArray(ids)) continue;
-    await saveEntryTags({
+    await saveEntryTagsInTx(tx, {
       entryId,
       field,
       tagIds: ids.filter((id): id is string => typeof id === "string"),

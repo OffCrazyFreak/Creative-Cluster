@@ -10,7 +10,7 @@ import { countryName } from "@/features/directory/country-name";
 import ContactDialog from "@/features/contact/components/contact-dialog";
 import EntryImage from "@/features/images/components/entry-image";
 import { tagLabel } from "@/features/tags/tag-label";
-import { fromSerializableDoc } from "@/features/translation/translation-schemas";
+import { fromSerializableDoc } from "@/features/translation/translation-fields";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";

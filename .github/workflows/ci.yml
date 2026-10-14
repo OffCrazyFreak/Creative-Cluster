@@ -66,3 +66,5 @@ jobs:
       - run: pnpm build:${{ matrix.site }}
       - name: No server secrets in the client bundle
         run: node scripts/check-client-bundle.mjs
+      - name: Initial JavaScript within budget
+        run: pnpm size

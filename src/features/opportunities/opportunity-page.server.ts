@@ -5,7 +5,7 @@ import { db } from "@/db/client.server";
 import { entry, image, opportunity, opportunityTag, tag } from "@/db/schema";
 import { hasContactChannel } from "@/features/entry/redact-entry";
 import { publicTagCondition } from "@/features/tags/tag-visibility.server";
-import { toSerializableDoc } from "@/features/translation/translation-schemas";
+import { toSerializableDoc } from "@/features/translation/translation-fields";
 import { EMPTY_RICH_TEXT } from "@/lib/rich-text/empty-rich-text";
 import { safeParseRichText } from "@/lib/rich-text/parse-rich-text";
 

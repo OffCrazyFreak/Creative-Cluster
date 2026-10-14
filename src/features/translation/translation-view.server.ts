@@ -11,7 +11,7 @@ import {
   toSerializableDoc,
   type ITranslationView,
   type TranslatedField,
-} from "./translation-schemas";
+} from "./translation-fields";
 
 function isTranslatedField(value: string): value is TranslatedField {
   return TRANSLATED_FIELDS.some((field) => field === value);

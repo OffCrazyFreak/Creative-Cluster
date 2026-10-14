@@ -4,6 +4,7 @@ import netlify from "@netlify/vite-plugin-tanstack-start";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig, loadEnv } from "vite";
 
 import { paraglideOptions } from "./src/sites/paraglide-options.ts";
@@ -51,6 +52,17 @@ export default defineConfig(({ command, mode }) => {
       // Netlify's local emulation (edge functions on Deno, a local database) is not needed for dev.
       command === "build" && netlify(),
       viteReact(),
+      // `pnpm analyze` only: a treemap of the client bundle (gzip sizes) at dist/stats.html.
+      process.env.ANALYZE === "true"
+        ? {
+            ...visualizer({
+              filename: "dist/stats.html",
+              gzipSize: true,
+              template: "treemap",
+            }),
+            applyToEnvironment: (environment) => environment.name === "client",
+          }
+        : null,
       // Uploads source maps only when the token exists; SENTRY_ORG and SENTRY_PROJECT come from the environment. Must stay last.
       command === "build" && Boolean(process.env.SENTRY_AUTH_TOKEN)
         ? sentryTanstackStart({

@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import TranslatedSection from "@/features/translation/components/translated-section";
 import TranslationNotice from "@/features/translation/components/translation-notice";
-import type { ITranslationView } from "@/features/translation/translation-schemas";
+import type { ITranslationView } from "@/features/translation/translation-fields";
 import { m } from "@/paraglide/messages";
 
 import type { IPublicEntry } from "../entry-schemas";
