@@ -33,7 +33,6 @@
   "map_loading": "Loading the map",
   "map_webgl_unsupported": "This browser cannot draw the map (it needs WebGL 2). The list has all the same listings.",
   "map_load_failed": "The map could not be loaded. The list still works.",
-  "map_show_map": "Show the map",
   "map_results_live": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
