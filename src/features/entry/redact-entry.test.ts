@@ -10,6 +10,7 @@ function row(patch: Partial<IEntryRow> = {}): IEntryRow {
     kind: "organization",
     name: "Demo",
     sourceLocale: "en",
+    description: null,
     descriptionText: "text",
     offeringText: "",
     seekingText: "",
@@ -117,5 +118,24 @@ describe("redactEntry", () => {
     expect(person.location.lat).toBe(45.81234);
     const online = redactEntry(row({ onlineOnly: true }), [], false);
     expect(online.location.lat).toBeNull();
+  });
+
+  it("passes the rich description and images through", () => {
+    const logo = {
+      id: "i1",
+      hash: "abc",
+      width: 64,
+      height: 64,
+      altText: null,
+    };
+    const description = { type: "doc" as const, content: [] };
+    const result = redactEntry(row({ description }), [], false, {
+      logo,
+      cover: null,
+    });
+    expect(result.description).toBe(description);
+    expect(result.logo).toBe(logo);
+    expect(result.cover).toBeNull();
+    expect(redactEntry(row(), [], false).logo).toBeNull();
   });
 });
