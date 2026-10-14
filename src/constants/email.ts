@@ -17,6 +17,8 @@ export const EMAIL_TEMPLATE_NAMES = [
   "erasure_scheduled",
   "erasure_done",
   "contact",
+  "terms",
+  "blocked",
 ] as const;
 export type EmailTemplateName = (typeof EMAIL_TEMPLATE_NAMES)[number];
 
@@ -40,6 +42,9 @@ export const EMAIL_TEMPLATE_PRIORITY: Record<
   erasure_scheduled: "urgent",
   erasure_done: "urgent",
   contact: "normal",
+  terms: "normal",
+  // A statement of reasons is a legal duty, so it uses the whole daily cap like reset mail.
+  blocked: "urgent",
 };
 
 // Non-urgent mail waits for the next UTC day once this share of the cap is sent.
