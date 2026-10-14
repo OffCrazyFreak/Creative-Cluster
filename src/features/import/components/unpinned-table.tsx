@@ -27,7 +27,9 @@ export default function UnpinnedTable() {
           <TableHeader>
             <TableRow>
               <TableHead>{m.import_col_name()}</TableHead>
-              <TableHead>{m.import_col_address()}</TableHead>
+              <TableHead className="hidden sm:table-cell">
+                {m.import_col_address()}
+              </TableHead>
               <TableHead>{m.import_col_pin()}</TableHead>
             </TableRow>
           </TableHeader>
@@ -39,7 +41,9 @@ export default function UnpinnedTable() {
                     {item.name}
                   </Link>
                 </TableCell>
-                <TableCell>{item.addressText}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {item.addressText}
+                </TableCell>
                 <TableCell>
                   {item.precision === "town"
                     ? m.import_pin_town()
