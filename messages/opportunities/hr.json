@@ -88,5 +88,36 @@
     }
   ],
   "opportunities_expiring_link": "Obnovi ili zatvori",
-  "opportunities_review_note_none": "Tvoja sljedeća prilika objavljuje se odmah."
+  "opportunities_board_title": "Prilike",
+  "opportunities_board_intro": "Partneri, vještine, prostori, usluge i natječaji koje unosi nude ili traže. Za odgovor otvori objavu i javi se unosu.",
+  "opportunities_board_meta_description": "Otvoreni pozivi i ponude kreativnih organizacija na {site}: partneri, vještine, prostori, usluge i natječaji.",
+  "opportunities_board_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} prilika",
+        "countPlural=few": "{count} prilike",
+        "countPlural=other": "{count} prilika"
+      }
+    }
+  ],
+  "opportunities_board_empty": "Nijedna prilika ne odgovara ovim filtrima.",
+  "opportunities_board_list_label": "Prilike",
+  "opportunities_filters_label": "Filtriraj prilike",
+  "opportunities_filter_type": "Vrsta",
+  "opportunities_filter_category": "Kategorija",
+  "opportunities_filter_country": "Država",
+  "opportunities_filter_tag": "Oznaka",
+  "opportunities_filter_any": "Sve",
+  "opportunities_filter_closing": "Uskoro završava (unutar 14 dana)",
+  "opportunities_filter_clear": "Očisti filtre",
+  "opportunities_item_by": "Unos: {name}",
+  "opportunities_item_filled": "Popunjeno",
+  "opportunities_item_remote": "Moguće na daljinu",
+  "opportunities_item_closes": "Završava {date}",
+  "opportunities_item_open_until": "Otvoreno do {date}",
+  "opportunities_review_note_none": "Tvoja sljedeća prilika objavljuje se odmah.",
+  "opportunities_filter_tags_several": "Oznaka: {count}",
+  "opportunities_board_truncated": "Prikazano je prvih {shown}. Filtrima sužavaš popis."
 }

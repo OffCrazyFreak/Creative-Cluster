@@ -27,6 +27,8 @@ export interface IDirectoryEntry {
   logo: IImageRef | null;
   blurb: string;
   tags: number[];
+  // Live opportunities of this entry; above zero the map pin gets a badge.
+  opps: number;
 }
 
 export interface IDirectoryTag {
