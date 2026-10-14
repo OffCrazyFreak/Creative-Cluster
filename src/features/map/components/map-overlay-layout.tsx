@@ -1,4 +1,11 @@
-import { lazy, Suspense, type ReactNode, type RefObject } from "react";
+import {
+  lazy,
+  Suspense,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -33,10 +40,14 @@ export default function MapOverlayLayout({
   searchArea,
   children,
 }: IMapOverlayLayoutProps) {
+  // Lets the map keep its attribution above the phone sheet.
+  const [sheetCovered, setSheetCovered] = useState("96px");
+
   return (
     <div
       ref={frameRef}
-      className="relative h-[calc(100dvh-var(--site-header-height,3.0625rem))] min-h-[28rem] overflow-hidden max-lg:h-[calc(100dvh-var(--site-header-height,5.5625rem))]"
+      style={{ "--map-sheet-covered": sheetCovered } as CSSProperties}
+      className="relative h-[calc(100dvh-var(--site-header-height,3.0625rem))] min-h-[28rem] overflow-hidden"
     >
       <MapSkipLink />
       <div className="absolute inset-0">{map}</div>
@@ -65,7 +76,9 @@ export default function MapOverlayLayout({
             <MapFilterChips />
           </div>
           <Suspense fallback={<div id="results-panel">{children}</div>}>
-            <MapSheet sheetRef={sheetRef}>{children}</MapSheet>
+            <MapSheet sheetRef={sheetRef} onCoveredChange={setSheetCovered}>
+              {children}
+            </MapSheet>
           </Suspense>
         </>
       )}
