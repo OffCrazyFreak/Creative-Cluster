@@ -1,3 +1,19 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "directory_title": "Directory",
+  "directory_intro": "Browse every published listing, or narrow the list by tag or country.",
+  "directory_meta_description": "A full list of the listings in the {site} directory.",
+  "directory_tag_title": "Tagged {tag}",
+  "directory_country_title": "Listings in {country}",
+  "directory_browse_tags": "Browse by tag",
+  "directory_browse_countries": "Browse by country",
+  "directory_all_entries": "All listings",
+  "directory_empty": "There are no listings here yet.",
+  "directory_list_label": "Listings",
+  "directory_total": "{total} listings",
+  "directory_page_label": "Page {page} of {pageCount}",
+  "directory_pagination_label": "Pages",
+  "directory_pagination_previous": "Previous page",
+  "directory_pagination_next": "Next page",
+  "directory_view_on_map": "View the map"
 }

@@ -1,3 +1,19 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "directory_title": "Imenik",
+  "directory_intro": "Pregledaj sve objavljene unose ili suzi popis po oznaci ili državi.",
+  "directory_meta_description": "Cjeloviti popis unosa u imeniku {site}.",
+  "directory_tag_title": "Oznaka {tag}",
+  "directory_country_title": "Unosi u državi {country}",
+  "directory_browse_tags": "Pregled po oznaci",
+  "directory_browse_countries": "Pregled po državi",
+  "directory_all_entries": "Svi unosi",
+  "directory_empty": "Ovdje još nema unosa.",
+  "directory_list_label": "Unosi",
+  "directory_total": "Ukupno unosa: {total}",
+  "directory_page_label": "Stranica {page} od {pageCount}",
+  "directory_pagination_label": "Stranice",
+  "directory_pagination_previous": "Prethodna stranica",
+  "directory_pagination_next": "Sljedeća stranica",
+  "directory_view_on_map": "Pogledaj kartu"
 }

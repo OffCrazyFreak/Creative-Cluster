@@ -13,6 +13,8 @@ const ALLOWED_SERVER_ROUTES = [
   "src/routes/sitemap[.]xml.ts",
   "src/routes/robots[.]txt.ts",
   "src/routes/healthz.ts",
+  // Public map payload: no session lookup, so a cacheable response never carries Set-Cookie.
+  "src/routes/directory[.]json.ts",
   "src/routes/[.]well-known/security[.]txt.ts",
 ];
 
