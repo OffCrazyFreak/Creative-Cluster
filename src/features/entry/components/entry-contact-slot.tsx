@@ -1,11 +1,14 @@
+import ContactDialog from "@/features/contact/components/contact-dialog";
+
 interface IEntryContactSlotProps {
   entryId: string;
   slug: string;
   name: string;
 }
 
-// Slot for the contact relay form (contact area). Render the "Contact" button and its dialog here.
-export default function EntryContactSlot(props: IEntryContactSlotProps) {
-  void props;
-  return null;
+export default function EntryContactSlot({
+  entryId,
+  name,
+}: IEntryContactSlotProps) {
+  return <ContactDialog entryId={entryId} name={name} />;
 }
