@@ -45,7 +45,7 @@ function noticeText(notice: Notice): string {
 
 export default function ListingForm({ listing }: IListingFormProps) {
   const [notice, setNotice] = useState<Notice | null>(null);
-  const save = useSaveListing(listing.id);
+  const save = useSaveListing(listing);
   // Moves only with the owner's own saves: a refetch must not replace what the owner is looking at.
   const [initial, setInitial] = useState(() =>
     withDefaultCountry(listing.values),
