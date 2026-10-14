@@ -32,3 +32,27 @@ export const OPPORTUNITY_LIMITS = {
   filledLabelDays: 7,
   closedNoindexDays: 30,
 } as const;
+
+export const OPPORTUNITY_TAG_MAX = 5;
+
+// closed_reason of a post its owner marked as filled.
+export const OPPORTUNITY_FILLED_REASON = "filled";
+
+// Why a rule refused a post. The service returns these; the UI maps each to a message.
+export const OPPORTUNITY_RULE_CODES = [
+  "entry_not_published",
+  "limit_active",
+  "limit_daily",
+  "duplicate",
+  "bad_deadline",
+  "invalid_tags",
+  "not_renewable",
+  "not_editable",
+] as const;
+export type OpportunityRuleCode = (typeof OPPORTUNITY_RULE_CODES)[number];
+
+// "Closing soon" filter: posts that end within this many days.
+export const OPPORTUNITY_CLOSING_SOON_DAYS = 14;
+export const OPPORTUNITY_LIST_MAX = 100;
+
+export const OPPORTUNITY_REPORT_MESSAGE_MAX = 500;

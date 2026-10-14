@@ -38,6 +38,7 @@ import {
 import type { IMapPadding } from "../map-padding";
 import type { IViewport } from "../map-search";
 import { useMapRecovery } from "../use-map-recovery";
+import MapConnectionArcs from "./map-connection-arcs";
 
 export interface IMapViewProps {
   // Every published entry, for stable numeric ids.
@@ -194,6 +195,7 @@ export default function MapView(props: IMapViewProps) {
           position="bottom-right"
           compact={!wide}
         />
+        <MapConnectionArcs allEntries={allEntries} selectedSlug={focusSlug} />
         <Source
           id={SOURCE_ID}
           type="geojson"

@@ -7,6 +7,7 @@ import { entry, image } from "@/db/schema";
 import { loadPublicTags } from "@/features/entry/entry-tags.server";
 import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 import { publicLocation } from "@/features/entry/public-location";
+import { countActiveByEntry } from "@/features/opportunities/public-opportunities.server";
 
 import { makeBlurb } from "./blurb";
 import type {
@@ -47,10 +48,13 @@ async function buildMapDirectory(): Promise<IMapDirectory> {
     .leftJoin(image, eq(image.id, entry.logoImageId))
     .where(publicEntryCondition())
     .orderBy(asc(sql`lower(${entry.name})`), asc(entry.id));
-  const tagsByEntry = await loadPublicTags(
-    db,
-    rows.map((row) => row.id),
-  );
+  const [tagsByEntry, oppsByEntry] = await Promise.all([
+    loadPublicTags(
+      db,
+      rows.map((row) => row.id),
+    ),
+    countActiveByEntry(),
+  ]);
 
   const dictionary: IDirectoryTag[] = [];
   const indexBySlug = new Map<string, number>();
@@ -86,6 +90,7 @@ async function buildMapDirectory(): Promise<IMapDirectory> {
           : null,
       blurb: makeBlurb(row.descriptionText),
       tags: [...new Set(tags)],
+      opps: oppsByEntry.get(row.id) ?? 0,
     };
   });
 
