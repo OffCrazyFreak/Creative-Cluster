@@ -25,3 +25,14 @@ export function detectSourceLocale(
 ): AppLocale {
   return detectLocale(text) ?? fallback;
 }
+
+// Detection runs when the text changes, so a language the owner corrected by hand survives saves that
+// leave the text alone. Short text keeps the chosen language. No previous text means a new record.
+export function sourceLocaleOnSave(
+  text: string,
+  chosen: AppLocale,
+  previousText?: string,
+): AppLocale {
+  if (previousText === text) return chosen;
+  return detectSourceLocale(text, chosen);
+}

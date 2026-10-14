@@ -2,6 +2,7 @@ import { SOCIAL_PLATFORMS } from "@/constants/account";
 import type { EntryKind } from "@/constants/entry";
 import type { entry } from "@/db/schema";
 import { applyPersonOffset } from "@/features/location/person-offset-fn.server";
+import { sourceLocaleOnSave } from "@/lib/translation/detect-locale";
 import { normalizeHttpUrl } from "@/utils/http-url";
 
 import { hasLegalStatus } from "./listing-rules";
@@ -49,6 +50,9 @@ type PatchRow = Pick<
   EntryRow,
   | "id"
   | "kind"
+  | "descriptionText"
+  | "offeringText"
+  | "seekingText"
   | "extra"
   | "lat"
   | "lng"
@@ -92,6 +96,17 @@ function personLocation(row: PatchRow, input: ListingInput["location"]) {
   };
 }
 
+// The name is left out: it is mostly a proper noun and says little about the language.
+function detectionText(source: {
+  descriptionText: string;
+  offeringText: string;
+  seekingText: string;
+}) {
+  return [source.descriptionText, source.offeringText, source.seekingText].join(
+    "\n",
+  );
+}
+
 export function buildListingPatch(
   row: PatchRow,
   input: ListingInput,
@@ -103,7 +118,11 @@ export function buildListingPatch(
 
   return {
     name: input.name,
-    sourceLocale: input.sourceLocale,
+    sourceLocale: sourceLocaleOnSave(
+      detectionText({ ...input, descriptionText: input.description.text }),
+      input.sourceLocale,
+      detectionText(row),
+    ),
     description: input.description.doc,
     descriptionText: input.description.text,
     offeringText: input.offeringText,

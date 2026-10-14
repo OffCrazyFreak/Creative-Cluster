@@ -1,3 +1,4 @@
+import type { AppLocale } from "@/constants/locales";
 import type { EntryKind, EntryStatus } from "@/constants/entry";
 
 import type { ListingFormValues } from "./listing-schemas";
@@ -18,8 +19,10 @@ export interface IOwnListing {
   values: ListingFormValues;
 }
 
-export type SaveListingResult =
-  { status: "saved"; changed: boolean } | { status: "pending_review" };
+// sourceLocale is the language detected on save, so the form can show what was stored.
+export type SaveListingResult = { sourceLocale: AppLocale } & (
+  { status: "saved"; changed: boolean } | { status: "pending_review" }
+);
 
 // Start's serialization check rejects the open `attrs` type of rich text nodes, although the stored JSON
 // is plain. The server function returns this opaque shape and the query casts it back.
