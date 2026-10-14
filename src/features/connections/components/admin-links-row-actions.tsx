@@ -15,11 +15,17 @@ export default function AdminLinksRowActions({
 }: IAdminLinksRowActionsProps) {
   const { run, busy } = useConnectionAction();
   if (!row.canDecide) {
-    return <span>{m.admin_links_owner_decides()}</span>;
+    return (
+      <span>
+        {row.recipient.unclaimed
+          ? m.admin_links_other_admin_decides()
+          : m.admin_links_owner_decides()}
+      </span>
+    );
   }
   return (
     <DecideButtons
-      name={row.proposer.name}
+      name={`${row.proposer.name}, ${row.recipient.name}`}
       busy={busy}
       onDecide={(decision) =>
         void run(

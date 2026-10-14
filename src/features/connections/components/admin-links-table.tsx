@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import {
   createColumnHelper,
   rowPaginationFeature,
@@ -8,7 +7,6 @@ import {
 } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -22,8 +20,8 @@ import { m } from "@/paraglide/messages";
 import { formatDate } from "@/utils/format-date";
 
 import type { IAdminLinkRow } from "../admin-links-schemas";
-import type { ILinkEntryRef } from "../connections-schemas";
 import { relationLabel } from "../relation-label";
+import AdminLinksEntryCell from "./admin-links-entry-cell";
 import AdminLinksRowActions from "./admin-links-row-actions";
 
 interface IAdminLinksTableProps {
@@ -36,23 +34,6 @@ interface IAdminLinksTableProps {
 const features = tableFeatures({ rowPaginationFeature });
 const helper = createColumnHelper<typeof features, IAdminLinkRow>();
 
-function EntryCell({ entry }: { entry: ILinkEntryRef }) {
-  return (
-    <div className="flex flex-wrap items-center gap-1">
-      <Link
-        to="/admin/entry/$id"
-        params={{ id: entry.id }}
-        className="font-medium"
-      >
-        {entry.name}
-      </Link>
-      {entry.unclaimed ? (
-        <Badge variant="outline">{m.admin_entries_no_owner()}</Badge>
-      ) : null}
-    </div>
-  );
-}
-
 export default function AdminLinksTable({
   rows,
   total,
@@ -64,7 +45,9 @@ export default function AdminLinksTable({
       helper.columns([
         helper.accessor("proposer", {
           header: () => m.admin_links_col_proposer(),
-          cell: ({ row }) => <EntryCell entry={row.original.proposer} />,
+          cell: ({ row }) => (
+            <AdminLinksEntryCell entry={row.original.proposer} />
+          ),
         }),
         helper.accessor("kind", {
           header: () => m.admin_links_col_relation(),
@@ -73,7 +56,9 @@ export default function AdminLinksTable({
         }),
         helper.accessor("recipient", {
           header: () => m.admin_links_col_recipient(),
-          cell: ({ row }) => <EntryCell entry={row.original.recipient} />,
+          cell: ({ row }) => (
+            <AdminLinksEntryCell entry={row.original.recipient} />
+          ),
         }),
         helper.accessor("createdAt", {
           header: () => m.admin_links_col_proposed(),

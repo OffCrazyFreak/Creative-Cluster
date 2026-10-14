@@ -24,6 +24,8 @@ export default function AdminLinksPage({ search }: IAdminLinksPageProps) {
     placeholderData: keepPreviousData,
   });
 
+  const filtered = Boolean(search.q || search.kind || search.unclaimed);
+
   function update(patch: Partial<AdminLinksSearch>) {
     void navigate({ search: (prev) => ({ ...prev, ...patch }) });
   }
@@ -40,10 +42,12 @@ export default function AdminLinksPage({ search }: IAdminLinksPageProps) {
         value={search}
         onChange={update}
       />
-      <p role="status">{m.admin_links_count({ count: data?.total ?? 0 })}</p>
+      <p role="status">
+        {data ? m.admin_links_count({ count: data.total }) : null}
+      </p>
       {data && data.rows.length === 0 ? (
         <div className="flex flex-col items-start gap-3">
-          <p>{m.admin_links_none()}</p>
+          <p>{filtered ? m.admin_links_none() : m.admin_links_none_at_all()}</p>
           {search.page > 1 && (
             <Button
               type="button"

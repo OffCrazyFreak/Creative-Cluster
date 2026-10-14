@@ -186,5 +186,7 @@
   "admin_links_col_proposed": "Predloženo",
   "admin_links_col_expires": "Istječe",
   "admin_links_owner_decides": "Odlučuje vlasnik",
-  "admin_nav_links": "Predložene veze"
+  "admin_nav_links": "Predložene veze",
+  "admin_links_other_admin_decides": "Prijedlog je tvoj; odlučuje drugi administrator",
+  "admin_links_none_at_all": "Nijedna veza ne čeka odgovor."
 }
