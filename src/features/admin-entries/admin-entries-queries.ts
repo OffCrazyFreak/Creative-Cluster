@@ -1,6 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { listAdminEntriesFn } from "./admin-entries.functions";
+import {
+  getAdminEntryDetailFn,
+  listAdminEntriesFn,
+} from "./admin-entries.functions";
 import type { AdminEntriesSearch } from "./admin-entries-schemas";
 
 export const ADMIN_ENTRIES_KEY = ["admin", "entries"] as const;
@@ -14,3 +17,10 @@ export function adminEntriesQueryOptions(input: AdminEntriesSearch) {
 
 // Prefix of every admin query: entry actions refresh the list and the detail pages together.
 export const ADMIN_KEY = ["admin"] as const;
+
+export function adminEntryDetailQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: [...ADMIN_KEY, "entry-detail", id],
+    queryFn: () => getAdminEntryDetailFn({ data: { id } }),
+  });
+}

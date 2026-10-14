@@ -1,6 +1,6 @@
 import type { IAdminEntryRow } from "./admin-entries-schemas";
 
-export type EntryDialogKind = "suspend";
+export type EntryDialogKind = "suspend" | "transfer" | "merge" | "pin" | "slug";
 
 export interface IEntryDialog {
   kind: EntryDialogKind;
