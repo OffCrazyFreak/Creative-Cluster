@@ -4,12 +4,12 @@
 // server preloads for the route chain plus their static imports (dynamic import() calls
 // are lazy and not counted). Sizes are size-limit kB (1 kB = 1000 bytes).
 //
-// Spec section 17.10 targets 170 kB for pages without the map. The limits below are the
-// measured sizes plus about 2 percent, so CI passes today and catches regressions. The
-// shared floor (the root route: React, router, zod, Base UI, i18n runtime) is about
-// 240 kB on its own, so the gap to the target is about 75 kB (directory) up to 335 kB (entry page). Lower a limit
-// when a change shrinks a page; raise one only with the reason in the pull request.
-import { readFileSync, readdirSync } from "node:fs";
+// Spec section 17.10 targets 170 kB for pages without the map; the root route alone is
+// above that, so these limits are the measured sizes plus about 2 percent: they catch
+// regressions, not the gap. Lower a limit when a change shrinks a page; raise one only
+// with the reason in the pull request. The build has no Sentry token in CI, so the
+// Sentry plugin that production builds add is not measured.
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const clientDir = "dist/client";
@@ -17,12 +17,17 @@ const clientDir = "dist/client";
 // TanStack Start lists, per route, the chunks the server preloads for it. A page loads
 // the root route plus every route on its match chain. The map library is an idle-time
 // dynamic import and is deliberately not part of these lists (its own budget is below).
-const manifestFile = readdirSync("dist/server/assets").find((name) =>
-  name.startsWith("_tanstack-start-manifest_v-"),
-);
+const serverAssets = "dist/server/assets";
+const manifestFile = existsSync(serverAssets)
+  ? readdirSync(serverAssets).find((name) =>
+      name.startsWith("_tanstack-start-manifest_v-"),
+    )
+  : undefined;
 if (!manifestFile)
-  throw new Error("Run a production build first (pnpm build:rpcc)");
-const source = readFileSync(join("dist/server/assets", manifestFile), "utf8");
+  throw new Error(
+    "No TanStack Start route manifest in dist/server/assets: run pnpm build:rpcc or pnpm build:dnz first, and check the plugin did not rename the file",
+  );
+const source = readFileSync(join(serverAssets, manifestFile), "utf8");
 const { tsrStartManifest } = await import(
   `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`
 );
@@ -30,7 +35,7 @@ const { routes } = tsrStartManifest();
 
 // The preload list leaves out chunks that are also dynamic-import targets, so each file's
 // static imports are followed too. Dynamic import() calls are not followed: they are lazy.
-const STATIC_IMPORT = /(?:from|import)\s*["']\.\/([^"']+\.js)["']/g;
+const STATIC_IMPORT = /(?:from|import)\s*["'](\.{1,2}\/[^"']+\.js)["']/g;
 
 function pageFiles(...chain) {
   const files = new Set(
