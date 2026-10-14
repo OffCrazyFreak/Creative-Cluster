@@ -55,7 +55,9 @@ export default function ReviewRow({
               {m.review_contact({ email: row.contactEmail })}
             </span>
           )}
-          {row.type !== "tag" && row.type !== "opportunity" && (
+          {(row.type === "application" ||
+            row.type === "untrusted_edit" ||
+            row.type === "report") && (
             <Link
               to="/admin/entry/$id"
               params={{ id: row.entityId }}

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { m } from "@/paraglide/messages";
-import { getLocale } from "@/paraglide/runtime";
+import { formatDate } from "@/utils/format-date";
 
 import { useLifecycleAction } from "../hooks/use-lifecycle-action";
 import {
@@ -20,13 +20,6 @@ import {
   ownListingStatusQueryOptions,
 } from "../lifecycle-queries";
 import { statusLabel } from "../status-label";
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat(getLocale(), {
-    dateStyle: "medium",
-    timeZone: "UTC",
-  }).format(new Date(value));
-}
 
 // The owner's status block: suspension reason, "confirm up to date", hide and show again, consent withdrawal.
 // Rendered on /account/data; the /account home can render the same component.

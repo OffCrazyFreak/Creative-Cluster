@@ -70,7 +70,8 @@ export async function unarchiveOwnListing(
         .select()
         .from(entry)
         .where(and(eq(entry.id, entryId), eq(entry.ownerUserId, userId)))
-        .limit(1);
+        .limit(1)
+        .for("update");
       if (!row || row.erasureRequestedAt) throw new NotFoundError();
       // A person who withdrew consent is published again only with fresh consent.
       const needsConsent = row.kind === "person" && !row.consentAt;

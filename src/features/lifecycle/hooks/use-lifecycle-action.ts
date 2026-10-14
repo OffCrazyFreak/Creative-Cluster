@@ -17,6 +17,8 @@ export function useLifecycleAction(queryKey: readonly unknown[]) {
       const result = await action();
       if (!result.ok) {
         toast.error(failText);
+        // The screen may show actions that no longer apply, so reload it either way.
+        await queryClient.invalidateQueries({ queryKey });
         return false;
       }
       toast.success(doneText);

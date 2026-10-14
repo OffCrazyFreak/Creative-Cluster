@@ -14,6 +14,9 @@ import { NotFoundError } from "@/server/errors";
 import { transitionEntry } from "./entry-transitions.server";
 import { purgeEntry } from "./purge-entry.server";
 
+// A first-year import cohort goes stale on one day; the rest is picked up by the following daily runs.
+const PURGE_BATCH_SIZE = 500;
+
 // Unclaimed imports nobody claimed within a year are hidden, never deleted: an admin can restore them.
 export async function archiveStaleImports(): Promise<number> {
   const stale = await db
@@ -28,7 +31,8 @@ export async function archiveStaleImports(): Promise<number> {
           sql`now() - make_interval(months => ${IMPORT_ARCHIVE_MONTHS})`,
         ),
       ),
-    );
+    )
+    .limit(PURGE_BATCH_SIZE);
   let archived = 0;
   for (const { id } of stale) {
     try {
@@ -53,18 +57,21 @@ export async function archiveStaleImports(): Promise<number> {
 
 // Rejected applications are kept 90 days for resubmission; applications never confirmed by email expire with their link.
 export async function purgeExpiredApplications(): Promise<number> {
+  const expiredCondition = sql`(${entry.status} = 'rejected' and ${entry.updatedAt} < now() - make_interval(days => ${REJECTED_APPLICATION_RETENTION_DAYS}))
+        or (${entry.status} = 'draft' and ${entry.ownerUserId} is null and ${entry.importedAt} is null and ${entry.updatedAt} < now() - make_interval(secs => ${APPLY_VERIFY_TTL_SECONDS}))`;
   const expired = await db
     .select({ id: entry.id })
     .from(entry)
-    .where(
-      sql`(${entry.status} = 'rejected' and ${entry.updatedAt} < now() - make_interval(days => ${REJECTED_APPLICATION_RETENTION_DAYS}))
-        or (${entry.status} = 'draft' and ${entry.ownerUserId} is null and ${entry.importedAt} is null and ${entry.updatedAt} < now() - make_interval(secs => ${APPLY_VERIFY_TTL_SECONDS}))`,
-    );
+    .where(expiredCondition)
+    .limit(PURGE_BATCH_SIZE);
   let purged = 0;
   for (const { id } of expired) {
     try {
-      await db.transaction((tx) => purgeEntry(tx, id));
-      purged += 1;
+      // Re-checked under the lock: an applicant may have verified or resubmitted since the query.
+      const done = await db.transaction((tx) =>
+        purgeEntry(tx, id, sql`(${expiredCondition})`),
+      );
+      if (done) purged += 1;
     } catch (error) {
       console.error("purging an application failed", id, error);
     }
