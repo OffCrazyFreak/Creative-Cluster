@@ -207,6 +207,33 @@ describe.skipIf(!temp)("saveOwnListing", () => {
     expect(open).toHaveLength(1);
   });
 
+  it("closes the pending edit when an untrusted owner reverts to the live values", async () => {
+    const { owner, row } = await setup();
+    const live = parse(formValues());
+    await saveOwnListing({ entryId: row.id, userId: owner.id, values: live });
+    await db
+      .update(schema.entry)
+      .set({ trusted: false })
+      .where(eq(schema.entry.id, row.id));
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues({ name: "Studio Changed" })),
+    });
+    const reverted = await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: live,
+    });
+    expect(reverted).toEqual({ status: "saved", changed: false });
+    const items = await db
+      .select()
+      .from(schema.reviewItem)
+      .where(eq(schema.reviewItem.entityId, row.id));
+    expect(items.map((item) => item.status)).toEqual(["dismissed"]);
+    expect((await findOwnListing(owner.id))?.hasPendingEdit).toBe(false);
+  });
+
   it("drops the pin of a person when a forged location carries no town population", async () => {
     const owner = await addUser(db, "forger");
     const row = await addEntry(db, "Bo", {}, { ownerUserId: owner.id });
