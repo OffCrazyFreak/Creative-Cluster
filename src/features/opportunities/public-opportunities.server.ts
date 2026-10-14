@@ -15,8 +15,16 @@ import {
   OPPORTUNITY_CLOSING_SOON_DAYS,
   OPPORTUNITY_LIST_MAX,
 } from "@/constants/opportunities";
+import { LOCALES } from "@/constants/locales";
 import { db } from "@/db/client.server";
-import { entry, image, opportunity, opportunityTag, tag } from "@/db/schema";
+import {
+  entry,
+  image,
+  opportunity,
+  opportunityTag,
+  tag,
+  translation,
+} from "@/db/schema";
 import { makeBlurb } from "@/features/directory/blurb";
 import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 import { publicTagCondition } from "@/features/tags/tag-visibility.server";
@@ -206,4 +214,49 @@ export async function countActiveByEntry(): Promise<Map<string, number>> {
     .where(and(activeOpportunityCondition(), publicEntryCondition()))
     .groupBy(opportunity.entryId);
   return new Map(rows.map((row) => [row.entryId, row.n]));
+}
+
+// Only live posts are indexed; ended pages leave the sitemap at once (they are noindex, then 410).
+// A language variant is listed only when it is not a copy of the owner's text: the page keeps it out of
+// the index until a translation exists, and the sitemap must not list URLs that say noindex.
+export async function listSitemapOpportunities() {
+  const rows = await db
+    .select({
+      id: opportunity.id,
+      updatedAt: opportunity.updatedAt,
+      sourceLocale: opportunity.sourceLocale,
+    })
+    .from(opportunity)
+    .innerJoin(entry, eq(entry.id, opportunity.entryId))
+    .where(and(activeOpportunityCondition(), publicEntryCondition()))
+    .orderBy(asc(opportunity.id));
+  const translated = rows.length
+    ? await db
+        .selectDistinct({
+          entityId: translation.entityId,
+          locale: translation.locale,
+        })
+        .from(translation)
+        .where(
+          and(
+            eq(translation.entityType, "opportunity"),
+            inArray(
+              translation.entityId,
+              rows.map((row) => row.id),
+            ),
+            sql`${translation.text} <> ''`,
+          ),
+        )
+    : [];
+  return rows.map((row) => ({
+    id: row.id,
+    updatedAt: row.updatedAt,
+    locales: LOCALES.filter(
+      (locale) =>
+        locale === row.sourceLocale ||
+        translated.some(
+          (item) => item.entityId === row.id && item.locale === locale,
+        ),
+    ),
+  }));
 }

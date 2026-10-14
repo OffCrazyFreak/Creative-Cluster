@@ -15,6 +15,7 @@ vi.mock("@/db/client.server", () => ({ db: temp?.db }));
 const {
   listPublicOpportunities,
   countActiveByEntry,
+  listSitemapOpportunities,
   invalidateOpportunityFacets,
 } = await import("./public-opportunities.server");
 
@@ -186,5 +187,46 @@ describe.skipIf(!temp)("public opportunities", () => {
       expiresAt: new Date(Date.now() - 1000),
     });
     expect((await countActiveByEntry()).get(owner.id)).toBe(2);
+  });
+
+  it("puts only live posts of public entries in the sitemap", async () => {
+    const owner = await addEntry(db, "Mapped");
+    const hidden = await addEntry(
+      db,
+      "Mapped hidden",
+      {},
+      { status: "suspended" },
+    );
+    const liveOne = await live(owner.id, "sitemap-live");
+    await live(owner.id, "sitemap-expired", {
+      expiresAt: new Date(Date.now() - 1000),
+    });
+    await live(hidden.id, "sitemap-suspended");
+    const listed = await listSitemapOpportunities();
+    const ids = listed.map((row) => row.id);
+    expect(ids).toContain(liveOne.id);
+    // No translation yet: only the owner's language is listed, since the other variant is noindex.
+    expect(listed.find((row) => row.id === liveOne.id)?.locales).toEqual([
+      "en",
+    ]);
+    await db.insert(schema.translation).values({
+      entityType: "opportunity",
+      entityId: liveOne.id,
+      field: "title",
+      locale: "hr",
+      text: "Prijevod",
+      origin: "machine",
+      sourceHash: "x",
+    });
+    const after = await listSitemapOpportunities();
+    expect(
+      [...(after.find((row) => row.id === liveOne.id)?.locales ?? [])].sort(),
+    ).toEqual(["en", "hr"]);
+    const all = await db.select().from(schema.opportunity);
+    const unwanted = all.filter(
+      (row) => row.title.startsWith("sitemap-") && row.id !== liveOne.id,
+    );
+    expect(unwanted.length).toBe(2);
+    for (const row of unwanted) expect(ids).not.toContain(row.id);
   });
 });
