@@ -88,7 +88,7 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
       ),
       after: changes,
     });
-    if (translatedTextChanged(keys, row, changes)) {
+    if (translatedTextChanged(keys, row, { extra: row.extra, ...changes })) {
       await enqueueJob(tx, {
         type: "translate",
         payload: { entityType: "entry", entityId: row.id },
