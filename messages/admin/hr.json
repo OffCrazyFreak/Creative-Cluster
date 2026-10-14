@@ -155,9 +155,14 @@
   "admin_entries_field_lastConfirmedAt": "Zadnja potvrda",
   "admin_entries_field_importedAt": "Uvezeno",
   "admin_entries_field_erasureRequestedAt": "Brisanje zatraženo",
+  "admin_export_entries_heading": "Unosi",
+  "admin_export_entries_intro": "Jedan redak po unosu, svi statusi, s e-poštom vlasnika i kontaktnim podacima. Unosi koji čekaju brisanje nisu uključeni. Datoteku čuvaj kao osobne podatke.",
+  "admin_export_entries_button": "Preuzmi CSV unosa",
+  "admin_export_failed": "Izvoz nije uspio. Pokušaj ponovno.",
   "admin_entries_entry_gone": "Unos više ne postoji.",
   "admin_entries_prev": "Prethodna",
   "admin_entries_next": "Sljedeća",
   "admin_entries_page": "Stranica {page} od {pages}",
-  "admin_entries_first_page": "Natrag na prvu stranicu"
+  "admin_entries_first_page": "Natrag na prvu stranicu",
+  "admin_export_title": "Izvoz"
 }

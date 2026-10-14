@@ -155,9 +155,14 @@
   "admin_entries_field_lastConfirmedAt": "Last confirmed",
   "admin_entries_field_importedAt": "Imported",
   "admin_entries_field_erasureRequestedAt": "Deletion requested",
+  "admin_export_entries_heading": "Entries",
+  "admin_export_entries_intro": "One row per listing, every status, with owner email and contact details. Listings queued for deletion are left out. Handle the file as personal data.",
+  "admin_export_entries_button": "Download entries CSV",
+  "admin_export_failed": "The export failed. Please try again.",
   "admin_entries_entry_gone": "The entry no longer exists.",
   "admin_entries_prev": "Previous",
   "admin_entries_next": "Next",
   "admin_entries_page": "Page {page} of {pages}",
-  "admin_entries_first_page": "Back to the first page"
+  "admin_entries_first_page": "Back to the first page",
+  "admin_export_title": "Export"
 }
