@@ -1,3 +1,59 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "map_search_label": "Pretraži imenik",
+  "map_search_placeholder": "Traži po imenu, mjestu ili oznaci",
+  "map_filters_button": "Filtri",
+  "map_filters_title": "Filtriraj rezultate",
+  "map_filter_tags": "Oznake",
+  "map_filter_country": "Država",
+  "map_filter_country_any": "Sve države",
+  "map_filter_legal": "Pravni oblik",
+  "map_filter_legal_any": "Bilo koji pravni oblik",
+  "map_filter_distance": "Udaljenost",
+  "map_filter_distance_any": "Bilo koja udaljenost",
+  "map_filter_near_me": "Koristi moju lokaciju",
+  "map_filter_near_center": "Koristi sredinu karte",
+  "map_filter_near_clear": "Ukloni točku",
+  "map_filter_near_set": "Unutar {km} km od odabrane točke",
+  "map_filter_near_needs_point": "Prvo odaberi točku.",
+  "map_filter_geolocation_denied": "Tvoja lokacija nije dostupna.",
+  "map_filter_clear": "Očisti sve filtre",
+  "map_chip_remove": "Ukloni filtar {label}",
+  "map_chip_text": "Pretraga: {text}",
+  "map_chip_near": "Unutar {km} km",
+  "map_chip_area": "Unutar područja karte",
+  "map_popular_tags": "Popularne oznake",
+  "map_search_area": "Traži u ovom području",
+  "map_empty": "Nijedan unos ne odgovara filtrima.",
+  "map_results_list": "Popis rezultata",
+  "map_override_clear": "Prikaži sve rezultate",
+  "map_skip_map": "Preskoči kartu",
+  "map_region_label": "Karta unosa",
+  "map_sheet_label": "Ploča s rezultatima",
+  "map_loading": "Učitavam kartu",
+  "map_webgl_unsupported": "Ovaj preglednik ne može prikazati kartu (treba WebGL 2). Popis sadrži iste unose.",
+  "map_load_failed": "Karta se nije mogla učitati. Popis i dalje radi.",
+  "map_show_map": "Prikaži kartu",
+  "map_results_live": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} unos prikazan",
+        "countPlural=other": "{count} unosa prikazano",
+        "countPlural=few": "{count} unosa prikazana"
+      }
+    }
+  ],
+  "map_override_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} unos na ovom mjestu",
+        "countPlural=other": "{count} unosa na ovom mjestu",
+        "countPlural=few": "{count} unosa na ovom mjestu"
+      }
+    }
+  ]
 }

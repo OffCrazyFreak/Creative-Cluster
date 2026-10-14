@@ -21,5 +21,5 @@ export const dnz = {
     email: "TODO-privacy@inovatoridnz.net",
   },
   searchConsoleToken: null,
-  map: { center: [17.6, 42.85], zoom: 8 },
+  map: { center: [17.6, 42.85], zoom: 8, style: "openfreemap" },
 } as const satisfies ISiteConfig;
