@@ -57,7 +57,7 @@ function pageFiles(...chain) {
 const pages = [
   ["Map home /", ["/_map", "/_map/"], 273],
   ["Directory /directory", ["/directory/"], 252],
-  ["Entry /e/:slug", ["/_map", "/_map/e/$slug"], 517],
+  ["Entry /e/:slug", ["/_map", "/_map/e/$slug"], 349],
   ["Opportunities /opportunities", ["/_map", "/_map/opportunities/"], 306],
   ["Legal /about", ["/about"], 296],
   ["Login /login", ["/login"], 303],
@@ -71,6 +71,13 @@ export default [
     gzip: true,
     limit: `${limitKb} kB`,
   })),
+  // Fetched right after hydration on entries that have connections.
+  {
+    name: "Connection graph chunk (entries with connections)",
+    path: [join(clientDir, "assets/connection-graph-*.js")],
+    gzip: true,
+    limit: "58 kB",
+  },
   // Spec: about 430 kB gzip, loaded on idle on map routes only.
   {
     name: "Map library chunks (idle, map routes only)",

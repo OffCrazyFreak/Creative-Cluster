@@ -14,7 +14,7 @@ import {
   fromSerializableDoc,
   type ITranslationView,
   type TranslatedField,
-} from "../translation-schemas";
+} from "../translation-fields";
 import TranslationEditFields, {
   type IEditValues,
 } from "./translation-edit-fields";
