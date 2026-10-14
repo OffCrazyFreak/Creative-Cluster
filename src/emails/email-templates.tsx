@@ -5,6 +5,14 @@ import type { EmailTemplateName } from "@/constants/email";
 import ApplicationReceivedEmail, {
   subject as applicationReceivedSubject,
 } from "./application-received-email";
+import ApplicationDigestEmail, {
+  subject as applicationDigestSubject,
+} from "./application-digest-email";
+import ApprovedEmail, { subject as approvedSubject } from "./approved-email";
+import RejectedEmail, { subject as rejectedSubject } from "./rejected-email";
+import ReportDigestEmail, {
+  subject as reportDigestSubject,
+} from "./report-digest-email";
 import ChangeEmail, { subject as changeSubject } from "./change-email";
 import ClaimEmail, { subject as claimSubject } from "./claim-email";
 import type { EmailPropsOf } from "./email-types";
@@ -51,5 +59,25 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <ApplicationReceivedEmail {...props} />,
     subject: applicationReceivedSubject,
     previewProps: ApplicationReceivedEmail.PreviewProps,
+  },
+  approved: {
+    element: (props) => <ApprovedEmail {...props} />,
+    subject: approvedSubject,
+    previewProps: ApprovedEmail.PreviewProps,
+  },
+  rejected: {
+    element: (props) => <RejectedEmail {...props} />,
+    subject: rejectedSubject,
+    previewProps: RejectedEmail.PreviewProps,
+  },
+  application_digest: {
+    element: (props) => <ApplicationDigestEmail {...props} />,
+    subject: applicationDigestSubject,
+    previewProps: ApplicationDigestEmail.PreviewProps,
+  },
+  report_digest: {
+    element: (props) => <ReportDigestEmail {...props} />,
+    subject: reportDigestSubject,
+    previewProps: ReportDigestEmail.PreviewProps,
   },
 };
