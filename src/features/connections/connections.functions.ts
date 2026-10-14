@@ -8,8 +8,10 @@ import {
   linkIdInput,
   proposeLinkInput,
   publicConnectionsInput,
+  partnerSlugsInput,
   searchTargetsInput,
 } from "./connections-schemas";
+import { connectionPartnerSlugs } from "./connection-slugs.server";
 import { decideLink, withdrawLink } from "./decide-link.server";
 import {
   countPendingProposals,
@@ -70,3 +72,8 @@ export const getPublicConnections = createServerFn({ method: "GET" })
   .middleware([publicGuard])
   .inputValidator(publicConnectionsInput)
   .handler(({ data }) => loadPublicConnections(data.entryId));
+
+export const getConnectionPartnerSlugs = createServerFn({ method: "GET" })
+  .middleware([publicGuard])
+  .inputValidator(partnerSlugsInput)
+  .handler(({ data }) => connectionPartnerSlugs(data.slug));

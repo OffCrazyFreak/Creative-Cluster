@@ -86,5 +86,10 @@
   "connections_graph_more": "i još {count} u popisu",
   "connections_unverified_heading": "Neprovjerene veze",
   "connections_unverified_hint": "Ovaj unos dodao je ove veze bez potvrde partnera.",
-  "connections_list_link": "Prikaži cijeli popis"
+  "connections_list_link": "Prikaži cijeli popis",
+  "connections_export_title": "Izvoz",
+  "connections_export_links_heading": "Potvrđene veze",
+  "connections_export_links_intro": "Preuzima sve potvrđene veze između objavljenih unosa kao CSV datoteku, uključujući veze s neprovjerenim vanjskim partnerima (označene u stupcu unverified).",
+  "connections_export_links_button": "Preuzmi CSV",
+  "connections_export_failed": "Izvoz nije uspio. Pokušaj ponovno."
 }

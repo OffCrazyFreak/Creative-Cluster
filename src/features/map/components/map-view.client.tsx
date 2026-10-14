@@ -38,6 +38,7 @@ import {
 import type { IMapPadding } from "../map-padding";
 import type { IViewport } from "../map-search";
 import { useMapRecovery } from "../use-map-recovery";
+import MapConnectionArcs from "./map-connection-arcs";
 
 export interface IMapViewProps {
   // Every published entry, for stable numeric ids.
@@ -193,6 +194,8 @@ export default function MapView(props: IMapViewProps) {
           position={wide ? "bottom-right" : "top-left"}
           compact={false}
         />
+        {/* Before the pin source so the pins draw above the arcs. */}
+        <MapConnectionArcs allEntries={allEntries} selectedSlug={focusSlug} />
         <Source
           id={SOURCE_ID}
           type="geojson"

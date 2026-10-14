@@ -86,5 +86,10 @@
   "connections_graph_more": "and {count} more in the list",
   "connections_unverified_heading": "Unverified connections",
   "connections_unverified_hint": "This listing added these without confirmation from the partner.",
-  "connections_list_link": "Show the full list"
+  "connections_list_link": "Show the full list",
+  "connections_export_title": "Export",
+  "connections_export_links_heading": "Confirmed connections",
+  "connections_export_links_intro": "Downloads every confirmed connection between published listings as a CSV file, including links to unverified outside partners (marked in the unverified column).",
+  "connections_export_links_button": "Download CSV",
+  "connections_export_failed": "The export failed. Please try again."
 }

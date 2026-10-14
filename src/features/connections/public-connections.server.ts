@@ -21,7 +21,7 @@ function otherEnd(entryId: string) {
   return sql`case when ${link.fromId} = ${entryId} then ${link.toId} else ${link.fromId} end`;
 }
 
-async function loadPartners(entryId: string): Promise<IPublicPartner[]> {
+export async function loadPartners(entryId: string): Promise<IPublicPartner[]> {
   // publicEntryCondition on the partner is what hides links of suspended or archived entries.
   const rows = await db
     .select({
