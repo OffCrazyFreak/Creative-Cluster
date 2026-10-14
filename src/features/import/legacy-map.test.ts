@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { stagingOrganizationSchema } from "./import-schemas";
+import { stagingFileSchema, stagingOrganizationSchema } from "./import-schemas";
 import {
   guessCountryCode,
   legacyOrganizationSchema,
@@ -65,5 +65,26 @@ describe("guessCountryCode", () => {
       guessCountryCode("Example Street 1, 10117 Exampletown, Germany"),
     ).toBe("DE");
     expect(guessCountryCode("Example Street 1, Exampletown")).toBeNull();
+  });
+});
+
+describe("staging file", () => {
+  it("rejects duplicate legacy ids", () => {
+    const row = mapLegacyOrganization(fake);
+    const result = stagingFileSchema.safeParse({
+      version: 1,
+      site: "rpcc",
+      source: "test",
+      exportedAt: new Date().toISOString(),
+      organizations: [row, row],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("knows common spellings of country names", () => {
+    expect(guessCountryCode("Example Street 1, Czech Republic")).toBe("CZ");
+    expect(guessCountryCode("Example Street 1, Bosnia and Herzegovina")).toBe(
+      "BA",
+    );
   });
 });

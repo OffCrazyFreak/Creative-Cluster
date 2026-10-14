@@ -49,6 +49,12 @@ export const stagingFileSchema = z.object({
   site: z.enum(SITE_IDS),
   source: z.string().trim().min(1).max(200),
   exportedAt: z.iso.datetime(),
-  organizations: z.array(stagingOrganizationSchema).max(2000),
+  organizations: z
+    .array(stagingOrganizationSchema)
+    .max(2000)
+    .refine(
+      (rows) => new Set(rows.map((row) => row.legacyId)).size === rows.length,
+      { message: "legacyId must be unique" },
+    ),
 });
 export type StagingFile = z.infer<typeof stagingFileSchema>;

@@ -125,7 +125,7 @@ export async function searchAddresses(userKey: string, input: SuggestInput) {
 // For offline scripts (the legacy import): the same cached chain without the per-user web limits.
 export async function searchAddressOnce(input: SuggestInput) {
   return cachedSearch(input, () =>
-    searchChain(geocoders(), { ...input, limit: 1 }),
+    searchChain(geocoders(), { ...input, limit: 5 }),
   );
 }
 

@@ -2,20 +2,23 @@ import { searchAddressOnce } from "@/features/location/location.server";
 
 import type { StagingOrganization } from "./import-schemas";
 
-// One lookup per organization. A hit fills the pin, city and country; no hit leaves the text for hand fixing.
+export type GeocodeOutcome = "found" | "miss" | "skipped" | "failed";
+
+// One lookup per organization. A hit fills the pin, city and country; anything else leaves the text for hand fixing.
 export async function geocodeOrganization(
   org: StagingOrganization,
   defaultCountry: string | null,
-): Promise<{ org: StagingOrganization; found: boolean }> {
+): Promise<{ org: StagingOrganization; outcome: GeocodeOutcome }> {
   const text = org.location.addressText;
   const countryCode = org.location.countryCode ?? defaultCountry;
   // The search needs a country to pick providers, so rows without one wait for hand fixing.
-  if (text.length < 3 || !countryCode) return { org, found: false };
-  const { hits } = await searchAddressOnce({ text, countryCode });
+  if (text.length < 3 || !countryCode) return { org, outcome: "skipped" };
+  const { hits, degraded } = await searchAddressOnce({ text, countryCode });
   const hit = hits[0];
-  if (!hit) return { org, found: false };
+  // Every provider failing is "unknown", not "no such address".
+  if (!hit) return { org, outcome: degraded ? "failed" : "miss" };
   return {
-    found: true,
+    outcome: "found",
     org: {
       ...org,
       location: {

@@ -45,6 +45,16 @@ const REGION_CODES = Array.from({ length: 26 * 26 }, (_, i) =>
   String.fromCharCode(65 + Math.floor(i / 26), 65 + (i % 26)),
 );
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+// Spellings the old free-text form commonly produced that CLDR names differently.
+const COUNTRY_ALIASES = new Map<string, string>([
+  ["czech republic", "CZ"],
+  ["usa", "US"],
+  ["uk", "GB"],
+  ["england", "GB"],
+  ["bosnia and herzegovina", "BA"],
+  ["macedonia", "MK"],
+  ["holland", "NL"],
+]);
 const countryByName = new Map<string, string>();
 for (const code of REGION_CODES) {
   const name = regionNames.of(code);
@@ -54,7 +64,9 @@ for (const code of REGION_CODES) {
 // The old form asked for a free-text address; when its last part is a country name we can keep the country.
 export function guessCountryCode(address: string): string | null {
   const last = address.split(",").at(-1)?.trim().toLowerCase();
-  return (last && countryByName.get(last)) || null;
+  return (
+    (last && (COUNTRY_ALIASES.get(last) ?? countryByName.get(last))) || null
+  );
 }
 
 function clean(value: string | null | undefined): string {
