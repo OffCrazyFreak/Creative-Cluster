@@ -30,28 +30,33 @@ const REPORT_REASON_LABELS = {
 } satisfies Record<ReportReason, typeof m.review_report_reason_other>;
 
 export function reviewTypeLabel(type: ReviewType, locale?: AppLocale): string {
-  return TYPE_LABELS[type]({}, locale ? { locale } : undefined);
+  return TYPE_LABELS[type]({}, { locale });
 }
 
 export function reasonLabel(code: ReasonCode): string {
   return REASON_LABELS[code]();
 }
 
-// Stored payloads are untyped JSON, so an unknown value yields no label instead of a raw code.
 export function reportReasonLabel(
+  reason: ReportReason,
+  locale?: AppLocale,
+): string {
+  return REPORT_REASON_LABELS[reason]({}, { locale });
+}
+
+// Stored payloads are untyped JSON; an unknown value is shown as is rather than dropped.
+export function storedReasonLabel(
   reason: unknown,
   locale?: AppLocale,
 ): string | null {
-  if (!REPORT_REASONS.includes(reason as ReportReason)) return null;
-  return REPORT_REASON_LABELS[reason as ReportReason](
-    {},
-    locale ? { locale } : undefined,
-  );
+  if (typeof reason !== "string" || !reason) return null;
+  return REPORT_REASONS.includes(reason as ReportReason)
+    ? reportReasonLabel(reason as ReportReason, locale)
+    : reason;
 }
 
 export function reviewAgeLabel(days: number, locale?: AppLocale): string {
-  const options = locale ? { locale } : undefined;
   return days <= 0
-    ? m.review_age_today({}, options)
-    : m.review_age_days({ count: days }, options);
+    ? m.review_age_today({}, { locale })
+    : m.review_age_days({ count: days }, { locale });
 }

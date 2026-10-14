@@ -41,7 +41,11 @@ ReportDigestEmail.PreviewProps = {
   locale: "en",
   count: 1,
   items: [
-    { name: "Example Studio", detail: "Spam or advertising", ageDays: 0 },
+    {
+      name: "Example Studio",
+      detail: "Spam or advertising, Today",
+      ageDays: 0,
+    },
   ],
   link: `${site.origin}/admin`,
 } satisfies IReportDigestEmailProps;

@@ -19,7 +19,7 @@ import { entry, opportunity, reviewItem, tag } from "@/db/schema";
 import { BOUNCE_SOURCE } from "@/features/contact/bounce-events.server";
 
 import { pickRevertible } from "./entry-fields";
-import { reportReasonLabel } from "./review-labels";
+import { storedReasonLabel } from "./review-labels";
 import type {
   IReviewPage,
   IReviewRow,
@@ -89,7 +89,7 @@ function summaryOf(row: {
     const { reason, message, source } = row.payload;
     // The automatic bounce text already says what happened; its fixed "other" reason adds nothing.
     const text = [
-      source === BOUNCE_SOURCE ? null : reportReasonLabel(reason),
+      source === BOUNCE_SOURCE ? null : storedReasonLabel(reason),
       message,
     ]
       .filter((v) => typeof v === "string" && v)

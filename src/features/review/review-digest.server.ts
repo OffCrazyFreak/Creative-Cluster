@@ -9,26 +9,18 @@ import {
   usageCounter,
   user,
 } from "@/db/schema";
-import type { IDigestItem } from "@/emails/email-types";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
-import { BOUNCE_SOURCE } from "@/features/contact/bounce-events.server";
-import { kindLabel } from "@/features/admin-entries/entry-kind-label";
 import { site } from "@/sites";
 
 import {
-  reportReasonLabel,
-  reviewAgeLabel,
-  reviewTypeLabel,
-} from "./review-labels";
+  DAY_MS,
+  ageDays,
+  applicationLines,
+  reportLines,
+} from "./review-digest-lines";
 
-const DAY_MS = 86_400_000;
-
-function ageDays(createdAt: Date, now: Date): number {
-  return Math.floor((now.getTime() - createdAt.getTime()) / DAY_MS);
-}
-
-async function recentItems(
+export async function recentItems(
   type: "application" | "report",
   since: Date,
   until: Date,
@@ -40,7 +32,7 @@ async function recentItems(
       payload: reviewItem.payload,
       // Reports can target an opportunity post as well as a listing.
       name: sql<string>`coalesce(${entry.name}, ${opportunity.title})`,
-      isOpportunity: isNotNull(opportunity.id),
+      entityType: reviewItem.entityType,
       kind: entry.kind,
       countryCode: entry.countryCode,
     })
@@ -70,55 +62,6 @@ async function recentItems(
       ),
     )
     .orderBy(asc(reviewItem.createdAt));
-}
-
-type DigestRow = Awaited<ReturnType<typeof recentItems>>[number];
-
-function joinDetail(parts: (string | null)[]) {
-  return parts.filter(Boolean).join(", ");
-}
-
-function applicationLines(
-  rows: DigestRow[],
-  now: Date,
-  locale: AppLocale,
-): IDigestItem[] {
-  return rows.map((row) => {
-    const days = ageDays(row.createdAt, now);
-    return {
-      name: row.name,
-      detail: joinDetail([
-        row.kind && kindLabel(row.kind, locale),
-        row.countryCode,
-        reviewAgeLabel(days, locale),
-      ]),
-      ageDays: days,
-    };
-  });
-}
-
-function reportLines(
-  rows: DigestRow[],
-  now: Date,
-  locale: AppLocale,
-): IDigestItem[] {
-  return rows.map((row) => {
-    const days = ageDays(row.createdAt, now);
-    // The automatic bounce report carries a fixed "other" reason that tells the admin nothing.
-    const reason =
-      row.payload.source === BOUNCE_SOURCE
-        ? null
-        : reportReasonLabel(row.payload.reason, locale);
-    return {
-      name: row.name,
-      detail: joinDetail([
-        row.isOpportunity ? reviewTypeLabel("opportunity", locale) : null,
-        reason,
-        reviewAgeLabel(days, locale),
-      ]),
-      ageDays: days,
-    };
-  });
 }
 
 async function openApplicationTotal() {
@@ -187,21 +130,11 @@ export async function queueReviewDigests(now = new Date()) {
   const window = since.toISOString();
   const openTotal = await openApplicationTotal();
   const oldestAgeDays = await oldestOpenApplication(now);
-  const lines = new Map(
-    LOCALES.map((locale) => [
-      locale,
-      {
-        applications: applicationLines(applications, now, locale),
-        reports: reportLines(reports, now, locale),
-      },
-    ]),
-  );
 
   await db.transaction(async (tx) => {
     for (const admin of admins) {
       const locale = adminLocale(admin.locale);
       const link = pageLink("/admin", locale);
-      const localized = lines.get(locale);
       if (applications.length > 0)
         await enqueueEmail(tx, {
           template: "application_digest",
@@ -211,7 +144,7 @@ export async function queueReviewDigests(now = new Date()) {
             count: applications.length,
             openTotal,
             oldestAgeDays,
-            items: localized?.applications ?? [],
+            items: applicationLines(applications, now, locale),
             link,
           },
           idempotencyKey: `digest:application:${window}:${admin.id}`,
@@ -223,7 +156,7 @@ export async function queueReviewDigests(now = new Date()) {
           props: {
             locale,
             count: reports.length,
-            items: localized?.reports ?? [],
+            items: reportLines(reports, now, locale),
             link,
           },
           idempotencyKey: `digest:report:${window}:${admin.id}`,

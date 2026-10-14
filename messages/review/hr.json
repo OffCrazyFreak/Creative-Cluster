@@ -129,5 +129,6 @@
   "review_expired": "Broj objava koje nije moguće odobriti jer im je rok istekao: {count}. Umjesto toga ih odbij uz razlog.",
   "review_no_account": "Broj obrađenih objava čiji unosi nemaju račun, pa e-poruka nije poslana: {count}. Javi to vlasnicima izravno.",
   "review_open_post": "Otvori objavu",
-  "review_reason_spam_removed": "Neželjeni sadržaj"
+  "review_reason_spam_removed": "Neželjeni sadržaj",
+  "review_report_bounced": "Kontaktna e-pošta više ne radi"
 }

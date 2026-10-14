@@ -135,7 +135,7 @@ export default function ReportDialog({
             <Select
               items={REPORT_REASONS.map((item) => ({
                 value: item,
-                label: reportReasonLabel(item) ?? item,
+                label: reportReasonLabel(item),
               }))}
               value={reason}
               onValueChange={(next) =>
@@ -150,7 +150,7 @@ export default function ReportDialog({
               <SelectContent>
                 {REPORT_REASONS.map((item) => (
                   <SelectItem key={item} value={item}>
-                    {reportReasonLabel(item) ?? item}
+                    {reportReasonLabel(item)}
                   </SelectItem>
                 ))}
               </SelectContent>

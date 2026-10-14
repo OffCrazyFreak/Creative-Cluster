@@ -397,7 +397,11 @@ describe.skipIf(!temp)("review services", () => {
           "Neželjeni sadržaj ili reklama, Danas",
         ],
         ["admin@example.test", "Digest Post", "Opportunity, Today"],
-        ["admin@example.test", "Digest Bounce Place", "Today"],
+        [
+          "admin@example.test",
+          "Digest Bounce Place",
+          "Contact email stopped working, Today",
+        ],
         [
           "admin-hr@example.test",
           "Digest Applicant",

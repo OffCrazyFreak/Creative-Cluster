@@ -10,7 +10,7 @@ export default function DigestList({ items }: IDigestListProps) {
     <ul>
       {items.map((item, index) => (
         <li key={`${item.name}-${index}`}>
-          {item.detail ? `${item.name} (${item.detail})` : item.name}
+          {item.name} ({item.detail})
         </li>
       ))}
     </ul>

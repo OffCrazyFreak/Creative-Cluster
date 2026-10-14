@@ -10,5 +10,5 @@ const LABELS = {
 
 // Emails render outside a request, so the locale is passed in; pages use the current locale.
 export function kindLabel(kind: EntryKind, locale?: AppLocale): string {
-  return LABELS[kind]({}, locale ? { locale } : undefined);
+  return LABELS[kind]({}, { locale });
 }
