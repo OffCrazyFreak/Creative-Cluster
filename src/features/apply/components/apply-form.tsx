@@ -18,7 +18,7 @@ import {
   type ApplicationFormValues,
   type SubmitApplicationResult,
 } from "../apply-schemas";
-import { submitApplicationFn } from "../apply.functions";
+import { getApplyFormTokenFn, submitApplicationFn } from "../apply.functions";
 import { clearApplyDraft, useApplyDraftSaver } from "../hooks/use-apply-draft";
 import { AboutSection } from "./about-section";
 import { ConsentFields } from "./consent-fields";
@@ -29,6 +29,7 @@ interface IApplyFormProps {
   initial?: ApplicationFormValues;
   draftRestored?: boolean;
   resubmitToken?: string;
+  formToken: string;
   onSent: (result: SubmitApplicationResult, email: string) => void;
 }
 
@@ -36,6 +37,8 @@ function errorKey(result: SubmitApplicationResult): string | null {
   if (result.status === "captcha") return m.apply_error_captcha();
   if (result.status === "limited") return m.apply_error_limit();
   if (result.status === "expired") return m.apply_error_expired();
+  if (result.status === "retry") return m.apply_error_retry();
+  if (result.status === "invalid_town") return m.apply_error_invalid_town();
   return null;
 }
 
@@ -43,9 +46,10 @@ export default function ApplyForm({
   initial,
   draftRestored = false,
   resubmitToken,
+  formToken: initialFormToken,
   onSent,
 }: IApplyFormProps) {
-  const [startedAt] = useState(() => Date.now());
+  const [formToken, setFormToken] = useState(initialFormToken);
   const [token, setToken] = useState<string | null>(null);
   const [widgetKey, setWidgetKey] = useState(0);
   const [honeypot, setHoneypot] = useState("");
@@ -72,19 +76,22 @@ export default function ApplyForm({
         return;
       }
       try {
-        // A restored draft can be sent within seconds of page load; wait out the minimum instead of being dropped.
-        const wait = APPLY_MIN_FILL_SECONDS * 1000 - (Date.now() - startedAt);
+        // The server counts the minimum fill time from the token's start; wait it out instead of being refused.
+        const issuedAt = Number(formToken.split(".")[0]);
+        const wait = APPLY_MIN_FILL_SECONDS * 1000 - (Date.now() - issuedAt);
         if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
         const result = await submitApplicationFn({
           data: {
             application: value,
             locale: getLocale(),
             turnstileToken: token,
-            nickname: honeypot,
-            startedAt,
+            referenceCode: honeypot,
+            formToken,
             resubmitToken,
           },
         });
+        if (result.status === "retry")
+          setFormToken(await getApplyFormTokenFn());
         const failure = errorKey(result);
         if (failure) {
           setError(failure);
@@ -141,7 +148,7 @@ export default function ApplyForm({
       </FieldGroup>
       <div aria-hidden="true" className="sr-only">
         <input
-          name="fax"
+          name="reference_code"
           tabIndex={-1}
           autoComplete="off"
           value={honeypot}

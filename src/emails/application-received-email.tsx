@@ -7,7 +7,7 @@ import EmailLayout from "./components/email-layout";
 import type { IApplicationReceivedEmailProps } from "./email-types";
 
 export function subject({ locale }: IApplicationReceivedEmailProps) {
-  return m.email_application_received_subject({}, { locale });
+  return m.moderation_email_application_received_subject({}, { locale });
 }
 
 export default function ApplicationReceivedEmail(
@@ -18,16 +18,21 @@ export default function ApplicationReceivedEmail(
     <EmailLayout
       locale={locale}
       footer="requested"
-      preview={m.email_application_received_preheader({}, { locale })}
+      preview={m.moderation_email_application_received_preheader(
+        {},
+        { locale },
+      )}
     >
       <Text>{m.email_greeting({}, { locale })}</Text>
       <Text>
-        {m.email_application_received_body_1(
+        {m.moderation_email_application_received_body_1(
           { entryName, siteName: site.name },
           { locale },
         )}
       </Text>
-      <Text>{m.email_application_received_body_2({}, { locale })}</Text>
+      <Text>
+        {m.moderation_email_application_received_body_2({}, { locale })}
+      </Text>
     </EmailLayout>
   );
 }

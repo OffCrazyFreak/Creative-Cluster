@@ -1,7 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "email_application_received_subject": "We received your application",
-  "email_application_received_preheader": "We review it within 7 days.",
-  "email_application_received_body_1": "thank you. We received your application for the listing {entryName} on {siteName}. Administrators review it within 7 days. We will send you the decision at this address.",
-  "email_application_received_body_2": "Until then, the listing is not public. If you want to correct something, reply to this message."
+  "moderation_email_application_received_subject": "We received your application",
+  "moderation_email_application_received_preheader": "We review it within 7 days.",
+  "moderation_email_application_received_body_1": "thank you. We received your application for the listing {entryName} on {siteName}. Administrators review it within 7 days. We will send you the decision at this address.",
+  "moderation_email_application_received_body_2": "Until then, the listing is not public. If you want to correct something, reply to this message."
 }

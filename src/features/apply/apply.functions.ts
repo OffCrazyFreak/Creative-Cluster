@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 
-import { APPLY_MIN_FILL_SECONDS } from "@/constants/apply";
 import { runInBackground } from "@/lib/auth/background-task.server";
 import { enforceLimits } from "@/lib/limits/check-limit.server";
 import { triggerDrain } from "@/lib/jobs/trigger-drain.server";
@@ -20,23 +20,22 @@ import {
 } from "./apply-schemas";
 import { loadRejectedApplication } from "./application-edit.server";
 import { createApplication, resubmitApplication } from "./apply.server";
+import { InvalidTownError } from "./apply-entry-fields";
+import { checkFormToken, issueFormToken } from "./apply-form-token.server";
 import { findSimilarEntries } from "./similar-entries.server";
 import {
   previewApplicationVerification,
   verifyApplication,
 } from "./verify-application.server";
 
-function filledTooFast(startedAt: number): boolean {
-  return Date.now() - startedAt < APPLY_MIN_FILL_SECONDS * 1000;
-}
-
 export const submitApplicationFn = createServerFn({ method: "POST" })
   .middleware([publicGuard])
   .inputValidator(submitApplicationSchema)
   .handler(async ({ data }): Promise<SubmitApplicationResult> => {
-    // Bots get the same answer as people so they learn nothing from a rejection.
-    if (data.nickname !== "" || filledTooFast(data.startedAt))
-      return { status: "verify" };
+    // A filled honeypot, a forged token or a too-fast send is never a fake success: the person (or a
+    // script) gets a plain "try again", so a wrongly flagged human is never left waiting for a mail.
+    if (data.referenceCode !== "" || checkFormToken(data.formToken) !== "ok")
+      return { status: "retry" };
     try {
       await verifyTurnstile(data.turnstileToken);
       const ip = clientIp();
@@ -59,6 +58,7 @@ export const submitApplicationFn = createServerFn({ method: "POST" })
       if (error instanceof TurnstileError) return { status: "captcha" };
       if (error instanceof LimitError) return { status: "limited" };
       if (error instanceof NotFoundError) return { status: "expired" };
+      if (error instanceof InvalidTownError) return { status: "invalid_town" };
       throw error;
     }
   });
@@ -104,3 +104,8 @@ export const getRejectedApplication = createServerFn({ method: "GET" })
     ]);
     return loadRejectedApplication(data.token);
   });
+
+export const getApplyFormTokenFn = createServerFn({ method: "GET" })
+  .middleware([publicGuard])
+  .inputValidator(z.void())
+  .handler(() => issueFormToken());

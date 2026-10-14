@@ -101,8 +101,9 @@ export const submitApplicationSchema = z.object({
   locale: z.enum(LOCALES),
   turnstileToken: z.string().min(1).max(4096),
   // Honeypot: real visitors never see or fill this field.
-  nickname: z.string().max(200),
-  startedAt: z.number().int(),
+  referenceCode: z.string().max(200),
+  // Signed by the server when the form was served; carries the start time.
+  formToken: z.string().min(1).max(200),
   // Present when a rejected application is sent again.
   resubmitToken: z.string().min(1).max(200).optional(),
 });
@@ -135,7 +136,9 @@ export type SubmitApplicationResult =
   | { status: "received" }
   | { status: "captcha" }
   | { status: "limited" }
-  | { status: "expired" };
+  | { status: "expired" }
+  | { status: "retry" }
+  | { status: "invalid_town" };
 
 export type VerifyApplicationResult =
   | { status: "verified"; entryName: string }
