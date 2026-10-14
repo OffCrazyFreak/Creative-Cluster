@@ -4,6 +4,6 @@ import "@/lib/translation/translate-job-handler.server";
 
 import { registerJobHandler } from "./job-registry.server";
 
-// Entry point for every drain (Netlify functions, pnpm jobs:drain). Another area adds its
-// handler by calling registerJobHandler from its own module and importing that module here.
+// Entry point for every drain (Netlify functions, pnpm jobs:drain). A new job type registers itself with
+// registerJobHandler in its own module and is imported here.
 registerJobHandler("email", handleEmailJob);

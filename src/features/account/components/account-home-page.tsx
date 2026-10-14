@@ -12,9 +12,7 @@ import ErasureNotice from "./erasure-notice";
 import ListingSummary from "./listing-summary";
 import SuspensionNotice from "./suspension-notice";
 
-// Other account areas add their pieces inside the marked sections: notices on top (apply and review
-// outcomes), listing actions under the summary (archive, confirm up to date), and data and erasure at the end.
-// An empty slot hides itself, so it adds no gap.
+// Notices sit on top and listing actions under the summary; an empty section hides itself, so it adds no gap.
 export default function AccountHomePage() {
   const { data: summary } = useSuspenseQuery(mySummaryQuery());
   const erasing = Boolean(summary?.erasureRequestedAt);
@@ -45,26 +43,30 @@ export default function AccountHomePage() {
       ) : (
         !summary && <p>{m.account_home_no_listing()}</p>
       )}
-      {!erasing && (
-        <nav
-          aria-label={m.account_home_links_label()}
-          className="flex flex-wrap gap-2"
+      <nav
+        aria-label={m.account_home_links_label()}
+        className="flex flex-wrap gap-2"
+      >
+        {!erasing && (
+          <>
+            <Link
+              to="/account/opportunities"
+              className={buttonVariants({ variant: "outline" })}
+            >
+              {m.account_home_opportunities()}
+            </Link>
+            <PendingConnectionsLink
+              className={buttonVariants({ variant: "outline" })}
+            />
+          </>
+        )}
+        <Link
+          to="/account/data"
+          className={buttonVariants({ variant: "outline" })}
         >
-          <Link
-            to="/account/opportunities"
-            className={buttonVariants({ variant: "outline" })}
-          >
-            {m.account_home_opportunities()}
-          </Link>
-          <PendingConnectionsLink
-            className={buttonVariants({ variant: "outline" })}
-          />
-        </nav>
-      )}
-      <div
-        data-slot="account-data"
-        className="flex flex-col gap-4 empty:hidden"
-      />
+          {m.lifecycle_data_title()}
+        </Link>
+      </nav>
     </section>
   );
 }

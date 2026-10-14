@@ -164,5 +164,13 @@
   "admin_entries_next": "Next",
   "admin_entries_page": "Page {page} of {pages}",
   "admin_entries_first_page": "Back to the first page",
-  "admin_export_title": "Export"
+  "admin_export_title": "Export",
+  "admin_nav_label": "Admin sections",
+  "admin_nav_queue": "Review queue",
+  "admin_nav_entries": "Entries",
+  "admin_nav_import": "Import",
+  "admin_nav_users": "Users",
+  "admin_nav_tags": "Tags",
+  "admin_nav_changes": "Changes",
+  "admin_nav_export": "Export"
 }

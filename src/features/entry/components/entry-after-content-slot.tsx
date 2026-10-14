@@ -5,7 +5,7 @@ interface IEntryAfterContentSlotProps {
   entryId: string;
 }
 
-// Slot below the entry text for later sections: connections first, then "Could collaborate with".
+// Sections below the entry text: connections first, then "Could collaborate with".
 export default function EntryAfterContentSlot({
   entryId,
 }: IEntryAfterContentSlotProps) {

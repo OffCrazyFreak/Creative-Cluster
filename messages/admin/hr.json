@@ -164,5 +164,13 @@
   "admin_entries_next": "Sljedeća",
   "admin_entries_page": "Stranica {page} od {pages}",
   "admin_entries_first_page": "Natrag na prvu stranicu",
-  "admin_export_title": "Izvoz"
+  "admin_export_title": "Izvoz",
+  "admin_nav_label": "Dijelovi administracije",
+  "admin_nav_queue": "Red za pregled",
+  "admin_nav_entries": "Unosi",
+  "admin_nav_import": "Uvoz",
+  "admin_nav_users": "Korisnici",
+  "admin_nav_tags": "Oznake",
+  "admin_nav_changes": "Promjene",
+  "admin_nav_export": "Izvoz"
 }
