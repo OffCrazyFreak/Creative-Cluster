@@ -52,12 +52,10 @@ describe.skipIf(!temp)("createOpportunity", () => {
   }
   function post(
     owner: { id: string },
-    row: { id: string },
     title: string,
     overrides: Partial<OpportunityFormValues> = {},
   ) {
     return createOpportunity({
-      entryId: row.id,
       userId: owner.id,
       values: values(title, overrides),
     });
@@ -71,49 +69,47 @@ describe.skipIf(!temp)("createOpportunity", () => {
 
   it("sends the first post to review and publishes later ones at once", async () => {
     const { owner, row } = await setup();
-    expect(await post(owner, row, "First")).toEqual({
+    expect(await post(owner, "First")).toEqual({
       status: "pending_review",
     });
     const items = await db.select().from(schema.reviewItem);
     expect(items.filter((i) => i.type === "opportunity")).toHaveLength(1);
     await approveAll(row.id);
-    expect(await post(owner, row, "Second")).toEqual({ status: "published" });
+    expect(await post(owner, "Second")).toEqual({ status: "published" });
     const jobs = await db.select().from(schema.job);
     expect(jobs.filter((j) => j.type === "translate")).toHaveLength(1);
   });
 
   it("reviews every post of an entry the admin marked untrusted", async () => {
     const { owner, row } = await setup();
-    await post(owner, row, "First");
+    await post(owner, "First");
     await approveAll(row.id);
     await db
       .update(schema.entry)
       .set({ trusted: false })
       .where(eq(schema.entry.id, row.id));
-    expect(await post(owner, row, "Second")).toEqual({
+    expect(await post(owner, "Second")).toEqual({
       status: "pending_review",
     });
   });
 
-  it("refuses entries that are not published, and other people's entries", async () => {
-    const { owner, row } = await setup("suspended");
-    expect(await post(owner, row, "Nope")).toEqual({
+  it("refuses entries that are not published, and people who own none", async () => {
+    const { owner } = await setup("suspended");
+    expect(await post(owner, "Nope")).toEqual({
       status: "refused",
       code: "entry_not_published",
     });
     const stranger = await addUser(db, "stranger");
-    await expect(post(stranger, row, "Nope")).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
+    await expect(post(stranger, "Nope")).rejects.toBeInstanceOf(NotFoundError);
   });
 
   it("allows 3 active posts per entry and refuses the fourth", async () => {
     const { owner, row } = await setup();
-    await post(owner, row, "One");
+    await post(owner, "One");
     await approveAll(row.id);
-    await post(owner, row, "Two");
-    await post(owner, row, "Three");
-    expect(await post(owner, row, "Four")).toEqual({
+    await post(owner, "Two");
+    await post(owner, "Three");
+    expect(await post(owner, "Four")).toEqual({
       status: "refused",
       code: "limit_active",
     });
@@ -121,58 +117,58 @@ describe.skipIf(!temp)("createOpportunity", () => {
 
   it("does not count expired or closed posts toward the cap", async () => {
     const { owner, row } = await setup();
-    await post(owner, row, "One");
+    await post(owner, "One");
     await approveAll(row.id);
     await db.update(schema.opportunity).set({
       expiresAt: new Date(Date.now() - 1000),
       createdAt: new Date(Date.now() - 2 * 86_400_000),
     });
-    await post(owner, row, "Two");
-    await post(owner, row, "Three");
-    expect(await post(owner, row, "Four")).toEqual({ status: "published" });
+    await post(owner, "Two");
+    await post(owner, "Three");
+    expect(await post(owner, "Four")).toEqual({ status: "published" });
   });
 
   it("limits a person to 3 new posts a day", async () => {
     const { owner, row } = await setup();
-    await post(owner, row, "One");
+    await post(owner, "One");
     await approveAll(row.id);
     await db
       .update(schema.opportunity)
       .set({ status: "closed", closedAt: new Date() });
-    await post(owner, row, "Two");
-    await post(owner, row, "Three");
-    expect(await post(owner, row, "Four")).toEqual({
+    await post(owner, "Two");
+    await post(owner, "Three");
+    expect(await post(owner, "Four")).toEqual({
       status: "refused",
       code: "limit_daily",
     });
   });
 
   it("refuses a duplicate title in any case or spacing", async () => {
-    const { owner, row } = await setup();
-    await post(owner, row, "Need a printer");
-    expect(await post(owner, row, "  need   A PRINTER ")).toEqual({
+    const { owner } = await setup();
+    await post(owner, "Need a printer");
+    expect(await post(owner, "  need   A PRINTER ")).toEqual({
       status: "refused",
       code: "duplicate",
     });
   });
 
   it("refuses a past deadline and tags the person may not use", async () => {
-    const { owner, row } = await setup();
-    expect(await post(owner, row, "Late", { deadline: "2020-01-01" })).toEqual({
+    const { owner } = await setup();
+    expect(await post(owner, "Late", { deadline: "2020-01-01" })).toEqual({
       status: "refused",
       code: "bad_deadline",
     });
     const hidden = await addTag(db, "hidden", { status: "rejected" });
-    expect(await post(owner, row, "Tagged", { tagIds: [hidden.id] })).toEqual({
+    expect(await post(owner, "Tagged", { tagIds: [hidden.id] })).toEqual({
       status: "refused",
       code: "invalid_tags",
     });
   });
 
   it("stores tags, logs the creation and lists the post for its owner", async () => {
-    const { owner, row } = await setup();
+    const { owner } = await setup();
     const tag = await addTag(db, "printing");
-    await post(owner, row, "Tagged", { tagIds: [tag.id] });
+    await post(owner, "Tagged", { tagIds: [tag.id] });
     const own = await listOwnOpportunities(owner.id);
     expect(own.items).toHaveLength(1);
     expect(own.items[0]).toMatchObject({ state: "pending", title: "Tagged" });
@@ -184,5 +180,52 @@ describe.skipIf(!temp)("createOpportunity", () => {
         (l) => l.entityId === own.items[0].id && l.action === "create",
       ),
     ).toHaveLength(1);
+  });
+
+  it("refuses dates that match the pattern but are not real days", () => {
+    expect(
+      opportunityValuesSchema.safeParse({
+        ...values("x-valid"),
+        body: richTextFromPlain("Body"),
+        deadline: "2027-02-30",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("posts to the newest listing, the one the owner area shows", async () => {
+    const owner = await addUser(db, "twoentries");
+    const older = await addEntry(db, "Older", {}, { ownerUserId: owner.id });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    const newer = await addEntry(db, "Newer", {}, { ownerUserId: owner.id });
+    await post(owner, "Where does this go");
+    const own = await listOwnOpportunities(owner.id);
+    expect(own.entry?.id).toBe(newer.id);
+    expect(own.items).toHaveLength(1);
+    const stored = await db.select().from(schema.opportunity);
+    expect(stored.filter((p) => p.entryId === older.id)).toHaveLength(0);
+  });
+
+  it("does not let two quick posts across entries pass the daily limit", async () => {
+    const owner = await addUser(db, "racer");
+    const row = await addEntry(db, "Racer", {}, { ownerUserId: owner.id });
+    await post(owner, "Race one");
+    await approveAll(row.id);
+    await post(owner, "Race two");
+    const results = await Promise.all([
+      post(owner, "Race three"),
+      post(owner, "Race four"),
+    ]);
+    expect(results.filter((r) => r.status === "refused")).toHaveLength(1);
+  });
+
+  it("counts a pending post that ran past its end as closed for the cap, in the list too", async () => {
+    const { owner, row } = await setup();
+    await post(owner, "Waiting");
+    await db
+      .update(schema.opportunity)
+      .set({ expiresAt: new Date(Date.now() - 1000) })
+      .where(eq(schema.opportunity.entryId, row.id));
+    const own = await listOwnOpportunities(owner.id);
+    expect(own.openCount).toBe(0);
   });
 });

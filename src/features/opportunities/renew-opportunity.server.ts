@@ -1,25 +1,27 @@
-import { and, count, eq, ne, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { OPPORTUNITY_LIMITS as L } from "@/constants/opportunities";
 import { db } from "@/db/client.server";
-import { entry, opportunity } from "@/db/schema";
+import { opportunity } from "@/db/schema";
 import { writeChange } from "@/lib/change-log/write-change.server";
-import { NotFoundError } from "@/server/errors";
 
-import { openOpportunityCondition } from "./opportunity-conditions.server";
 import { afterOpportunityChange } from "./opportunity-effects.server";
 import {
   canRenew,
   isDeadlineAllowed,
+  isExpired,
   periodEnd,
   renewalStart,
 } from "./opportunity-expiry";
+import { countOpenPosts } from "./opportunity-limits.server";
 import type { OpportunityResult } from "./opportunity-schemas";
+import { lockOwnOpportunity } from "./own-opportunity-lock.server";
 
 interface IRenewOpportunity {
   id: string;
   userId: string;
-  // undefined keeps the post's deadline; a posts with a deadline must pass a later one.
+  // undefined keeps the post's deadline. A post that has one must pass a later one, because it ends
+  // the day after it. An empty string drops the deadline and gives the default 60 days.
   deadline?: string;
 }
 
@@ -32,40 +34,18 @@ export async function renewOpportunity({
   const result = await db.transaction(
     async (tx): Promise<OpportunityResult> => {
       const now = new Date();
-      const [current] = await tx
-        .select({ row: opportunity, entryStatus: entry.status })
-        .from(opportunity)
-        .innerJoin(entry, eq(entry.id, opportunity.entryId))
-        .where(
-          and(
-            eq(opportunity.id, id),
-            eq(entry.ownerUserId, userId),
-            sql`${entry.erasureRequestedAt} is null`,
-          ),
-        )
-        .for("update", { of: opportunity });
-      if (!current) throw new NotFoundError();
-      const { row } = current;
-      if (current.entryStatus !== "published")
+      const { row, entryStatus } = await lockOwnOpportunity(tx, id, userId);
+      if (entryStatus !== "published")
         return { status: "refused", code: "entry_not_published" };
       if (!canRenew(row, now))
         return { status: "refused", code: "not_renewable" };
 
-      const wasExpired = row.expiresAt <= now;
-      if (wasExpired) {
-        const [{ open }] = await tx
-          .select({ open: count() })
-          .from(opportunity)
-          .where(
-            and(
-              eq(opportunity.entryId, row.entryId),
-              ne(opportunity.id, id),
-              openOpportunityCondition(),
-            ),
-          );
-        if (open >= L.activePerEntry)
-          return { status: "refused", code: "limit_active" };
-      }
+      // An expired post that comes back counts toward the cap again.
+      if (
+        isExpired(row.expiresAt, now) &&
+        (await countOpenPosts(tx, row.entryId, id)) >= L.activePerEntry
+      )
+        return { status: "refused", code: "limit_active" };
 
       const nextDeadline =
         deadline === undefined ? row.deadline : deadline || null;

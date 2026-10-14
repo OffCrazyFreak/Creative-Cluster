@@ -19,13 +19,18 @@ jobs:
       - name: Dump and encrypt
         shell: bash
         env:
+          PRODUCTION_READY: ${{ vars.PRODUCTION_READY }}
           URL_RPCC: ${{ secrets.DATABASE_URL_UNPOOLED_RPCC }}
           URL_DNZ: ${{ secrets.DATABASE_URL_UNPOOLED_DNZ }}
           AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
         run: |
           set -euo pipefail
           url="$([ "${{ matrix.site }}" = rpcc ] && echo "$URL_RPCC" || echo "$URL_DNZ")"
-          if [ -z "$url" ] || [ -z "$AGE_RECIPIENT" ]; then echo "Backup secrets not set yet."; exit 0; fi
+          # Until the accounts exist (repository variable PRODUCTION_READY unset) a missing secret is a skip; after that it fails.
+          if [ -z "$url" ] || [ -z "$AGE_RECIPIENT" ]; then
+            if [ "$PRODUCTION_READY" = "true" ]; then echo "Missing backup secrets."; exit 1; fi
+            echo "No backup secrets yet."; exit 0
+          fi
           apt-get update -qq && apt-get install -y -qq age > /dev/null
           mkdir -p backup
           pg_dump -Fc --no-owner "$url" | age -r "$AGE_RECIPIENT" > "backup/${{ matrix.site }}-$(date -u +%F).dump.age"

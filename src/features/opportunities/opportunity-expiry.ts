@@ -2,13 +2,8 @@ import { OPPORTUNITY_LIMITS as L } from "@/constants/opportunities";
 
 const DAY_MS = 86_400_000;
 
-function addDays(date: Date, days: number) {
+export function addDays(date: Date, days: number) {
   return new Date(date.getTime() + days * DAY_MS);
-}
-
-// "YYYY-MM-DD" of the UTC day, the shape of the deadline column.
-export function isoDay(date: Date): string {
-  return date.toISOString().slice(0, 10);
 }
 
 // A deadline stays open through its own day, so the post lives until the end of it.
@@ -30,8 +25,20 @@ export function periodEnd({ start, deadline }: IPeriod): Date {
   return natural < cap ? natural : cap;
 }
 
+// "YYYY-MM-DD" of the UTC day, the shape of the deadline column.
+export function isoDay(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+// 2027-02-30 matches the pattern but is not a day: it must round-trip to count.
+export function isRealDate(value: string): boolean {
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && isoDay(date) === value;
+}
+
 export function isDeadlineAllowed(deadline: string, now: Date): boolean {
   return (
+    isRealDate(deadline) &&
     deadline >= isoDay(now) &&
     deadline <= isoDay(addDays(now, L.maxLifetimeDays))
   );
@@ -66,13 +73,4 @@ export function canRenew(post: IRenewable, now: Date): boolean {
 // A renewal starts when the old period ends, so renewing early loses no days.
 export function renewalStart(expiresAt: Date, now: Date): Date {
   return expiresAt > now ? expiresAt : now;
-}
-
-export function filledLabelVisible(closedAt: Date, now: Date): boolean {
-  return now.getTime() - closedAt.getTime() < L.filledLabelDays * DAY_MS;
-}
-
-// Closed and expired pages stay up with a banner for 30 days, then answer 410.
-export function pageGoneAt(endedAt: Date): Date {
-  return addDays(endedAt, L.closedNoindexDays);
 }

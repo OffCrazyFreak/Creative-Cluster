@@ -3,6 +3,7 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 
 import * as schema from "@/db/schema";
 import { NotFoundError } from "@/server/errors";
+import { formatDate } from "@/utils/format-date";
 
 import { addEntry, addUser } from "../../../tests/helpers/fixture-data";
 import { addOpportunity } from "../../../tests/helpers/opportunity-fixtures";
@@ -14,6 +15,7 @@ const { temp } = await vi.hoisted(async () => {
 });
 vi.mock("@/db/client.server", () => ({ db: temp?.db }));
 const { decideOpportunity } = await import("./decide-opportunity.server");
+const { OpportunityDeadlinePassedError } = await import("./opportunity-errors");
 const { removeOpportunity } = await import("./remove-opportunity.server");
 
 describe.skipIf(!temp)("opportunity decisions", () => {
@@ -39,6 +41,19 @@ describe.skipIf(!temp)("opportunity decisions", () => {
     return jobs
       .filter((j) => j.type === "email")
       .map((j) => (j.payload as { template: string }).template);
+  }
+  async function approvalMail(postId: string) {
+    const jobs = await db.select().from(schema.job);
+    return jobs.find((j) => {
+      const payload = j.payload as {
+        template?: string;
+        props?: { link?: string };
+      };
+      return (
+        payload.template === "opportunity_approved" &&
+        payload.props?.link?.includes(postId)
+      );
+    })!;
   }
   async function reload(id: string) {
     const [row] = await db
@@ -164,10 +179,111 @@ describe.skipIf(!temp)("opportunity decisions", () => {
     const row = await reload(post.id);
     expect(row).toMatchObject({ status: "removed", closedReason: "spam" });
     expect(await templates()).toContain("opportunity_removed");
+    const removed = (await db.select().from(schema.job)).find(
+      (j) =>
+        (j.payload as { template?: string }).template === "opportunity_removed",
+    );
+    // The mail invites the owner to reply, so replies must reach a monitored address.
+    expect((removed?.payload as { replyTo?: string }).replyTo).toBeTruthy();
     const items = await db
       .select()
       .from(schema.reviewItem)
       .where(eq(schema.reviewItem.entityId, post.id));
     expect(items.every((i) => i.status !== "open")).toBe(true);
+  });
+
+  it("will not approve a post whose deadline passed while it waited", async () => {
+    const { admin, post } = await setup();
+    await db
+      .update(schema.opportunity)
+      .set({ deadline: "2020-01-01" })
+      .where(eq(schema.opportunity.id, post.id));
+    await expect(
+      db.transaction((tx) =>
+        decideOpportunity(tx, {
+          id: post.id,
+          approve: true,
+          adminId: admin.id,
+        }),
+      ),
+    ).rejects.toBeInstanceOf(OpportunityDeadlinePassedError);
+    expect((await reload(post.id)).status).toBe("pending");
+  });
+
+  it("tells the owner the last open day, not the day after", async () => {
+    const { admin, post } = await setup();
+    const deadline = new Date(Date.now() + 10 * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    await db
+      .update(schema.opportunity)
+      .set({ deadline })
+      .where(eq(schema.opportunity.id, post.id));
+    await db.transaction((tx) =>
+      decideOpportunity(tx, { id: post.id, approve: true, adminId: admin.id }),
+    );
+    const mail = await approvalMail(post.id);
+    const payload = mail.payload as {
+      props: { expiresAt: string; publishedAtOnce: boolean };
+    };
+    expect(payload.props.expiresAt).toBe(formatDate(deadline, "en"));
+  });
+
+  it("does not promise instant publishing for an entry set to review", async () => {
+    const { admin, post } = await setup();
+    await db
+      .update(schema.entry)
+      .set({ trusted: false })
+      .where(eq(schema.entry.id, post.entryId));
+    await db.transaction((tx) =>
+      decideOpportunity(tx, { id: post.id, approve: true, adminId: admin.id }),
+    );
+    const mail = await approvalMail(post.id);
+    expect(
+      (mail.payload as { props: { publishedAtOnce: boolean } }).props
+        .publishedAtOnce,
+    ).toBe(false);
+  });
+
+  it("settles a waiting review as rejected and a report as acted on when removing", async () => {
+    const { admin, post } = await setup("pending");
+    await db.insert(schema.reviewItem).values({
+      type: "report",
+      entityType: "opportunity",
+      entityId: post.id,
+    });
+    await db.transaction((tx) =>
+      removeOpportunity(tx, {
+        id: post.id,
+        reasonCode: "out_of_scope",
+        adminId: admin.id,
+      }),
+    );
+    const items = await db
+      .select()
+      .from(schema.reviewItem)
+      .where(eq(schema.reviewItem.entityId, post.id));
+    expect(items.find((i) => i.type === "opportunity")).toMatchObject({
+      status: "rejected",
+      reasonCode: "out_of_scope",
+    });
+    expect(items.find((i) => i.type === "report")).toMatchObject({
+      status: "approved",
+      reasonCode: "out_of_scope",
+    });
+  });
+
+  it("says so when an entry without an account cannot be mailed", async () => {
+    const admin = await addUser(db, "admin", "admin");
+    const row = await addEntry(db, "Unclaimed");
+    const post = await addOpportunity(db, row.id, { status: "published" });
+    const result = await db.transaction((tx) =>
+      removeOpportunity(tx, {
+        id: post.id,
+        reasonCode: "spam",
+        adminId: admin.id,
+      }),
+    );
+    expect(result).toEqual({ emailed: false });
   });
 });
