@@ -30,8 +30,20 @@ import ClaimReminderEmail, {
   subject as claimReminderSubject,
 } from "./claim-reminder-email";
 import ContactEmail, { subject as contactSubject } from "./contact-email";
+import ConnectionEmail, {
+  subject as connectionSubject,
+} from "./connection-email";
 import type { EmailPropsOf } from "./email-types";
 import InviteEmail, { subject as inviteSubject } from "./invite-email";
+import OpportunityApprovedEmail, {
+  subject as opportunityApprovedSubject,
+} from "./opportunity-approved-email";
+import OpportunityRejectedEmail, {
+  subject as opportunityRejectedSubject,
+} from "./opportunity-rejected-email";
+import OpportunityRemovedEmail, {
+  subject as opportunityRemovedSubject,
+} from "./opportunity-removed-email";
 import ResetEmail, { subject as resetSubject } from "./reset-email";
 import TermsEmail, { subject as termsSubject } from "./terms-email";
 import VerifyEmail, { subject as verifySubject } from "./verify-email";
@@ -75,6 +87,21 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <ChangeEmail {...props} />,
     subject: changeSubject,
     previewProps: ChangeEmail.PreviewProps,
+  },
+  opportunity_approved: {
+    element: (props) => <OpportunityApprovedEmail {...props} />,
+    subject: opportunityApprovedSubject,
+    previewProps: OpportunityApprovedEmail.PreviewProps,
+  },
+  opportunity_rejected: {
+    element: (props) => <OpportunityRejectedEmail {...props} />,
+    subject: opportunityRejectedSubject,
+    previewProps: OpportunityRejectedEmail.PreviewProps,
+  },
+  opportunity_removed: {
+    element: (props) => <OpportunityRemovedEmail {...props} />,
+    subject: opportunityRemovedSubject,
+    previewProps: OpportunityRemovedEmail.PreviewProps,
   },
   application_received: {
     element: (props) => <ApplicationReceivedEmail {...props} />,
@@ -135,5 +162,10 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <BlockedEmail {...props} />,
     subject: blockedSubject,
     previewProps: BlockedEmail.PreviewProps,
+  },
+  connection: {
+    element: (props) => <ConnectionEmail {...props} />,
+    subject: connectionSubject,
+    previewProps: ConnectionEmail.PreviewProps,
   },
 };

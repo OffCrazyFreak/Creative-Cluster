@@ -1,6 +1,7 @@
 import type { EmailExpiry, EmailTemplateName } from "@/constants/email";
 import type { AppLocale } from "@/constants/locales";
 import type { ReasonCode } from "@/constants/moderation";
+import type { LinkKind } from "@/constants/links";
 
 // Props are plain JSON because they are stored in the job payload.
 export interface IBaseEmailProps {
@@ -42,6 +43,30 @@ export interface IResetEmailProps extends IBaseEmailProps {
 export interface IChangeEmailProps extends IBaseEmailProps {
   link: string;
   expiry: EmailExpiry;
+}
+
+export interface IOpportunityApprovedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  opportunityTitle: string;
+  expiresAt: string;
+  // False when an admin made this entry's posts go through review, so the promise below would be wrong.
+  publishedAtOnce: boolean;
+  link: string;
+}
+
+export interface IOpportunityRejectedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  opportunityTitle: string;
+  reasonCode: ReasonCode;
+  note: string | null;
+  link: string;
+}
+
+export interface IOpportunityRemovedEmailProps extends IBaseEmailProps {
+  opportunityTitle: string;
+  reasonCode: ReasonCode;
+  note: string | null;
+  link: string;
 }
 
 export interface IApplicationReceivedEmailProps extends IBaseEmailProps {
@@ -129,6 +154,15 @@ export interface IBlockedEmailProps extends IBaseEmailProps {
   reason: string;
 }
 
+export interface IConnectionEmailProps extends IBaseEmailProps {
+  proposerName: string;
+  entryName: string;
+  kind: LinkKind;
+  year: number | null;
+  note: string | null;
+  link: string;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
@@ -136,6 +170,9 @@ export interface IEmailPropsMap {
   verify: IVerifyEmailProps;
   reset: IResetEmailProps;
   change: IChangeEmailProps;
+  opportunity_approved: IOpportunityApprovedEmailProps;
+  opportunity_rejected: IOpportunityRejectedEmailProps;
+  opportunity_removed: IOpportunityRemovedEmailProps;
   application_received: IApplicationReceivedEmailProps;
   approved: IApprovedEmailProps;
   rejected: IRejectedEmailProps;
@@ -148,6 +185,7 @@ export interface IEmailPropsMap {
   contact: IContactEmailProps;
   terms: ITermsEmailProps;
   blocked: IBlockedEmailProps;
+  connection: IConnectionEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

@@ -25,7 +25,11 @@ export function buildGeoJson(
                 type: "Point" as const,
                 coordinates: [entry.lng, entry.lat],
               },
-              properties: { n: ids.get(entry.slug) ?? 0, slug: entry.slug },
+              properties: {
+                n: ids.get(entry.slug) ?? 0,
+                slug: entry.slug,
+                opps: entry.opps,
+              },
             },
           ],
     ),

@@ -34,6 +34,7 @@ function entry(
     logo: null,
     blurb: "",
     tags: [],
+    opps: 0,
     ...patch,
   };
 }
