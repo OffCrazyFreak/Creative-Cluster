@@ -5,6 +5,7 @@ import { db } from "@/db/client.server";
 import { job } from "@/db/schema";
 
 import "./job-handlers.server";
+import { backoffMs } from "./job-backoff";
 import {
   PermanentJobError,
   jobHandlerFor,
@@ -15,17 +16,12 @@ import {
 const BATCH_SIZE = 10;
 // Longer than a background function may run (15 minutes), so a live drain never loses its job.
 const STALE_LOCK_MS = 20 * 60 * 1000;
-const BACKOFF_BASE_MS = 30_000;
 
 export interface IDrainResult {
   done: number;
   retried: number;
   failed: number;
   deferred: number;
-}
-
-export function backoffMs(attempts: number): number {
-  return BACKOFF_BASE_MS * 4 ** Math.max(0, attempts - 1);
 }
 
 // SKIP LOCKED lets overlapping drains (save-triggered and scheduled) never take the same job.

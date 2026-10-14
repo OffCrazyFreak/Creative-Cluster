@@ -19,8 +19,15 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1791922594359,
-      "tag": "0002_min_admins_trigger",
+      "when": 1791922857993,
+      "tag": "0002_image_mime_check",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791936296490,
+      "tag": "0003_min_admins_trigger",
       "breakpoints": true
     }
   ]

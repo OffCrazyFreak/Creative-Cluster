@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { backoffMs } from "./drain-jobs.server";
+import { backoffMs } from "./job-backoff";
 
 describe("job backoff", () => {
   it("grows by a factor of four per attempt", () => {
