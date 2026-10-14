@@ -19,16 +19,3 @@ export const LISTING_LIMITS = {
   contactEmail: 254,
   legalStatus: 120,
 } as const;
-
-// Statuses where the owner may edit; an erasure request blocks editing separately.
-export const EDITABLE_ENTRY_STATUSES = [
-  "draft",
-  "pending",
-  "published",
-  "suspended",
-  "rejected",
-  "archived",
-] as const;
-
-// Bump when the shape of entry.extra changes.
-export const ENTRY_EXTRA_VERSION = 1;

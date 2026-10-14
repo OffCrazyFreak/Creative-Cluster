@@ -5,6 +5,7 @@ import * as schema from "@/db/schema";
 import { emptyLocation } from "@/features/location/location-schemas";
 import { richTextFromPlain } from "@/lib/rich-text/empty-rich-text";
 import { NotFoundError } from "@/server/errors";
+import { InvalidListingError } from "./listing-errors";
 
 import { addEntry, addUser } from "../../../tests/helpers/fixture-data";
 import type { ITempDatabase } from "../../../tests/helpers/temp-database";
@@ -200,6 +201,91 @@ describe.skipIf(!temp)("saveOwnListing", () => {
         .where(eq(schema.reviewItem.entityId, row.id))
     ).filter((item) => item.status === "open");
     expect(open).toHaveLength(1);
+  });
+
+  it("drops the pin of a person when a forged location carries no town population", async () => {
+    const owner = await addUser(db, "forger");
+    const row = await addEntry(db, "Bo", {}, { ownerUserId: owner.id });
+    await db
+      .update(schema.entry)
+      .set({ kind: "person" })
+      .where(eq(schema.entry.id, row.id));
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(
+        formValues({
+          location: {
+            ...emptyLocation("HR"),
+            city: "Split",
+            lat: 43.508133,
+            lng: 16.440193,
+            precision: "house",
+            source: "town_list",
+            display: "exact",
+          },
+        }),
+      ),
+    });
+    const saved = await reload(row.id);
+    expect(saved.lat).toBeNull();
+    expect(saved.locationDisplay).toBe("town");
+  });
+
+  it("clears the invalid-email flag when the contact email changes", async () => {
+    const { owner, row } = await setup();
+    await db
+      .update(schema.entry)
+      .set({ contactEmail: "old@example.test", contactEmailInvalid: true })
+      .where(eq(schema.entry.id, row.id));
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues({ contactEmail: "new@example.test" })),
+    });
+    expect((await reload(row.id)).contactEmailInvalid).toBe(false);
+  });
+
+  it("rejects an image id that was never uploaded", async () => {
+    const { owner, row } = await setup();
+    await expect(
+      saveOwnListing({
+        entryId: row.id,
+        userId: owner.id,
+        values: parse(
+          formValues({
+            logo: {
+              id: "01a137e4-78a7-7279-8ffe-6d70d7f585fd",
+              hash: "a".repeat(64),
+              width: 256,
+              height: 256,
+              altText: "x",
+            },
+          }),
+        ),
+      }),
+    ).rejects.toBeInstanceOf(InvalidListingError);
+  });
+
+  it("sends a tag-only edit of an untrusted entry to review", async () => {
+    const { owner, row } = await setup(false);
+    const [tag] = await db
+      .insert(schema.tag)
+      .values({ slug: "t-only", labelEn: "t", labelHr: "t" })
+      .returning();
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues()),
+    });
+    const same = await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(
+        formValues({ tags: { topic: [tag.id], offering: [], seeking: [] } }),
+      ),
+    });
+    expect(same).toEqual({ status: "pending_review" });
   });
 
   it("stores a person at an offset town pin with no address or cover", async () => {

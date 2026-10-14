@@ -1,6 +1,7 @@
 import { SOCIAL_PLATFORMS } from "@/constants/account";
 import type { EntryKind } from "@/constants/entry";
 import type { entry } from "@/db/schema";
+import { site } from "@/sites";
 import { applyPersonOffset } from "@/features/location/person-offset-fn.server";
 import { normalizeHttpUrl } from "@/utils/http-url";
 
@@ -34,7 +35,7 @@ function extraOf(
   const { legal_status: _legal, ...rest } = current;
   return {
     ...rest,
-    ...(kind !== "person" && input.legalStatus
+    ...(site.id === "rpcc" && kind !== "person" && input.legalStatus
       ? { legal_status: input.legalStatus }
       : {}),
     references: input.references.doc,
@@ -44,17 +45,60 @@ function extraOf(
   };
 }
 
+type PatchRow = Pick<
+  EntryRow,
+  | "id"
+  | "kind"
+  | "extra"
+  | "lat"
+  | "lng"
+  | "contactEmail"
+  | "city"
+  | "countryCode"
+  | "precision"
+  | "locationSource"
+  | "locationDisplay"
+>;
+
+// People are never stored exactly: a new pin must come from the town list (which carries the population
+// the offset needs); anything else keeps the stored pin or loses its coordinates.
+function personLocation(row: PatchRow, input: ListingInput["location"]) {
+  if (input.onlineOnly) {
+    return {
+      onlineOnly: false,
+      addressText: null,
+      lat: row.lat,
+      lng: row.lng,
+      city: row.city,
+      countryCode: row.countryCode,
+      precision: row.precision,
+      source: row.locationSource,
+      pinMovedByHand: false,
+      display: row.locationDisplay,
+    };
+  }
+  const moved = input.lat !== row.lat || input.lng !== row.lng;
+  const fresh = input.townPopulation != null && input.source === "town_list";
+  const location = applyPersonOffset(row.id, {
+    ...input,
+    onlineOnly: false,
+    addressText: null,
+    ...(moved && !fresh ? { lat: null, lng: null, source: null } : {}),
+  });
+  return {
+    ...location,
+    precision: location.lat === null ? null : ("town" as const),
+    display: "town" as const,
+  };
+}
+
 export function buildListingPatch(
-  row: Pick<EntryRow, "id" | "kind" | "extra">,
+  row: PatchRow,
   input: ListingInput,
 ): ListingPatch {
   const person = row.kind === "person";
   const location = person
-    ? applyPersonOffset(row.id, {
-        ...input.location,
-        onlineOnly: false,
-        addressText: null,
-      })
+    ? personLocation(row, input.location)
     : input.location;
 
   return {
@@ -68,6 +112,10 @@ export function buildListingPatch(
     socials: socialsOf(input.socials),
     contactName: orNull(input.contactName),
     contactEmail: orNull(input.contactEmail),
+    // A corrected address gets a fresh chance to receive mail.
+    ...(orNull(input.contactEmail) !== row.contactEmail
+      ? { contactEmailInvalid: false }
+      : {}),
     contactPhone: orNull(input.contactPhone),
     visibility: input.visibility,
     extra: extraOf(row.extra, input, row.kind),
