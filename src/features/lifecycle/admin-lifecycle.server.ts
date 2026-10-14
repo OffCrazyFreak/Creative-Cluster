@@ -1,4 +1,6 @@
-import { eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+
+import { eq, sql } from "drizzle-orm";
 
 import { LOCALES } from "@/constants/locales";
 import { db, type Tx } from "@/db/client.server";
@@ -11,6 +13,23 @@ import { NotFoundError } from "@/server/errors";
 import { site } from "@/sites";
 
 import { transitionEntry, type IActor } from "./entry-transitions.server";
+
+// A listing queued for deletion stays hidden until the owner cancels, and a person who withdrew consent stays
+// unpublished until they give it again.
+async function assertCanPublish(tx: Tx, entryId: string) {
+  const [row] = await tx
+    .select({
+      erasure: entry.erasureRequestedAt,
+      kind: entry.kind,
+      consentAt: entry.consentAt,
+    })
+    .from(entry)
+    .where(eq(entry.id, entryId))
+    .limit(1)
+    .for("update");
+  if (!row || row.erasure) throw new NotFoundError();
+  if (row.kind === "person" && !row.consentAt) throw new NotFoundError();
+}
 
 function admin(adminId: string): IActor {
   return { userId: adminId, source: "admin" };
@@ -38,7 +57,7 @@ async function mailSuspension(
       reason,
       link: pageLink("/account", locale),
     },
-    idempotencyKey: `suspended:${row.id}:${Date.now()}`,
+    idempotencyKey: `suspended:${row.id}:${randomUUID()}`,
   });
 }
 
@@ -63,13 +82,7 @@ export async function suspendEntry(
 
 export async function reinstateEntry(entryId: string, adminId: string) {
   await db.transaction(async (tx) => {
-    const [row] = await tx
-      .select({ erasure: entry.erasureRequestedAt })
-      .from(entry)
-      .where(eq(entry.id, entryId))
-      .limit(1);
-    // A listing queued for deletion stays hidden until the owner cancels it.
-    if (!row || row.erasure) throw new NotFoundError();
+    await assertCanPublish(tx, entryId);
     await transitionEntry(tx, {
       entryId,
       from: ["suspended"],
@@ -85,9 +98,9 @@ export async function archiveEntryAsAdmin(entryId: string, adminId: string) {
   await db.transaction((tx) =>
     transitionEntry(tx, {
       entryId,
-      from: ["published", "suspended"],
+      // A suspension is lifted by reinstating, never by archiving: an archive the owner can undo would lift it.
+      from: ["published"],
       to: "archived",
-      patch: { suspendedReason: null },
       actor: admin(adminId),
     }),
   );
@@ -97,18 +110,20 @@ export async function archiveEntryAsAdmin(entryId: string, adminId: string) {
 // Restores an archived listing (for example an unclaimed import the 12 month check archived).
 export async function restoreEntryAsAdmin(entryId: string, adminId: string) {
   await db.transaction(async (tx) => {
-    const [row] = await tx
-      .select({ erasure: entry.erasureRequestedAt })
-      .from(entry)
-      .where(eq(entry.id, entryId))
-      .limit(1);
-    if (!row || row.erasure) throw new NotFoundError();
+    await assertCanPublish(tx, entryId);
     await transitionEntry(tx, {
       entryId,
       from: ["archived"],
       to: "published",
       actor: admin(adminId),
     });
+    // Restarts the 12 month clock, so the next daily check does not archive a restored import again.
+    await tx
+      .update(entry)
+      .set({
+        importedAt: sql`case when ${entry.importedAt} is null then null else now() end`,
+      })
+      .where(eq(entry.id, entryId));
   });
   invalidateMapDirectory();
 }

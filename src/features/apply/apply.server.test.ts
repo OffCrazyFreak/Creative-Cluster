@@ -156,4 +156,53 @@ describe.skipIf(!temp)("apply services", () => {
     const names = (await findSimilarEntries("harbour")).map((r) => r.name);
     expect(names).toEqual(["Harbour Collective"]);
   });
+
+  it("invalidates earlier confirm links when a resubmission changes the address", async () => {
+    await createApplication(
+      application({ name: "Moved Mail", contactEmail: "old@example.test" }),
+      "en",
+    );
+    const oldToken = await verifyLinkToken("old@example.test");
+    const [row] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.name, "Moved Mail"));
+    await db
+      .update(schema.entry)
+      .set({ status: "rejected" })
+      .where(eq(schema.entry.id, row.id));
+    const edit = await issueApplicationToken(db, "apply-edit", row.id, 3600);
+
+    const result = await resubmitApplication(
+      application({ name: "Moved Mail", contactEmail: "new@example.test" }),
+      edit,
+    );
+    expect(result).toEqual({ status: "verify" });
+    expect(await verifyApplication(oldToken)).toEqual({ status: "invalid" });
+    // The edit link is spent, and the new address can still confirm.
+    await expect(
+      resubmitApplication(
+        application({ contactEmail: "new@example.test" }),
+        edit,
+      ),
+    ).rejects.toThrow("Not found");
+    const fresh = await verifyLinkToken("new@example.test");
+    expect(await verifyApplication(fresh)).toMatchObject({
+      status: "verified",
+    });
+  });
+
+  it("rejects an application kind the site does not offer", async () => {
+    const { applicationSchema } = await import("./apply-schemas");
+    const parsed = applicationSchema.safeParse({
+      ...application({ kind: "person", consent: true, ageConfirmed: true }),
+      website: "",
+      description: richTextFromPlain(
+        "We run workshops for schools every week.",
+      ),
+    });
+    expect(parsed.error?.issues.map((issue) => issue.path[0])).toContain(
+      "kind",
+    );
+  });
 });

@@ -156,7 +156,52 @@ describe.skipIf(!temp)("change log services", () => {
       .select()
       .from(schema.changeLog)
       .where(eq(schema.changeLog.id, recent.id));
-    expect(erased.before).toEqual({ name: "a" });
+    expect(erased.before).toBeNull();
+    expect(erased.changedFields).toEqual(["contactEmail", "name"]);
+  });
+
+  it("restores a field group whole or not at all", async () => {
+    const { admin, listing } = await setup();
+    const log = await writeChange(db, {
+      entityType: "entry",
+      entityId: listing.id,
+      userId: null,
+      source: "owner",
+      action: "update",
+      before: { city: "Old Town", name: "Old name" },
+      after: { city: "New Town", lat: 1, name: "New name" },
+    });
+    const detail = await getChangeDetail(log.id);
+    const byField = Object.fromEntries(
+      detail.diffs.map((d) => [d.field, d.restorable]),
+    );
+    // lat has no stored old value, so the city (same group) is not restored either; the name is.
+    expect(byField).toEqual({ city: false, lat: false, name: true });
+    expect(await revertChange(log.id, "x", admin.id)).toEqual({ status: "ok" });
+    const [after] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, listing.id));
+    expect(after.name).toBe("Old name");
+  });
+
+  it("strips every stored value of a person's rows after 90 days", async () => {
+    const { listing, log } = await setup();
+    await db
+      .update(schema.entry)
+      .set({ kind: "person" })
+      .where(eq(schema.entry.id, listing.id));
+    await db
+      .update(schema.changeLog)
+      .set({ createdAt: new Date(Date.now() - 100 * 86_400_000) })
+      .where(eq(schema.changeLog.id, log.id));
+    await stripOldChangeLog(db);
+    const [row] = await db
+      .select()
+      .from(schema.changeLog)
+      .where(eq(schema.changeLog.id, log.id));
+    expect(row.before).toBeNull();
+    expect(row.after).toBeNull();
   });
 
   it("lists and filters changes", async () => {

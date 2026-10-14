@@ -2,7 +2,7 @@ import { and, asc, count, eq, gte } from "drizzle-orm";
 
 import { LOCALES, type AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
-import { entry, reviewItem, user } from "@/db/schema";
+import { entry, reviewItem, usageCounter, user } from "@/db/schema";
 import type { IDigestItem } from "@/emails/email-types";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
@@ -14,7 +14,7 @@ function ageDays(createdAt: Date, now: Date): number {
   return Math.floor((now.getTime() - createdAt.getTime()) / DAY_MS);
 }
 
-async function recentItems(type: "application" | "report", now: Date) {
+async function recentItems(type: "application" | "report", since: Date) {
   return db
     .select({
       id: reviewItem.id,
@@ -30,7 +30,7 @@ async function recentItems(type: "application" | "report", now: Date) {
       and(
         eq(reviewItem.type, type),
         eq(reviewItem.status, "open"),
-        gte(reviewItem.createdAt, new Date(now.getTime() - DAY_MS)),
+        gte(reviewItem.createdAt, since),
       ),
     )
     .orderBy(asc(reviewItem.createdAt));
@@ -58,21 +58,48 @@ async function oldestOpenApplication(now: Date) {
   return row ? ageDays(row.createdAt, now) : 0;
 }
 
+const DIGEST_MARKER = "review-digest:last";
+
+// The marker's window start is the time of the last run, so a missed day is caught up on the next one.
+async function lastDigestTime(now: Date): Promise<Date> {
+  const [row] = await db
+    .select({ at: usageCounter.windowStart })
+    .from(usageCounter)
+    .where(eq(usageCounter.key, DIGEST_MARKER))
+    .limit(1);
+  return row?.at ?? new Date(now.getTime() - DAY_MS);
+}
+
+async function markDigestRun(now: Date) {
+  await db
+    .insert(usageCounter)
+    .values({ key: DIGEST_MARKER, windowStart: now, count: 0 })
+    .onConflictDoUpdate({
+      target: usageCounter.key,
+      set: { windowStart: now },
+    });
+}
+
 function adminLocale(value: string): AppLocale {
   return LOCALES.find((l) => l === value) ?? site.baseLocale;
 }
 
 // One mail per admin per day, and none when nothing is new. Names and short details only.
 export async function queueReviewDigests(now = new Date()) {
-  const applications = await recentItems("application", now);
-  const reports = await recentItems("report", now);
-  if (applications.length === 0 && reports.length === 0) return;
+  const since = await lastDigestTime(now);
+  const applications = await recentItems("application", since);
+  const reports = await recentItems("report", since);
+  if (applications.length === 0 && reports.length === 0) {
+    await markDigestRun(now);
+    return;
+  }
 
   const admins = await db
     .select({ id: user.id, email: user.email, locale: user.locale })
     .from(user)
     .where(and(eq(user.role, "admin"), eq(user.banned, false)));
-  const day = now.toISOString().slice(0, 10);
+  // Keyed by the window start, so a retry of the same window never mails twice.
+  const window = since.toISOString();
   const openTotal = await openApplicationTotal();
   const oldestAgeDays = await oldestOpenApplication(now);
 
@@ -105,7 +132,7 @@ export async function queueReviewDigests(now = new Date()) {
             items: applicationItems,
             link,
           },
-          idempotencyKey: `digest:application:${day}:${admin.id}`,
+          idempotencyKey: `digest:application:${window}:${admin.id}`,
         });
       if (reportItems.length > 0)
         await enqueueEmail(tx, {
@@ -117,8 +144,9 @@ export async function queueReviewDigests(now = new Date()) {
             items: reportItems,
             link,
           },
-          idempotencyKey: `digest:report:${day}:${admin.id}`,
+          idempotencyKey: `digest:report:${window}:${admin.id}`,
         });
     }
   });
+  await markDigestRun(now);
 }

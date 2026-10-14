@@ -22,7 +22,6 @@ const { decideReviewItems } = await import("./decide-review.server");
 const { listReviewItems } = await import("./review-queue.server");
 const { createReport } = await import("./report.server");
 const { queueReviewDigests } = await import("./review-digest.server");
-const { submitUntrustedEdit } = await import("./untrusted-edit.server");
 
 function application(name: string, email: string): ApplicationInput {
   return {
@@ -186,24 +185,90 @@ describe.skipIf(!temp)("review services", () => {
     expect(noNote[0].outcome).toBe("failed");
   });
 
-  it("applies an approved sensitive edit and ignores fields that are not editable", async () => {
+  it("applies an approved sensitive edit, queues translation and ignores fields that are not editable", async () => {
     const boss = await admin();
     const listing = await addEntry(db, "Trusted Not");
-    const itemId = await db.transaction((tx) =>
-      submitUntrustedEdit(tx, {
-        entryId: listing.id,
-        userId: boss.id,
-        changes: { name: "Renamed", status: "suspended", ownerUserId: boss.id },
-      }),
+    const [item] = await db
+      .insert(schema.reviewItem)
+      .values({
+        type: "untrusted_edit",
+        entityType: "entry",
+        entityId: listing.id,
+        payload: {
+          patch: {
+            name: "Renamed",
+            descriptionText: "New words",
+            status: "suspended",
+            ownerUserId: boss.id,
+          },
+          tags: { topic: [], offering: [], seeking: [] },
+          submittedBy: boss.id,
+        },
+      })
+      .returning();
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
     );
-    await decideReviewItems({ ids: [itemId], decision: "approve" }, boss.id);
+    expect(result.outcome).toBe("ok");
     const [after] = await db
       .select()
       .from(schema.entry)
       .where(eq(schema.entry.id, listing.id));
     expect(after.name).toBe("Renamed");
+    expect(after.descriptionText).toBe("New words");
     expect(after.status).toBe("published");
     expect(after.ownerUserId).toBeNull();
+    const jobs = (await db.select().from(schema.job)).filter(
+      (j) => j.type === "translate",
+    );
+    expect(jobs.map((j) => j.payload)).toContainEqual({
+      entityType: "entry",
+      entityId: listing.id,
+    });
+  });
+
+  it("closes an edit that has nothing editable left without failing", async () => {
+    const boss = await admin();
+    const listing = await addEntry(db, "Nothing To Do");
+    const [item] = await db
+      .insert(schema.reviewItem)
+      .values({
+        type: "untrusted_edit",
+        entityType: "entry",
+        entityId: listing.id,
+        payload: { patch: { status: "suspended" }, submittedBy: boss.id },
+      })
+      .returning();
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("ok");
+  });
+
+  it("refuses to approve an application for a blocked account", async () => {
+    const boss = await admin();
+    await db.insert(schema.user).values({
+      name: "Blocked",
+      email: "blocked@example.test",
+      locale: "en",
+      banned: true,
+    });
+    const blocked = await verifiedApplication(
+      "Blocked Applicant",
+      "blocked@example.test",
+    );
+    const [result] = await decideReviewItems(
+      { ids: [blocked.review_item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("failed");
+    const [row] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, blocked.entry.id));
+    expect(row.status).toBe("pending");
   });
 
   it("reports only public listings and never hides them", async () => {

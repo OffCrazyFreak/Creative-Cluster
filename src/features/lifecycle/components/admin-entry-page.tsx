@@ -107,7 +107,7 @@ export default function AdminEntryPage({ id }: IAdminEntryPageProps) {
             {m.lifecycle_reinstate()}
           </Button>
         )}
-        {(data.status === "published" || data.status === "suspended") && (
+        {data.status === "published" && (
           <Button
             type="button"
             variant="outline"

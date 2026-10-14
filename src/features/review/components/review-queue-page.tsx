@@ -23,6 +23,7 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
   const decide = useReviewDecisions();
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [rejecting, setRejecting] = useState<string[] | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const rows = data?.rows ?? [];
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
@@ -41,9 +42,12 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
     });
   }
 
+  // One decision run at a time: a double click would otherwise report items as already decided.
   async function approve(ids: string[]) {
+    if (busy) return;
+    setBusy(true);
     await decide({ ids, decision: "approve" });
-    setSelected(new Set());
+    setBusy(false);
   }
 
   // Only applications need a reason; reports, edits and tags are rejected in one click.
@@ -52,9 +56,10 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
       (row) => ids.includes(row.id) && row.type === "application",
     );
     if (needsReason) setRejecting(ids);
-    else {
+    else if (!busy) {
+      setBusy(true);
       await decide({ ids, decision: "reject" });
-      setSelected(new Set());
+      setBusy(false);
     }
   }
 
@@ -65,13 +70,13 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
       reasonCode: rejection.reasonCode,
       note: rejection.note || undefined,
     });
-    if (ok) {
-      setRejecting(null);
-      setSelected(new Set());
-    }
+    if (ok) setRejecting(null);
   }
 
-  const chosen = [...selected];
+  // Decided items drop out of the list after the refetch, and out of the selection with them.
+  const chosen = rows
+    .filter((row) => selected.has(row.id))
+    .map((row) => row.id);
   function decidableIds(list: IReviewRow[]) {
     return list.filter((row) => row.decidable).map((row) => row.id);
   }
@@ -86,7 +91,12 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
       {chosen.length > 0 && (
         <div className="flex flex-wrap items-center gap-2" role="status">
           <span>{m.review_selected({ count: chosen.length })}</span>
-          <Button type="button" size="sm" onClick={() => void approve(chosen)}>
+          <Button
+            type="button"
+            size="sm"
+            disabled={busy}
+            onClick={() => void approve(chosen)}
+          >
             {m.review_approve_selected()}
           </Button>
           <Button
