@@ -11,19 +11,28 @@ function text(max: number) {
   return z.string().trim().max(max).default("");
 }
 
-const locationSchema = z.object({
-  addressText: text(300),
-  city: z.string().trim().max(120).nullable().default(null),
-  countryCode: z
-    .string()
-    .regex(/^[A-Z]{2}$/)
-    .nullable()
-    .default(null),
-  lat: z.number().min(-90).max(90).nullable().default(null),
-  lng: z.number().min(-180).max(180).nullable().default(null),
-  precision: z.enum(LOCATION_PRECISIONS).nullable().default(null),
-  source: z.enum(LOCATION_SOURCES).nullable().default(null),
-});
+const locationSchema = z
+  .object({
+    addressText: text(300),
+    city: z.string().trim().max(120).nullable().default(null),
+    countryCode: z
+      .string()
+      .regex(/^[A-Z]{2}$/)
+      .nullable()
+      .default(null),
+    lat: z.number().min(-90).max(90).nullable().default(null),
+    lng: z.number().min(-180).max(180).nullable().default(null),
+    precision: z.enum(LOCATION_PRECISIONS).nullable().default(null),
+    source: z.enum(LOCATION_SOURCES).nullable().default(null),
+  })
+  .refine((value) => (value.lat === null) === (value.lng === null), {
+    message: "lat and lng go together",
+    path: ["lat"],
+  })
+  .refine((value) => value.lat === null || value.precision !== null, {
+    message: "a pin needs a precision",
+    path: ["precision"],
+  });
 
 export const stagingOrganizationSchema = z.object({
   legacyId: z.string().trim().min(1).max(80),
