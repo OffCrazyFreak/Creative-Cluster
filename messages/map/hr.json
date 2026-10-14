@@ -33,7 +33,6 @@
   "map_loading": "Učitavam kartu",
   "map_webgl_unsupported": "Ovaj preglednik ne može prikazati kartu (treba WebGL 2). Popis sadrži iste unose.",
   "map_load_failed": "Karta se nije mogla učitati. Popis i dalje radi.",
-  "map_show_map": "Prikaži kartu",
   "map_results_live": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
