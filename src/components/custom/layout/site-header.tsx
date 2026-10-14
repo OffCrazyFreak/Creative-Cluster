@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
+import AuthNav from "@/features/auth/components/auth-nav";
 import { site } from "@/sites";
 
 import LanguageSwitch from "./language-switch";
@@ -12,6 +13,7 @@ export default function SiteHeader() {
         {site.name}
       </Link>
       <MainNav />
+      <AuthNav />
       <LanguageSwitch />
     </header>
   );

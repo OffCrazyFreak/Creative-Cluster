@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
+import EuEmblem from "@/features/legal/components/eu-emblem";
 import EscoFooterNote from "@/features/tags/components/esco-footer-note";
 import { site } from "@/sites";
 import { m } from "@/paraglide/messages";
@@ -7,9 +8,20 @@ import { m } from "@/paraglide/messages";
 export default function SiteFooter() {
   return (
     <footer className="flex flex-col gap-4 border-t p-4 text-sm">
-      {site.showFundingLine && <p>{m.common_footer_funding()}</p>}
+      {site.showFundingLine && (
+        <div className="flex flex-wrap items-center gap-4">
+          <EuEmblem height={40} />
+          <p className="flex-1">{m.common_footer_funding()}</p>
+        </div>
+      )}
       <EscoFooterNote />
       <ul className="flex flex-wrap gap-4">
+        <li>
+          <Link to="/about">{m.common_nav_about()}</Link>
+        </li>
+        <li>
+          <Link to="/help">{m.common_nav_help()}</Link>
+        </li>
         <li>
           <Link to="/privacy">{m.common_footer_privacy()}</Link>
         </li>
