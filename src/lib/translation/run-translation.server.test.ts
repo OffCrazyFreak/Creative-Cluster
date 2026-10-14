@@ -108,6 +108,19 @@ describe.skipIf(!temp)("runTranslation", () => {
     expect(calls[0].glossary).toContain("Studio Plava");
   });
 
+  it("still translates when the job is replayed with an old start time", async () => {
+    const id = await entryWithText();
+    const calls: ITranslateInput[] = [];
+    const result = await runTranslation(
+      db,
+      fakeAdapter(answers, calls),
+      { entityType: "entry", entityId: id },
+      new Date(Date.now() - 60 * 60 * 1000),
+    );
+    expect(result).toBeUndefined();
+    expect(calls).toHaveLength(2);
+  });
+
   it("skips fields whose source hash is unchanged", async () => {
     const id = await entryWithText();
     const calls: ITranslateInput[] = [];

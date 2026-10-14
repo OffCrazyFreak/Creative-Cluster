@@ -41,6 +41,8 @@ export async function runTranslation(
   now = new Date(),
   { deadline = Number.POSITIVE_INFINITY }: IRunOptions = {},
 ): Promise<JobResult> {
+  // The budget runs on the wall clock from here; `now` only dates the quota reset.
+  const startedAt = Date.now();
   const source = await loadTranslationSource(
     db,
     request.entityType,
@@ -67,7 +69,7 @@ export async function runTranslation(
     ...pending.map((f) => f.field),
   ]);
 
-  const limit = Math.min(deadline, now.getTime() + JOB_BUDGET_MS);
+  const limit = Math.min(deadline, startedAt + JOB_BUDGET_MS);
   const context = {
     hasTime: () => Date.now() + REQUEST_TIMEOUT_MS < limit,
     adapter,
