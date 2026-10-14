@@ -114,7 +114,9 @@ describe("provider parsers", () => {
   });
 
   it("an unexpected shape is an unavailable error, not a crash", () => {
-    expect(() => parseGeoapify({ nope: true })).not.toThrow();
+    expect(() => parseGeoapify({ nope: true })).toThrow(
+      expect.objectContaining({ code: "unavailable" }),
+    );
     expect(() => parseNominatim({ error: "x" })).toThrow();
   });
 });

@@ -26,3 +26,18 @@ export type SaveListingResult =
 export type OwnListingWire = Omit<IOwnListing, "values"> & {
   values: Record<string, never>;
 };
+
+// The light version for /account: no form values, so the home page does not load the whole entry.
+export interface IOwnSummary {
+  id: string;
+  slug: string;
+  kind: EntryKind;
+  status: EntryStatus;
+  name: string;
+  suspendedReason: string | null;
+  updatedAt: string;
+  lastConfirmedAt: string | null;
+  hasPendingEdit: boolean;
+  // Set once the owner asked to delete the listing and account; the lifecycle area owns the purge.
+  erasureRequestedAt: string | null;
+}
