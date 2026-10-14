@@ -1,5 +1,7 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
+import AdminNav from "@/components/custom/layout/admin-nav";
+
 export const Route = createFileRoute("/admin")({
   beforeLoad: ({ context, location }) => {
     if (!context.viewer) {
@@ -7,5 +9,14 @@ export const Route = createFileRoute("/admin")({
     }
     if (context.viewer.role !== "admin") throw redirect({ to: "/account" });
   },
-  component: Outlet,
+  component: AdminLayout,
 });
+
+function AdminLayout() {
+  return (
+    <>
+      <AdminNav />
+      <Outlet />
+    </>
+  );
+}

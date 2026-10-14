@@ -41,5 +41,10 @@
   "admin_users_failed": "Promjena nije uspjela. Pokušaj ponovno.",
   "admin_users_empty": "Još nema korisnika.",
   "admin_home_title": "Administracija",
-  "admin_users_self_blocked": "Ne možeš promijeniti vlastitu ulogu. Zamoli drugog administratora."
+  "admin_users_self_blocked": "Ne možeš promijeniti vlastitu ulogu. Zamoli drugog administratora.",
+  "admin_nav_label": "Dijelovi administracije",
+  "admin_nav_queue": "Red za pregled",
+  "admin_nav_entries": "Unosi",
+  "admin_nav_import": "Uvoz",
+  "admin_nav_users": "Korisnici"
 }

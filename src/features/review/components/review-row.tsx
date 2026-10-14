@@ -103,7 +103,7 @@ export default function ReviewRow({
       <TableCell>
         <ReviewAge days={row.ageDays} stale={row.stale} />
       </TableCell>
-      <TableCell>
+      <TableCell className="whitespace-normal">
         {row.decidable && (
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" onClick={onApprove}>

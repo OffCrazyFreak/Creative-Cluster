@@ -41,5 +41,10 @@
   "admin_users_failed": "The change failed. Please try again.",
   "admin_users_empty": "No users yet.",
   "admin_home_title": "Admin",
-  "admin_users_self_blocked": "You cannot change your own role. Ask another admin."
+  "admin_users_self_blocked": "You cannot change your own role. Ask another admin.",
+  "admin_nav_label": "Admin sections",
+  "admin_nav_queue": "Review queue",
+  "admin_nav_entries": "Entries",
+  "admin_nav_import": "Import",
+  "admin_nav_users": "Users"
 }
