@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 import type { SuppressionReason } from "@/constants/import";
 import type { DbOrTx } from "@/db/client.server";
@@ -36,4 +36,20 @@ export async function isSuppressed(
     .where(eq(emailSuppression.emailHash, suppressionHash(email)))
     .limit(1);
   return Boolean(row);
+}
+
+// One query for a whole batch; returns the lower-cased addresses that must not be written to.
+export async function suppressedAmong(
+  tx: DbOrTx,
+  emails: string[],
+): Promise<Set<string>> {
+  const byHash = new Map(
+    emails.map((email) => [suppressionHash(email), email.trim().toLowerCase()]),
+  );
+  if (byHash.size === 0) return new Set();
+  const rows = await tx
+    .select({ hash: emailSuppression.emailHash })
+    .from(emailSuppression)
+    .where(inArray(emailSuppression.emailHash, [...byHash.keys()]));
+  return new Set(rows.flatMap((row) => byHash.get(row.hash) ?? []));
 }
