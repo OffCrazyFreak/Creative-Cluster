@@ -46,5 +46,11 @@
   "email_edit_group_visibility": "tko vidi koje polje",
   "email_edit_group_images": "slike",
   "email_edit_group_location": "mjesto",
-  "email_edit_group_other": "ostali podaci"
+  "email_edit_group_other": "ostali podaci",
+  "email_suspended_subject": "Tvoj unos {entryName} je privremeno uklonjen",
+  "email_suspended_preheader": "Unos nije javan dok se razlog ne riješi.",
+  "email_suspended_body_1": "administrator je suspendirao unos {entryName} na {siteName}. Dok je suspendiran, unos, njegove prilike i veze nisu vidljivi posjetiteljima.",
+  "email_suspended_reason": "Razlog: {reason}",
+  "email_suspended_body_2": "Razlog vidiš i u svom računu. Ako ga možeš riješiti ili misliš da je suspenzija pogrešna, odgovori na ovu poruku. Kad se suspenzija ukine, sve se vraća kako je bilo.",
+  "email_suspended_button": "Otvori moj račun"
 }

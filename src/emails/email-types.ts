@@ -83,6 +83,12 @@ export interface IEditRevertedEmailProps extends IBaseEmailProps {
   link: string;
 }
 
+export interface ISuspendedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  reason: string;
+  link: string;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
@@ -95,6 +101,7 @@ export interface IEmailPropsMap {
   application_digest: IApplicationDigestEmailProps;
   report_digest: IReportDigestEmailProps;
   edit_reverted: IEditRevertedEmailProps;
+  suspended: ISuspendedEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

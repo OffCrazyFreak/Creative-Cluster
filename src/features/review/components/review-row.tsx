@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -52,6 +54,15 @@ export default function ReviewRow({
             <span className="text-xs break-all">
               {m.review_contact({ email: row.contactEmail })}
             </span>
+          )}
+          {row.type !== "tag" && row.type !== "opportunity" && (
+            <Link
+              to="/admin/entry/$id"
+              params={{ id: row.entityId }}
+              className="text-xs"
+            >
+              {m.review_open_listing()}
+            </Link>
           )}
           {row.summary && (
             <details>

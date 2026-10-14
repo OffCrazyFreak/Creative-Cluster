@@ -1,4 +1,8 @@
 import { stripOldChangeLog } from "@/features/changes/strip-change-log.server";
+import {
+  archiveStaleImports,
+  purgeExpiredApplications,
+} from "@/features/lifecycle/scheduled-lifecycle.server";
 import { queueReviewDigests } from "@/features/review/review-digest.server";
 import { triggerDrain } from "@/lib/jobs/trigger-drain.server";
 
@@ -8,6 +12,8 @@ type Task = { name: string; run: () => Promise<unknown> };
 const TASKS: Task[] = [
   { name: "review-digests", run: () => queueReviewDigests() },
   { name: "strip-change-log", run: () => stripOldChangeLog() },
+  { name: "archive-stale-imports", run: () => archiveStaleImports() },
+  { name: "purge-expired-applications", run: () => purgeExpiredApplications() },
 ];
 
 export async function runDailyMaintenance(): Promise<Record<string, string>> {

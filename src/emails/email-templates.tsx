@@ -13,6 +13,7 @@ import RejectedEmail, { subject as rejectedSubject } from "./rejected-email";
 import EditRevertedEmail, {
   subject as editRevertedSubject,
 } from "./edit-reverted-email";
+import SuspendedEmail, { subject as suspendedSubject } from "./suspended-email";
 import ReportDigestEmail, {
   subject as reportDigestSubject,
 } from "./report-digest-email";
@@ -87,5 +88,10 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <EditRevertedEmail {...props} />,
     subject: editRevertedSubject,
     previewProps: EditRevertedEmail.PreviewProps,
+  },
+  suspended: {
+    element: (props) => <SuspendedEmail {...props} />,
+    subject: suspendedSubject,
+    previewProps: SuspendedEmail.PreviewProps,
   },
 };

@@ -46,5 +46,11 @@
   "email_edit_group_visibility": "who sees which field",
   "email_edit_group_images": "images",
   "email_edit_group_location": "place",
-  "email_edit_group_other": "other details"
+  "email_edit_group_other": "other details",
+  "email_suspended_subject": "Your listing {entryName} was taken down for now",
+  "email_suspended_preheader": "It is not public until the reason is resolved.",
+  "email_suspended_body_1": "an administrator suspended the listing {entryName} on {siteName}. While it is suspended, the listing, its opportunities and its connections are not visible to visitors.",
+  "email_suspended_reason": "Reason: {reason}",
+  "email_suspended_body_2": "You can also see the reason in your account. If you can fix it, or think the suspension is wrong, reply to this message. When the suspension is lifted, everything returns as it was.",
+  "email_suspended_button": "Open my account"
 }
