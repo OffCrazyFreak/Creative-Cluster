@@ -7,6 +7,7 @@ import { db } from "@/db/client.server";
 import { claimInvite, entry } from "@/db/schema";
 import { hashClaimToken } from "@/features/auth/claim.server";
 
+import { openInviteCondition } from "./claim-state.server";
 import { claimTokenFor } from "./claim-token.server";
 import { suppressedAmong } from "./email-suppression.server";
 
@@ -122,11 +123,7 @@ export async function listUnsentInvites(): Promise<IPreparedInvite[]> {
     .where(
       and(
         isNull(claimInvite.sentAt),
-        isNull(claimInvite.usedAt),
-        eq(entry.status, "published"),
-        isNull(entry.ownerUserId),
-        isNull(entry.erasureRequestedAt),
-        eq(entry.contactEmailInvalid, false),
+        openInviteCondition,
         isNotNull(entry.importedAt),
       ),
     )

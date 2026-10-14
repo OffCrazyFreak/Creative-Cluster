@@ -1,6 +1,9 @@
 import { IMPORT_ARCHIVE_MONTHS } from "@/constants/lifecycle";
 import { LOCALES, type AppLocale } from "@/constants/locales";
-import type { IClaimEmailProps } from "@/emails/email-types";
+import type {
+  IClaimEmailProps,
+  IClaimReminderEmailProps,
+} from "@/emails/email-types";
 import { site } from "@/sites";
 
 import { claimTokenFor } from "./claim-token.server";
@@ -34,17 +37,36 @@ function archiveDateText(importedAt: Date, locale: AppLocale): string {
   }).format(shown);
 }
 
+function claimLinks(inviteId: string) {
+  const link = `${site.origin}/claim/${claimTokenFor(inviteId)}`;
+  return { link, removeLink: `${link}/remove` };
+}
+
+export function claimReminderProps(
+  source: { inviteId: string; name: string; sourceLocale: string },
+  expiresAt: Date,
+): IClaimReminderEmailProps {
+  const locale = claimEmailLocale(source.sourceLocale);
+  return {
+    locale,
+    entryName: source.name,
+    ...claimLinks(source.inviteId),
+    expiryDate: new Intl.DateTimeFormat(locale, {
+      dateStyle: "long",
+      timeZone: "UTC",
+    }).format(expiresAt),
+  };
+}
+
 export function claimEmailProps(
   source: IClaimEmailSource,
   importSource: string,
 ): IClaimEmailProps {
   const locale = claimEmailLocale(source.sourceLocale);
-  const link = `${site.origin}/claim/${claimTokenFor(source.inviteId)}`;
   return {
     locale,
     entryName: source.name,
-    link,
-    removeLink: `${link}/remove`,
+    ...claimLinks(source.inviteId),
     expiry: "days30",
     importSource,
     archiveDate: archiveDateText(source.importedAt, locale),
