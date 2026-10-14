@@ -1,6 +1,6 @@
 import "./load-env";
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 
@@ -21,13 +21,17 @@ const { claimEmailProps } =
 
 // Left visible on purpose: the reviewer must see the gap, and claims:send refuses a text that still holds it.
 const importSource =
-  values["import-source"] ?? "[[GAP: import source and year]]";
+  values["import-source"]?.trim() || "[[GAP: import source and year]]";
 const outDir = values.out ?? join("data", "claims", site.id);
 
 const result = await prepareClaimInvites();
 const invites = await listUnsentInvites();
 
 mkdirSync(outDir, { recursive: true });
+// Files of invites that were since removed, renamed or sent must not linger with real addresses in them.
+for (const file of readdirSync(outDir))
+  if (file.endsWith(".html") || file.endsWith(".txt"))
+    rmSync(join(outDir, file));
 for (const invite of invites) {
   const props = claimEmailProps(invite, importSource);
   const { html, text, subject } = await renderEmail("claim", props);
@@ -41,6 +45,10 @@ for (const invite of invites) {
 console.log(
   `Created ${result.created} invites, skipped ${result.invalidEmail} with an invalid address and ${result.suppressed} suppressed.`,
 );
+if (result.sharedAddresses > 0)
+  console.log(
+    `${result.sharedAddresses} addresses belong to more than one listing: claims:send mails each address once.`,
+  );
 console.log(
   `Rendered ${invites.length} unsent claim emails into ${outDir}. Nothing was queued or sent.`,
 );

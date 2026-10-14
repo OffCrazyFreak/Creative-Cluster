@@ -16,11 +16,22 @@ export function claimEmailLocale(value: string): AppLocale {
   return LOCALES.find((locale) => locale === value) ?? site.baseLocale;
 }
 
-// Unclaimed imports are archived a fixed time after import, and the mail says when.
+// Same rule as the daily archive check (SQL months arithmetic clamps month ends, setUTCMonth rolls over), in UTC.
+// A date already past (an old import) becomes today: the archive job runs within a day.
 function archiveDateText(importedAt: Date, locale: AppLocale): string {
   const date = new Date(importedAt);
-  date.setMonth(date.getMonth() + IMPORT_ARCHIVE_MONTHS);
-  return new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(date);
+  const day = date.getUTCDate();
+  date.setUTCDate(1);
+  date.setUTCMonth(date.getUTCMonth() + IMPORT_ARCHIVE_MONTHS);
+  const lastDay = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  date.setUTCDate(Math.min(day, lastDay));
+  const shown = date.getTime() < Date.now() ? new Date() : date;
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "long",
+    timeZone: "UTC",
+  }).format(shown);
 }
 
 export function claimEmailProps(

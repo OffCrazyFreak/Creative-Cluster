@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, isNull, notExists, sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, isNull, notExists, sql } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 
@@ -8,57 +8,90 @@ import { claimInvite, entry } from "@/db/schema";
 import { hashClaimToken } from "@/features/auth/claim.server";
 
 import { claimTokenFor } from "./claim-token.server";
-import { isSuppressed } from "./email-suppression.server";
+import { suppressedAmong } from "./email-suppression.server";
 
 export interface IPrepareResult {
   created: number;
   invalidEmail: number;
   suppressed: number;
+  // Addresses that are the contact of more than one listing; the sender mails each address once.
+  sharedAddresses: number;
 }
 
+const PREPARE_LOCK_KEY = 7_315_002;
+const INSERT_CHUNK = 500;
+
 // Only imported, still unclaimed listings that have no invite yet; one invite per listing, ever.
-const eligible = and(
-  isNotNull(entry.importedAt),
-  eq(entry.status, "published"),
-  isNull(entry.ownerUserId),
-  isNotNull(entry.contactEmail),
-  eq(entry.contactEmailInvalid, false),
-  notExists(
-    db
-      .select({ one: sql`1` })
-      .from(claimInvite)
-      .where(eq(claimInvite.entryId, entry.id)),
-  ),
-);
+function eligible() {
+  return and(
+    isNotNull(entry.importedAt),
+    eq(entry.status, "published"),
+    isNull(entry.ownerUserId),
+    isNull(entry.erasureRequestedAt),
+    isNotNull(entry.contactEmail),
+    eq(entry.contactEmailInvalid, false),
+    notExists(
+      db
+        .select({ one: sql`1` })
+        .from(claimInvite)
+        .where(eq(claimInvite.entryId, entry.id)),
+    ),
+  );
+}
 
 // Creates the invite rows and nothing else: no job, no mail. Sending is a separate, approved step.
+// The lock keeps two overlapping runs from giving one listing two valid tokens.
 export async function prepareClaimInvites(): Promise<IPrepareResult> {
-  const rows = await db
-    .select({ id: entry.id, email: entry.contactEmail })
-    .from(entry)
-    .where(eligible);
-  const result: IPrepareResult = { created: 0, invalidEmail: 0, suppressed: 0 };
-  for (const row of rows) {
-    const email = row.email?.trim().toLowerCase() ?? "";
-    if (!z.email().safeParse(email).success) {
-      result.invalidEmail += 1;
-      continue;
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(${PREPARE_LOCK_KEY})`);
+    const rows = await tx
+      .select({ id: entry.id, email: entry.contactEmail })
+      .from(entry)
+      .where(eligible());
+    const result: IPrepareResult = {
+      created: 0,
+      invalidEmail: 0,
+      suppressed: 0,
+      sharedAddresses: 0,
+    };
+    const valid: { entryId: string; email: string }[] = [];
+    for (const row of rows) {
+      const email = row.email?.trim().toLowerCase() ?? "";
+      if (z.email().safeParse(email).success)
+        valid.push({ entryId: row.id, email });
+      else result.invalidEmail += 1;
     }
-    if (await isSuppressed(db, email)) {
-      result.suppressed += 1;
-      continue;
+    const blocked = await suppressedAmong(
+      tx,
+      valid.map((row) => row.email),
+    );
+    const open = valid.filter((row) => !blocked.has(row.email));
+    result.suppressed = valid.length - open.length;
+    const perAddress = new Map<string, number>();
+    for (const row of open)
+      perAddress.set(row.email, (perAddress.get(row.email) ?? 0) + 1);
+    result.sharedAddresses = [...perAddress.values()].filter(
+      (count) => count > 1,
+    ).length;
+
+    for (let start = 0; start < open.length; start += INSERT_CHUNK) {
+      await tx.insert(claimInvite).values(
+        open.slice(start, start + INSERT_CHUNK).map((row) => {
+          const id = uuidv7();
+          return {
+            id,
+            entryId: row.entryId,
+            email: row.email,
+            tokenHash: hashClaimToken(claimTokenFor(id)),
+            // Restarted when the mail is sent: review can take longer than the links should live.
+            expiresAt: sql`now() + make_interval(days => ${CLAIM_INVITE_TTL_DAYS})`,
+          };
+        }),
+      );
     }
-    const inviteId = uuidv7();
-    await db.insert(claimInvite).values({
-      id: inviteId,
-      entryId: row.id,
-      email,
-      tokenHash: hashClaimToken(claimTokenFor(inviteId)),
-      expiresAt: sql`now() + make_interval(days => ${CLAIM_INVITE_TTL_DAYS})`,
-    });
-    result.created += 1;
-  }
-  return result;
+    result.created = open.length;
+    return result;
+  });
 }
 
 export interface IPreparedInvite {
@@ -72,6 +105,7 @@ export interface IPreparedInvite {
 }
 
 // Invites that exist but have not gone out; used for the review files and for the sender.
+// Re-checks what can change after preparing: removal (suppression), archive, erasure, bounces.
 export async function listUnsentInvites(): Promise<IPreparedInvite[]> {
   const rows = await db
     .select({
@@ -89,12 +123,21 @@ export async function listUnsentInvites(): Promise<IPreparedInvite[]> {
       and(
         isNull(claimInvite.sentAt),
         isNull(claimInvite.usedAt),
+        eq(entry.status, "published"),
         isNull(entry.ownerUserId),
+        isNull(entry.erasureRequestedAt),
+        eq(entry.contactEmailInvalid, false),
         isNotNull(entry.importedAt),
       ),
     )
-    .orderBy(claimInvite.createdAt);
+    .orderBy(asc(claimInvite.createdAt));
+  const blocked = await suppressedAmong(
+    db,
+    rows.map((row) => row.email),
+  );
   return rows.flatMap((row) =>
-    row.importedAt ? [{ ...row, importedAt: row.importedAt }] : [],
+    row.importedAt && !blocked.has(row.email.toLowerCase())
+      ? [{ ...row, importedAt: row.importedAt }]
+      : [],
   );
 }

@@ -62,6 +62,7 @@ describe.skipIf(!temp)("claim invite preparation", () => {
       created: 1,
       invalidEmail: 1,
       suppressed: 1,
+      sharedAddresses: 0,
     });
     const invites = await db.select().from(schema.claimInvite);
     expect(invites).toHaveLength(1);
@@ -70,15 +71,53 @@ describe.skipIf(!temp)("claim invite preparation", () => {
   });
 
   it("is idempotent and the stored hash matches the rebuilt token", async () => {
+    await imported("again");
+    await prepareClaimInvites();
     expect(await prepareClaimInvites()).toMatchObject({ created: 0 });
-    const [invite] = await db.select().from(schema.claimInvite);
+    const [invite] = await db
+      .select()
+      .from(schema.claimInvite)
+      .where(eq(schema.claimInvite.email, "again@example.com"));
     expect(invite.tokenHash).toBe(hashClaimToken(claimTokenFor(invite.id)));
     expect(invite.expiresAt.getTime()).toBeGreaterThan(
       Date.now() + 29 * 86_400_000,
     );
-    const [unsent] = await listUnsentInvites();
-    const props = claimEmailProps(unsent, "A test source");
+    const unsent = (await listUnsentInvites()).find(
+      (row) => row.inviteId === invite.id,
+    );
+    expect(unsent).toBeDefined();
+    const props = claimEmailProps(unsent!, "A test source");
     expect(props.link).toContain(`/claim/${claimTokenFor(invite.id)}`);
     expect(props.removeLink).toBe(`${props.link}/remove`);
+  });
+
+  it("drops invites from the unsent list once the address opts out or the listing is hidden", async () => {
+    const quiet = await imported("later-quiet");
+    const hidden = await imported("later-hidden");
+    await prepareClaimInvites();
+    async function names() {
+      return (await listUnsentInvites()).map((row) => row.entryId);
+    }
+    expect(await names()).toEqual(
+      expect.arrayContaining([quiet.id, hidden.id]),
+    );
+
+    await suppressEmail(db, "later-quiet@example.com", "claim_removal");
+    await db
+      .update(schema.entry)
+      .set({ status: "archived" })
+      .where(eq(schema.entry.id, hidden.id));
+    const after = await names();
+    expect(after).not.toContain(quiet.id);
+    expect(after).not.toContain(hidden.id);
+  });
+
+  it("counts addresses shared by several listings", async () => {
+    await imported("twin-a", { contactEmail: "shared@example.com" });
+    await imported("twin-b", { contactEmail: "shared@example.com" });
+    expect(await prepareClaimInvites()).toMatchObject({
+      created: 2,
+      sharedAddresses: 1,
+    });
   });
 });
