@@ -35,4 +35,16 @@ describe("layoutGraph", () => {
             Math.abs(p.y - q.y) >= GRAPH_NODE.height,
         ).toBe(true);
   });
+
+  it("separates a full set of fifteen partners", () => {
+    const ids = Array.from({ length: 15 }, (_, i) => `p${i}`);
+    const links = ids.map((id) => ({ source: "c", target: id }));
+    const points = [...layoutGraph("full", "c", ids, links).values()];
+    for (const [i, p] of points.entries())
+      for (const q of points.slice(i + 1))
+        expect(
+          Math.abs(p.x - q.x) >= GRAPH_NODE.width ||
+            Math.abs(p.y - q.y) >= GRAPH_NODE.height,
+        ).toBe(true);
+  });
 });

@@ -101,10 +101,14 @@ export async function loadPublicConnections(
     loadPartners(entryId),
     loadUnverified(entryId),
   ]);
+  // Two kinds of link to the same entry are two list rows but one node.
+  const distinct = [
+    ...new Map(partners.map((p) => [p.entryId, p] as const)).values(),
+  ];
   const graph = await buildGraph(
     self,
-    partners.slice(0, LINK_LIMITS.graphPartners),
-    partners.length,
+    distinct.slice(0, LINK_LIMITS.graphPartners),
+    distinct.length,
   );
   return { partners, unverified, graph };
 }

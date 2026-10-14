@@ -7,21 +7,37 @@ import type { IConnectionGraph, IPublicPartner } from "./connections-schemas";
 import { GRAPH_NODE, layoutGraph, type IPoint } from "./graph-layout";
 
 const CACHE_LIMIT = 200;
+const ORIGIN: IPoint = { x: 0, y: 0 };
 const layoutCache = new Map<string, Map<string, IPoint>>();
 
+// Least recently used: a hit is re-inserted so the busiest pages stay cached.
 function cached(key: string, build: () => Map<string, IPoint>) {
   const hit = layoutCache.get(key);
-  if (hit) return hit;
-  const value = build();
-  if (layoutCache.size >= CACHE_LIMIT)
-    layoutCache.delete(layoutCache.keys().next().value as string);
+  const value = hit ?? build();
+  layoutCache.delete(key);
   layoutCache.set(key, value);
+  if (layoutCache.size > CACHE_LIMIT)
+    layoutCache.delete(layoutCache.keys().next().value as string);
   return value;
 }
 
 interface ISelf {
   id: string;
   name: string;
+}
+
+// One edge per pair of entries, even when they are linked under several kinds.
+function uniquePairs(rows: { id: string; fromId: string; toId: string }[]) {
+  const seen = new Map<
+    string,
+    { id: string; source: string; target: string }
+  >();
+  for (const row of rows) {
+    const key = `${row.fromId}:${row.toId}`;
+    if (!seen.has(key))
+      seen.set(key, { id: row.id, source: row.fromId, target: row.toId });
+  }
+  return [...seen.values()];
 }
 
 // Confirmed links among the shown partners make the picture a network instead of a star.
@@ -46,33 +62,32 @@ export async function buildGraph(
   total: number,
 ): Promise<IConnectionGraph | null> {
   if (shown.length === 0) return null;
-  const partnerIds = shown;
-  const among = await linksAmong(partnerIds.map((p) => p.entryId));
+  const among = await linksAmong(shown.map((p) => p.entryId));
   const edges = [
-    ...partnerIds.map((p) => ({
+    ...shown.map((p) => ({
       id: p.linkId,
       source: self.id,
       target: p.entryId,
     })),
-    ...among.map((l) => ({ id: l.id, source: l.fromId, target: l.toId })),
+    ...uniquePairs(among),
   ];
-  // The key is the confirmed link set itself, so any change to it recomputes the layout.
+  // The key is the confirmed link set itself (ids are unique), so any change to it recomputes the layout.
   const key = edges
     .map((e) => e.id)
     .sort()
     .join(",");
-  const points = cached(`${self.id}:${key}`, () =>
+  const points = cached(key, () =>
     layoutGraph(
       key,
       self.id,
-      partnerIds.map((p) => p.entryId),
+      shown.map((p) => p.entryId),
       edges,
     ),
   );
   const nodes = [
     { id: self.id, label: self.name, slug: null },
-    ...partnerIds.map((p) => ({ id: p.entryId, label: p.name, slug: p.slug })),
-  ].map((node) => ({ ...node, ...(points.get(node.id) as IPoint) }));
+    ...shown.map((p) => ({ id: p.entryId, label: p.name, slug: p.slug })),
+  ].map((node) => ({ ...node, ...(points.get(node.id) ?? ORIGIN) }));
   const xs = nodes.map((n) => n.x);
   const ys = nodes.map((n) => n.y);
   return {

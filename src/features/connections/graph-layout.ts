@@ -20,7 +20,7 @@ interface ISimNode extends SimulationNodeDatum {
   id: string;
 }
 
-// 32 bit FNV-1a, then mulberry32: the same link set always produces the same picture.
+// Seeded so the same link set always produces the same picture on every server instance.
 function seededRandom(seed: string): () => number {
   let hash = 2166136261;
   for (const char of seed)
@@ -34,7 +34,6 @@ function seededRandom(seed: string): () => number {
   };
 }
 
-// Top-left corners for React Flow, with the page's own entry pinned at the origin.
 export function layoutGraph(
   seed: string,
   centerId: string,

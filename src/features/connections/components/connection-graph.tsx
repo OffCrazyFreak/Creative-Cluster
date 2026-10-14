@@ -1,25 +1,19 @@
 import "@xyflow/react/dist/style.css";
 
-import { Position, ReactFlow, type Edge, type NodeHandle } from "@xyflow/react";
+import { ReactFlow, type Edge } from "@xyflow/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 import { m } from "@/paraglide/messages";
 
 import type { IConnectionGraph } from "../connections-schemas";
+import {
+  GRAPH_HANDLES,
+  SOURCE_HANDLE_ID,
+  TARGET_HANDLE_ID,
+} from "../graph-handles";
 import { GRAPH_NODE } from "../graph-layout";
 import GraphNode, { type GraphNodeData } from "./graph-node";
-
-// Declared up front because the server cannot measure handles; edges need them to be drawn.
-const HANDLES: NodeHandle[] = (["source", "target"] as const).map((type) => ({
-  id: type === "source" ? "s" : "t",
-  type,
-  position: Position.Top,
-  x: GRAPH_NODE.width / 2,
-  y: GRAPH_NODE.height / 2,
-  width: 1,
-  height: 1,
-}));
 
 const NODE_TYPES = { partner: GraphNode };
 const FIT_OPTIONS = { padding: 0.1 };
@@ -29,7 +23,6 @@ interface IConnectionGraphProps {
   centerId: string;
 }
 
-// Viewer only. Explicit node sizes and the precomputed layout let it render on the server.
 export default function ConnectionGraph({
   graph,
   centerId,
@@ -43,7 +36,7 @@ export default function ConnectionGraph({
         position: { x: node.x, y: node.y },
         width: GRAPH_NODE.width,
         height: GRAPH_NODE.height,
-        handles: HANDLES,
+        handles: GRAPH_HANDLES,
         data: {
           label: node.label,
           slug: node.slug,
@@ -58,8 +51,8 @@ export default function ConnectionGraph({
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        sourceHandle: "s",
-        targetHandle: "t",
+        sourceHandle: SOURCE_HANDLE_ID,
+        targetHandle: TARGET_HANDLE_ID,
         type: "straight",
       })),
     [graph.edges],
