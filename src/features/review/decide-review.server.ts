@@ -1,19 +1,27 @@
 import { and, eq } from "drizzle-orm";
 
-import type { ReasonCode } from "@/constants/moderation";
 import { NOTE_REQUIRED_REASON_CODES } from "@/constants/review";
 import { db, type Tx } from "@/db/client.server";
 import { reviewItem } from "@/db/schema";
-import { invalidateMapDirectory } from "@/features/directory/map-directory.server";
 import { decideSuggestion } from "@/features/tags/decide-suggestion.server";
+import { afterOpportunityChange } from "@/features/opportunities/opportunity-effects.server";
+import {
+  OpportunityDeadlinePassedError,
+  OpportunityDecisionError,
+} from "@/features/opportunities/opportunity-errors";
 import { NotFoundError } from "@/server/errors";
 
 import { approveApplication } from "./approve-application.server";
 import { rejectApplication } from "./reject-application.server";
+import {
+  decideOpportunityItem,
+  decideOpportunityReport,
+} from "./decide-opportunity-item.server";
 import type {
   DecideOutcome,
   DecideReviewInput,
   IDecideResult,
+  IItemDecision,
 } from "./review-schemas";
 import {
   applyUntrustedEdit,
@@ -22,12 +30,7 @@ import {
 
 type Item = typeof reviewItem.$inferSelect;
 
-interface IDecision {
-  decision: DecideReviewInput["decision"];
-  reasonCode?: ReasonCode;
-  note: string | null;
-  adminId: string;
-}
+type IDecision = IItemDecision;
 
 // Reports have no "reject": the admin either acted on the listing ("approve") or dismisses the report.
 async function closeItem(tx: Tx, item: Item, decision: IDecision) {
@@ -61,6 +64,11 @@ async function decideInTx(
 ): Promise<DecideOutcome> {
   const { adminId } = decision;
   // Queue items for listings always point at an entry; anything else is not ours to decide here.
+  const onOpportunity = item.entityType === "opportunity";
+  if (item.type === "opportunity")
+    return decideOpportunityItem(tx, item, decision);
+  if (item.type === "report" && onOpportunity)
+    return decideOpportunityReport(tx, item, decision);
   if (
     ["application", "untrusted_edit", "report"].includes(item.type) &&
     item.entityType !== "entry"
@@ -168,6 +176,10 @@ export async function decideReviewItems(
         // The listing is no longer in a state this decision applies to; close the item so it stops coming back.
         outcome = "gone";
         await dismissStale(id, adminId);
+      } else if (error instanceof OpportunityDeadlinePassedError) {
+        outcome = "expired";
+      } else if (error instanceof OpportunityDecisionError) {
+        outcome = "failed";
       } else {
         console.error("review decision failed", id, error);
         outcome = "failed";
@@ -176,6 +188,6 @@ export async function decideReviewItems(
     results.push({ id, outcome });
   }
   // Publishing, edits and tag rejections change what the map shows.
-  invalidateMapDirectory();
+  await afterOpportunityChange();
   return results;
 }

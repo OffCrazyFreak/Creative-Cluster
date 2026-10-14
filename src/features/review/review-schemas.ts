@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { REASON_CODES, REVIEW_TYPES } from "@/constants/moderation";
+import {
+  REASON_CODES,
+  REVIEW_TYPES,
+  type ReasonCode,
+} from "@/constants/moderation";
 import {
   NOTE_REQUIRED_REASON_CODES,
   REPORT_MESSAGE_MAX,
@@ -50,8 +54,13 @@ export type DecideReviewInput = z.infer<typeof decideReviewSchema>;
 export interface IReviewRow {
   id: string;
   type: (typeof REVIEW_TYPES)[number];
+  entityType: string;
   entityId: string;
   label: string;
+  // Entry that posted an opportunity.
+  postedBy: string | null;
+  // Set when the system, not a visitor, raised the item (for example an email bounce).
+  automatic: boolean;
   kind: string | null;
   countryCode: string | null;
   city: string | null;
@@ -69,7 +78,16 @@ export interface IReviewPage {
   pageSize: number;
 }
 
-export type DecideOutcome = "ok" | "gone" | "unsupported" | "failed";
+// "expired": the post's deadline passed while it waited. "no_account": done, but the entry has no account to email.
+export type DecideOutcome =
+  "ok" | "gone" | "unsupported" | "failed" | "expired" | "no_account";
+
+export interface IItemDecision {
+  decision: DecideReviewInput["decision"];
+  reasonCode?: ReasonCode;
+  note: string | null;
+  adminId: string;
+}
 export interface IDecideResult {
   id: string;
   outcome: DecideOutcome;

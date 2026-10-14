@@ -34,6 +34,8 @@ export interface IRejection {
 
 interface IRejectDialogProps {
   count: number;
+  // The same reason form serves taking a post down after a report.
+  mode?: "reject" | "remove";
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (rejection: IRejection) => Promise<void>;
@@ -41,6 +43,7 @@ interface IRejectDialogProps {
 
 export default function RejectDialog({
   count,
+  mode = "reject",
   open,
   onOpenChange,
   onConfirm,
@@ -60,8 +63,16 @@ export default function RejectDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{m.review_reject_title({ count })}</DialogTitle>
-          <DialogDescription>{m.review_reject_body()}</DialogDescription>
+          <DialogTitle>
+            {mode === "remove"
+              ? m.review_remove_title()
+              : m.review_reject_title({ count })}
+          </DialogTitle>
+          <DialogDescription>
+            {mode === "remove"
+              ? m.review_remove_body()
+              : m.review_reject_body()}
+          </DialogDescription>
         </DialogHeader>
         <Field>
           <FieldLabel htmlFor="reject-reason">
@@ -112,7 +123,9 @@ export default function RejectDialog({
             disabled={busy || (noteRequired && note.trim() === "")}
             onClick={() => void confirm()}
           >
-            {m.review_reject_confirm()}
+            {mode === "remove"
+              ? m.review_remove_confirm()
+              : m.review_reject_confirm()}
           </Button>
         </DialogFooter>
       </DialogContent>

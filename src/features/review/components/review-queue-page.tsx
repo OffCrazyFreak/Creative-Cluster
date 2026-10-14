@@ -13,6 +13,10 @@ import RejectDialog, { type IRejection } from "./reject-dialog";
 import ReviewFilters from "./review-filters";
 import ReviewTable from "./review-table";
 
+function removesPost(row: IReviewRow): boolean {
+  return row.type === "report" && row.entityType === "opportunity";
+}
+
 interface IReviewQueuePageProps {
   search: ReviewListInput;
 }
@@ -26,6 +30,7 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
   const decide = useReviewDecisions();
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [rejecting, setRejecting] = useState<string[] | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const rows = data?.rows ?? [];
@@ -59,10 +64,12 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
     setBusy(false);
   }
 
-  // Only applications need a reason; reports, edits and tags are rejected in one click.
+  // Applications and opportunities need a reason; reports, edits and tags are rejected in one click.
   async function startReject(ids: string[]) {
     const needsReason = rows.some(
-      (row) => ids.includes(row.id) && row.type === "application",
+      (row) =>
+        ids.includes(row.id) &&
+        (row.type === "application" || row.type === "opportunity"),
     );
     if (needsReason) setRejecting(ids);
     else if (!busy) {
@@ -82,12 +89,25 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
     if (ok) setRejecting(null);
   }
 
+  async function confirmRemove(id: string, removal: IRejection) {
+    const ok = await decide({
+      ids: [id],
+      decision: "approve",
+      reasonCode: removal.reasonCode,
+      note: removal.note || undefined,
+    });
+    if (ok) setRemoving(null);
+  }
+
   // Decided items drop out of the list after the refetch, and out of the selection with them.
   const chosen = rows
     .filter((row) => selected.has(row.id))
     .map((row) => row.id);
+  // Taking a post down needs its own reason, so those reports are never part of a bulk run.
   function decidableIds(list: IReviewRow[]) {
-    return list.filter((row) => row.decidable).map((row) => row.id);
+    return list
+      .filter((row) => row.decidable && !removesPost(row))
+      .map((row) => row.id);
   }
 
   return (
@@ -129,7 +149,9 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
             onToggleAll={(checked) =>
               setSelected(checked ? new Set(decidableIds(rows)) : new Set())
             }
-            onApprove={(row) => void approve([row.id])}
+            onApprove={(row) =>
+              removesPost(row) ? setRemoving(row.id) : void approve([row.id])
+            }
             onReject={(row) => void startReject([row.id])}
           />
         </div>
@@ -163,6 +185,15 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
           open
           onOpenChange={(open) => !open && setRejecting(null)}
           onConfirm={(rejection) => confirmReject(rejecting, rejection)}
+        />
+      )}
+      {removing && (
+        <RejectDialog
+          count={1}
+          mode="remove"
+          open
+          onOpenChange={(open) => !open && setRemoving(null)}
+          onConfirm={(removal) => confirmRemove(removing, removal)}
         />
       )}
     </section>

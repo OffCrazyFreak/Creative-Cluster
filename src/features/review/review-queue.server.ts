@@ -1,10 +1,12 @@
 import { dequal } from "dequal";
 import { and, asc, count, eq, gte, inArray, lt, type SQL } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import { REVIEW_STALE_DAYS } from "@/constants/moderation";
 import { REVIEW_PAGE_SIZE } from "@/constants/review";
 import { db } from "@/db/client.server";
 import { entry, opportunity, reviewItem, tag } from "@/db/schema";
+import { BOUNCE_SOURCE } from "@/features/contact/bounce-events.server";
 
 import { pickRevertible } from "./entry-fields";
 import type {
@@ -16,9 +18,11 @@ import type {
 const DECIDABLE_TYPES = new Set([
   "application",
   "untrusted_edit",
+  "opportunity",
   "report",
   "tag",
 ]);
+const postingEntry = alias(entry, "posting_entry");
 const SUMMARY_MAX = 300;
 
 function staleBefore(): Date {
@@ -54,13 +58,17 @@ function summaryOf(row: {
   type: string;
   payload: Record<string, unknown>;
   descriptionText: string | null;
+  opportunityBody: string | null;
   current?: Record<string, unknown>;
 }): string {
   if (row.type === "application")
     return (row.descriptionText ?? "").slice(0, SUMMARY_MAX);
+  if (row.type === "opportunity")
+    return (row.opportunityBody ?? "").slice(0, SUMMARY_MAX);
   if (row.type === "report") {
-    const { reason, message } = row.payload;
-    return [reason, message]
+    const { reason, message, source } = row.payload;
+    // The automatic bounce text already says what happened; its fixed "other" reason adds nothing.
+    return [source === BOUNCE_SOURCE ? null : reason, message]
       .filter((v) => typeof v === "string" && v)
       .join(": ");
   }
@@ -78,6 +86,7 @@ export async function listReviewItems(
     .select({
       id: reviewItem.id,
       type: reviewItem.type,
+      entityType: reviewItem.entityType,
       entityId: reviewItem.entityId,
       payload: reviewItem.payload,
       createdAt: reviewItem.createdAt,
@@ -89,6 +98,8 @@ export async function listReviewItems(
       contactEmail: entry.contactEmail,
       tagLabel: tag.labelEn,
       opportunityTitle: opportunity.title,
+      opportunityBody: opportunity.bodyText,
+      postedBy: postingEntry.name,
     })
     .from(reviewItem)
     .leftJoin(
@@ -109,6 +120,7 @@ export async function listReviewItems(
         eq(opportunity.id, reviewItem.entityId),
       ),
     )
+    .leftJoin(postingEntry, eq(postingEntry.id, opportunity.entryId))
     .where(where);
 
   const [rows, [total]] = await Promise.all([
@@ -146,7 +158,10 @@ export async function listReviewItems(
     rows: rows.map((row): IReviewRow => ({
       id: row.id,
       type: row.type,
+      entityType: row.entityType,
       entityId: row.entityId,
+      postedBy: row.postedBy,
+      automatic: row.payload.source === BOUNCE_SOURCE,
       label: row.entryName ?? row.tagLabel ?? row.opportunityTitle ?? "",
       kind: row.kind,
       countryCode: row.countryCode,

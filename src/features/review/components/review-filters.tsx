@@ -1,7 +1,7 @@
 import { LOCATION_COUNTRIES } from "@/constants/countries";
-import { REVIEW_AGE_FILTERS } from "@/constants/review";
+import { QUEUE_REVIEW_TYPES, REVIEW_AGE_FILTERS } from "@/constants/review";
 import { countryName } from "@/features/directory/country-name";
-import { REVIEW_STALE_DAYS, REVIEW_TYPES } from "@/constants/moderation";
+import { REVIEW_STALE_DAYS } from "@/constants/moderation";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
@@ -41,14 +41,14 @@ export default function ReviewFilters({
         value={value.type ?? ALL}
         options={[
           all,
-          ...REVIEW_TYPES.map((type) => ({
+          ...QUEUE_REVIEW_TYPES.map((type) => ({
             value: type,
             label: reviewTypeLabel(type),
           })),
         ]}
         onChange={(next) =>
           onChange({
-            type: REVIEW_TYPES.find((type) => type === next),
+            type: QUEUE_REVIEW_TYPES.find((type) => type === next),
             page: 1,
           })
         }
