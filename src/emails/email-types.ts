@@ -1,6 +1,7 @@
 import type { EmailExpiry, EmailTemplateName } from "@/constants/email";
 import type { AppLocale } from "@/constants/locales";
 import type { ReasonCode } from "@/constants/moderation";
+import type { LinkKind } from "@/constants/links";
 
 // Props are plain JSON because they are stored in the job payload.
 export interface IBaseEmailProps {
@@ -122,6 +123,15 @@ export interface IBlockedEmailProps extends IBaseEmailProps {
   reason: string;
 }
 
+export interface IConnectionEmailProps extends IBaseEmailProps {
+  proposerName: string;
+  entryName: string;
+  kind: LinkKind;
+  year: number | null;
+  note: string | null;
+  link: string;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
@@ -140,6 +150,7 @@ export interface IEmailPropsMap {
   contact: IContactEmailProps;
   terms: ITermsEmailProps;
   blocked: IBlockedEmailProps;
+  connection: IConnectionEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

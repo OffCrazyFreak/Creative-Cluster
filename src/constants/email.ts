@@ -19,6 +19,7 @@ export const EMAIL_TEMPLATE_NAMES = [
   "contact",
   "terms",
   "blocked",
+  "connection",
 ] as const;
 export type EmailTemplateName = (typeof EMAIL_TEMPLATE_NAMES)[number];
 
@@ -45,6 +46,7 @@ export const EMAIL_TEMPLATE_PRIORITY: Record<
   terms: "normal",
   // A statement of reasons is a legal duty, so it uses the whole daily cap like reset mail.
   blocked: "urgent",
+  connection: "normal",
 };
 
 // Non-urgent mail waits for the next UTC day once this share of the cap is sent.

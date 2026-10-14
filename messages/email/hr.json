@@ -45,5 +45,13 @@
   "email_change_preheader": "Nova adresa za tvoj račun na {siteName}.",
   "email_change_body_1": "zatražena je promjena e-adrese za račun na {siteName}. Ova adresa postaje nova adresa računa tek kad je potvrdiš. Poveznica vrijedi {expiry}.",
   "email_change_body_2": "Ako zahtjev nije tvoj, ignoriraj poruku. Račun ostaje na staroj adresi.",
-  "email_change_button": "Potvrdi novu e-adresu"
+  "email_change_button": "Potvrdi novu e-adresu",
+  "email_connection_subject": "{proposerName} predlaže vezu s {entryName}",
+  "email_connection_preheader": "Ti odlučuješ hoće li veza biti javna.",
+  "email_connection_intro": "{proposerName} predlaže vezu s tvojim unosom {entryName} na {siteName}.",
+  "email_connection_kind": "Vrsta veze: {kind}",
+  "email_connection_year": "Godina: {year}",
+  "email_connection_note": "Napomena: {note}",
+  "email_connection_visibility": "Dok je ne potvrdiš, veza je vidljiva samo tebi, predlagatelju i administratorima. Potvrdi je ili odbij u svom računu. Ako ne učiniš ništa, prijedlog istječe nakon {days} dana.",
+  "email_connection_button": "Pregledaj prijedlog"
 }
