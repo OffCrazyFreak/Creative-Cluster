@@ -72,6 +72,15 @@ async function releaseJobs(rows: ClaimedJob[]) {
     );
 }
 
+function isErasureDone(payload: unknown) {
+  return (
+    typeof payload === "object" &&
+    payload !== null &&
+    "template" in payload &&
+    payload.template === "erasure_done"
+  );
+}
+
 async function runJob(row: ClaimedJob, result: IDrainResult, deadline: number) {
   const handler = jobHandlerFor(row.type);
   const context: IJobContext = {
@@ -113,6 +122,10 @@ async function runJob(row: ClaimedJob, result: IDrainResult, deadline: number) {
           error: message,
           lockedAt: null,
           runAt: new Date(Date.now() + backoffMs(row.attempts)),
+          // The address of a deleted account must not stay in the outbox when its last mail gave up.
+          ...(exhausted && isErasureDone(row.payload)
+            ? { payload: { template: "erasure_done", scrubbed: true } }
+            : {}),
         })
         .where(eq(job.id, row.id));
     } catch (updateError) {

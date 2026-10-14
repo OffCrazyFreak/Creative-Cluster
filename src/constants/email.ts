@@ -7,6 +7,18 @@ export const EMAIL_TEMPLATE_NAMES = [
   "verify",
   "reset",
   "change",
+  "application_received",
+  "approved",
+  "rejected",
+  "application_digest",
+  "report_digest",
+  "edit_reverted",
+  "suspended",
+  "erasure_scheduled",
+  "erasure_done",
+  "contact",
+  "terms",
+  "blocked",
   "connection",
 ] as const;
 export type EmailTemplateName = (typeof EMAIL_TEMPLATE_NAMES)[number];
@@ -21,6 +33,19 @@ export const EMAIL_TEMPLATE_PRIORITY: Record<
   verify: "urgent",
   reset: "urgent",
   change: "urgent",
+  application_received: "normal",
+  approved: "normal",
+  rejected: "normal",
+  application_digest: "normal",
+  report_digest: "normal",
+  edit_reverted: "normal",
+  suspended: "normal",
+  erasure_scheduled: "urgent",
+  erasure_done: "urgent",
+  contact: "normal",
+  terms: "normal",
+  // A statement of reasons is a legal duty, so it uses the whole daily cap like reset mail.
+  blocked: "urgent",
   connection: "normal",
 };
 

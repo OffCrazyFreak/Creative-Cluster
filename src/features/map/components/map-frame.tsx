@@ -173,8 +173,7 @@ export default function MapFrame() {
           {live}
           <MapListLayout
             status={status}
-            canShowMap={Boolean(entryMatch) && status === "idle"}
-            onShowMap={requestMap}
+            entryOnly={Boolean(entryMatch) && status === "idle"}
           >
             {outlet}
           </MapListLayout>
