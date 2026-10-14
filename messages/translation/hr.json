@@ -1,3 +1,20 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "translation_language_hr": "hrvatski",
+  "translation_language_en": "engleski",
+  "translation_language_from_hr": "hrvatskog",
+  "translation_language_from_en": "engleskog",
+  "translation_label_machine": "Strojno prevedeno s {language}",
+  "translation_label_human": "Prijevod vlasnika s {language}",
+  "translation_show_original": "Prikaži izvornik",
+  "translation_hide_original": "Sakrij izvornik",
+  "translation_original_heading": "Izvorni tekst",
+  "translation_unavailable": "Prijevod još nije dostupan. Prikazan je izvorni tekst ({language}).",
+  "translation_edit_open": "Uredi prijevod",
+  "translation_edit_close": "Zatvori",
+  "translation_edit_title": "Tvoj prijevod",
+  "translation_edit_hint": "Tvoja verzija zamjenjuje strojni prijevod i ostaje kad se izvornik promijeni. Ostavi polje prazno ako želiš da ga opet prevede stroj.",
+  "translation_edit_save": "Spremi prijevod",
+  "translation_edit_saved": "Prijevod je spremljen.",
+  "translation_edit_error": "Prijevod se nije mogao spremiti. Provjeri duljinu i pokušaj ponovno."
 }
