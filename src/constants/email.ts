@@ -10,6 +10,15 @@ export const EMAIL_TEMPLATE_NAMES = [
   "opportunity_approved",
   "opportunity_rejected",
   "opportunity_removed",
+  "application_received",
+  "approved",
+  "rejected",
+  "application_digest",
+  "report_digest",
+  "edit_reverted",
+  "suspended",
+  "erasure_scheduled",
+  "erasure_done",
 ] as const;
 export type EmailTemplateName = (typeof EMAIL_TEMPLATE_NAMES)[number];
 
@@ -27,6 +36,15 @@ export const EMAIL_TEMPLATE_PRIORITY: Record<
   opportunity_rejected: "normal",
   // The statement of reasons is a legal duty, so it is not held back by the daily soft cap.
   opportunity_removed: "urgent",
+  application_received: "normal",
+  approved: "normal",
+  rejected: "normal",
+  application_digest: "normal",
+  report_digest: "normal",
+  edit_reverted: "normal",
+  suspended: "normal",
+  erasure_scheduled: "urgent",
+  erasure_done: "urgent",
 };
 
 // Non-urgent mail waits for the next UTC day once this share of the cap is sent.
