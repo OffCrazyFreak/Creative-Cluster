@@ -10,6 +10,7 @@ import { addOpportunity } from "../../../tests/helpers/opportunity-fixtures";
 import type { ITempDatabase } from "../../../tests/helpers/temp-database";
 import {
   opportunityValuesSchema,
+  renewOpportunityInput,
   type OpportunityFormValues,
 } from "./opportunity-schemas";
 
@@ -94,7 +95,12 @@ describe.skipIf(!temp)("managing a post", () => {
     const same = values("Need a partner", {
       body: richTextFromPlain("Body"),
     });
-    await updateOpportunity({ id: post.id, userId: owner.id, values: same });
+    const result = await updateOpportunity({
+      id: post.id,
+      userId: owner.id,
+      values: same,
+    });
+    expect(result).toEqual({ status: "unchanged" });
     const logs = await db.select().from(schema.changeLog);
     expect(logs.filter((l) => l.entityId === post.id)).toHaveLength(0);
   });
@@ -221,5 +227,95 @@ describe.skipIf(!temp)("managing a post", () => {
     await expect(
       markOpportunityFilled(post.id, owner.id),
     ).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it("takes a live post offline for review when its text changes on an entry set to review", async () => {
+    const { owner, row, post } = await setup();
+    await db
+      .update(schema.entry)
+      .set({ trusted: false })
+      .where(eq(schema.entry.id, row.id));
+    const remote = await updateOpportunity({
+      id: post.id,
+      userId: owner.id,
+      values: values("Need a partner", {
+        body: richTextFromPlain("Body"),
+        remoteOk: true,
+      }),
+    });
+    expect(remote).toEqual({ status: "saved" });
+    expect((await reload(post.id)).status).toBe("published");
+    const text = await updateOpportunity({
+      id: post.id,
+      userId: owner.id,
+      values: values("A new title", { body: richTextFromPlain("Body") }),
+    });
+    expect(text).toEqual({ status: "pending_review" });
+    expect((await reload(post.id)).status).toBe("pending");
+  });
+
+  it("will not resubmit a rejected post when the entry already has 3 open ones", async () => {
+    const { owner, row, post } = await setup({
+      status: "rejected",
+      publishedAt: null,
+    });
+    for (const title of ["A", "B", "C"])
+      await addOpportunity(db, row.id, { title, status: "published" });
+    expect(
+      await updateOpportunity({
+        id: post.id,
+        userId: owner.id,
+        values: values("Fixed up"),
+      }),
+    ).toEqual({ status: "refused", code: "limit_active" });
+    expect((await reload(post.id)).status).toBe("rejected");
+  });
+
+  it("lets an expired post with a past deadline be edited when the deadline is left alone", async () => {
+    const { owner, post } = await setup({
+      deadline: "2026-01-01",
+      expiresAt: new Date(Date.now() - DAY),
+    });
+    expect(
+      await updateOpportunity({
+        id: post.id,
+        userId: owner.id,
+        values: values("Typo fixed", { deadline: "2026-01-01" }),
+      }),
+    ).toEqual({ status: "saved" });
+    expect(
+      await updateOpportunity({
+        id: post.id,
+        userId: owner.id,
+        values: values("Typo fixed", { deadline: "2026-01-02" }),
+      }),
+    ).toEqual({ status: "refused", code: "bad_deadline" });
+  });
+
+  it("refuses a renewal deadline that is not a real day", () => {
+    expect(
+      renewOpportunityInput.safeParse({
+        id: "0198a2c4-0000-7000-8000-000000000000",
+        deadline: "2026-13-45",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("lets only one of two quick renewals revive posts past the cap", async () => {
+    const { owner, row, post } = await setup({
+      expiresAt: new Date(Date.now() - 1000),
+    });
+    const second = await addOpportunity(db, row.id, {
+      title: "Second",
+      status: "published",
+      expiresAt: new Date(Date.now() - 1000),
+    });
+    for (const title of ["A", "B"])
+      await addOpportunity(db, row.id, { title, status: "published" });
+    const results = await Promise.all([
+      renewOpportunity({ id: post.id, userId: owner.id }),
+      renewOpportunity({ id: second.id, userId: owner.id }),
+    ]);
+    expect(results.filter((r) => r.status === "saved")).toHaveLength(1);
   });
 });
