@@ -20,6 +20,7 @@ interface IReviewRowProps {
   onSelect: (checked: boolean) => void;
   onApprove: () => void;
   onReject: () => void;
+  onMovePin: () => void;
 }
 
 export default function ReviewRow({
@@ -28,6 +29,7 @@ export default function ReviewRow({
   onSelect,
   onApprove,
   onReject,
+  onMovePin,
 }: IReviewRowProps) {
   const isReport = row.type === "report";
   const removes = removesPost(row);
@@ -37,6 +39,10 @@ export default function ReviewRow({
   ]
     .filter(Boolean)
     .join(", ");
+  // People are shown at town level only, so the service refuses a hand-placed pin for them.
+  const canMovePin =
+    (row.type === "application" || row.type === "untrusted_edit") &&
+    row.kind !== "person";
   return (
     <TableRow data-state={selected ? "selected" : undefined}>
       <TableCell>
@@ -122,6 +128,16 @@ export default function ReviewRow({
             >
               {isReport ? m.review_dismiss() : m.review_reject()}
             </Button>
+            {canMovePin && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={onMovePin}
+              >
+                {m.admin_entries_action_pin()}
+              </Button>
+            )}
           </div>
         )}
       </TableCell>

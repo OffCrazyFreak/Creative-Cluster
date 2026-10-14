@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { REVIEW_STALE_DAYS } from "@/constants/moderation";
+import MovePinDialog from "@/features/admin-entries/components/move-pin-dialog";
 import { m } from "@/paraglide/messages";
 
 import { useReviewDecisions } from "../hooks/use-review-decisions";
@@ -28,6 +29,7 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [rejecting, setRejecting] = useState<string[] | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
+  const [pinRow, setPinRow] = useState<IReviewRow | null>(null);
   const [busy, setBusy] = useState(false);
 
   const rows = data?.rows ?? [];
@@ -149,6 +151,7 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
               removesPost(row) ? setRemoving(row.id) : void approve([row.id])
             }
             onReject={(row) => void startReject([row.id])}
+            onMovePin={setPinRow}
           />
         </div>
       )}
@@ -190,6 +193,13 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
           open
           onOpenChange={(open) => !open && setRemoving(null)}
           onConfirm={(removal) => confirmRemove(removing, removal)}
+        />
+      )}
+      {pinRow && (
+        <MovePinDialog
+          entryId={pinRow.entityId}
+          name={pinRow.label}
+          onClose={() => setPinRow(null)}
         />
       )}
     </section>
