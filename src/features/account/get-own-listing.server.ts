@@ -4,11 +4,8 @@ import { db } from "@/db/client.server";
 import { entry, entryTag, image, reviewItem } from "@/db/schema";
 
 import type { IOwnListing } from "./listing-types";
-import {
-  EMPTY_TAGS,
-  formValuesOfRow,
-  type IImageRow,
-} from "./listing-values.server";
+import { emptyTags } from "./listing-defaults";
+import { formValuesOfRow, type IImageRow } from "./listing-values.server";
 
 async function loadImages(ids: (string | null)[]) {
   const wanted = ids.filter((id): id is string => id !== null);
@@ -56,7 +53,7 @@ export async function findOwnListing(
       )
       .limit(1),
   ]);
-  const tags = structuredClone(EMPTY_TAGS);
+  const tags = emptyTags();
   for (const { tagId, field } of tagRows) tags[field].push(tagId);
 
   return {

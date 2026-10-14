@@ -336,7 +336,7 @@ describe("listingSchema", () => {
     expect(result.success).toBe(false);
     const paths = result.error?.issues.map((i) => i.path.join(".")) ?? [];
     expect(paths).toContain("website");
-    expect(paths).toContain("location.city");
+    expect(paths).toContain("location");
   });
 
   it("accepts an online-only listing without a city", () => {
