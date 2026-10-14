@@ -155,5 +155,9 @@
   "admin_entries_field_lastConfirmedAt": "Last confirmed",
   "admin_entries_field_importedAt": "Imported",
   "admin_entries_field_erasureRequestedAt": "Deletion requested",
-  "admin_entries_entry_gone": "The entry no longer exists."
+  "admin_entries_entry_gone": "The entry no longer exists.",
+  "admin_entries_prev": "Previous",
+  "admin_entries_next": "Next",
+  "admin_entries_page": "Page {page} of {pages}",
+  "admin_entries_first_page": "Back to the first page"
 }

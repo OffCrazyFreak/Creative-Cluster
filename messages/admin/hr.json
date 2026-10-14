@@ -155,5 +155,9 @@
   "admin_entries_field_lastConfirmedAt": "Zadnja potvrda",
   "admin_entries_field_importedAt": "Uvezeno",
   "admin_entries_field_erasureRequestedAt": "Brisanje zatraženo",
-  "admin_entries_entry_gone": "Unos više ne postoji."
+  "admin_entries_entry_gone": "Unos više ne postoji.",
+  "admin_entries_prev": "Prethodna",
+  "admin_entries_next": "Sljedeća",
+  "admin_entries_page": "Stranica {page} od {pages}",
+  "admin_entries_first_page": "Natrag na prvu stranicu"
 }

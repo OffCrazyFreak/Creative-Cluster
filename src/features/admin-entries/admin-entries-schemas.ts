@@ -16,7 +16,7 @@ export const adminEntriesSearchSchema = z.object({
   unclaimed: z.literal(true).optional().catch(undefined),
   emailInvalid: z.literal(true).optional().catch(undefined),
   q: z.string().trim().max(100).optional().catch(undefined),
-  page: z.number().int().min(1).default(1).catch(1),
+  page: z.number().int().min(1).max(100_000).default(1).catch(1),
 });
 
 export type AdminEntriesSearch = z.infer<typeof adminEntriesSearchSchema>;

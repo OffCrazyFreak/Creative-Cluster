@@ -17,8 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { countryName } from "@/features/directory/country-name";
 import { statusLabel } from "@/features/lifecycle/status-label";
 import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 import { formatDate } from "@/utils/format-date";
 
 import type { IAdminEntryRow } from "../admin-entries-schemas";
@@ -99,7 +101,10 @@ export default function EntriesTable({
         }),
         helper.accessor("countryCode", {
           header: () => m.admin_entries_col_country(),
-          cell: ({ row }) => row.original.countryCode ?? "",
+          cell: ({ row }) =>
+            row.original.countryCode
+              ? countryName(row.original.countryCode, getLocale())
+              : "",
         }),
         helper.accessor("ownerEmail", {
           header: () => m.admin_entries_col_owner(),
@@ -120,6 +125,7 @@ export default function EntriesTable({
     features,
     columns,
     data: rows,
+    getRowId: (row) => row.id,
     rowCount: total,
     manualPagination: true,
     state: { pagination },
