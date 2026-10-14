@@ -174,9 +174,11 @@ export async function resubmitApplication(
 
     const fields = await applicationEntryFields(entryId, input);
     const emailChanged = fields.contactEmail !== row.contactEmail;
-    // A placeholder slug stays one until confirmation; a real slug is renewed only when the name changed.
-    const slug =
-      row.name === input.name || row.slug.startsWith(DRAFT_SLUG_PREFIX)
+    // A draft never holds a name: a changed address goes back to a placeholder slug until confirmation.
+    // Otherwise a real slug is renewed only when the name changed.
+    const slug = emailChanged
+      ? `${DRAFT_SLUG_PREFIX}${entryId}`
+      : row.name === input.name || row.slug.startsWith(DRAFT_SLUG_PREFIX)
         ? row.slug
         : await allocateSlug(tx, input.name);
     const locale = detectSourceLocale(

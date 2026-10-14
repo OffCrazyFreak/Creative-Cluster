@@ -23,10 +23,7 @@ import type {
   IDecideResult,
   IItemDecision,
 } from "./review-schemas";
-import {
-  applyUntrustedEdit,
-  applyUntrustedEditTags,
-} from "./untrusted-edit.server";
+import { applyUntrustedEdit } from "./untrusted-edit.server";
 
 type Item = typeof reviewItem.$inferSelect;
 
@@ -133,8 +130,6 @@ async function decideOne(
     });
     return "ok";
   }
-  if (peek.type === "untrusted_edit" && decision.decision === "approve")
-    await applyUntrustedEditTags(peek.entityId, peek.payload);
   const outcome = await db.transaction(async (tx) => {
     const [item] = await tx
       .select()
