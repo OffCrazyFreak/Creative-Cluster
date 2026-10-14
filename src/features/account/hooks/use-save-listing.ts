@@ -45,6 +45,6 @@ export function useSaveListing(listing: IOwnListing) {
       return tagsSaved ? { status: "saved", changed: true } : result;
     },
     onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: accountKeys.listing() }),
+      queryClient.invalidateQueries({ queryKey: accountKeys.all }),
   });
 }
