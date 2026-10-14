@@ -5,3 +5,11 @@ export class OpportunityDecisionError extends Error {
     this.name = "OpportunityDecisionError";
   }
 }
+
+// The approved post's deadline is already over; the admin should reject it with a reason.
+export class OpportunityDeadlinePassedError extends Error {
+  constructor() {
+    super("The deadline of this opportunity has passed");
+    this.name = "OpportunityDeadlinePassedError";
+  }
+}

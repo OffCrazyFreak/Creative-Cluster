@@ -6,9 +6,14 @@ import { opportunity, reviewItem } from "@/db/schema";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
 import { enqueueTranslation } from "@/lib/translation/enqueue-translation.server";
+import { site } from "@/sites";
+import { formatDate } from "@/utils/format-date";
 import { absoluteUrl } from "@/utils/seo-links";
 
-import { OpportunityDecisionError } from "./opportunity-errors";
+import {
+  OpportunityDecisionError,
+  OpportunityDeadlinePassedError,
+} from "./opportunity-errors";
 import { periodEnd } from "./opportunity-expiry";
 import { lockOpportunityWithOwner } from "./opportunity-owner.server";
 
@@ -32,13 +37,6 @@ function openItems(id: string) {
   );
 }
 
-function formatDate(date: Date, locale: string) {
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: "long",
-    timeZone: "UTC",
-  }).format(date);
-}
-
 // Runs inside the caller's transaction. After it commits, call afterOpportunityChange().
 export async function decideOpportunity(
   tx: Tx,
@@ -48,9 +46,8 @@ export async function decideOpportunity(
   if (!approve && (!reasonCode || (reasonCode === "other" && !cleanNote)))
     throw new OpportunityDecisionError();
 
-  const { row, entryName, owner } = await lockOpportunityWithOwner(tx, id, [
-    "pending",
-  ]);
+  const { row, entryName, entryTrusted, owner } =
+    await lockOpportunityWithOwner(tx, id, ["pending"]);
   const now = new Date();
   const items = await tx
     .select({ id: reviewItem.id })
@@ -71,6 +68,8 @@ export async function decideOpportunity(
 
   if (approve) {
     const expiresAt = periodEnd({ start: now, deadline: row.deadline });
+    // A post whose deadline passed while it waited would be published already expired: reject it instead.
+    if (expiresAt <= now) throw new OpportunityDeadlinePassedError();
     await tx
       .update(opportunity)
       .set({ status: "published", publishedAt: now, expiresAt })
@@ -93,7 +92,12 @@ export async function decideOpportunity(
           locale: owner.locale,
           entryName,
           opportunityTitle: row.title,
-          expiresAt: formatDate(expiresAt, owner.locale),
+          // The stored end is the start of the day after the last open day.
+          expiresAt: formatDate(
+            new Date(expiresAt.getTime() - 1),
+            owner.locale,
+          ),
+          publishedAtOnce: entryTrusted,
           link: absoluteUrl(`/opportunities/${id}`, owner.locale),
         },
         idempotencyKey: `opportunity-approved:${id}:${itemKey}`,
@@ -128,6 +132,7 @@ export async function decideOpportunity(
         link: absoluteUrl("/account/opportunities", owner.locale),
       },
       idempotencyKey: `opportunity-rejected:${id}:${itemKey}`,
+      replyTo: site.contactEmail,
     });
   return "rejected";
 }
