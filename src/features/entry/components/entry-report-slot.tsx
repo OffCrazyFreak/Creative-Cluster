@@ -1,11 +1,14 @@
+import ReportDialog from "@/features/review/components/report-dialog";
+
 interface IEntryReportSlotProps {
   entryId: string;
   slug: string;
   name: string;
 }
 
-// Slot for "Report this listing" (review area). Render the report button and its dialog here.
-export default function EntryReportSlot(props: IEntryReportSlotProps) {
-  void props;
-  return null;
+export default function EntryReportSlot({
+  entryId,
+  name,
+}: IEntryReportSlotProps) {
+  return <ReportDialog entryId={entryId} name={name} />;
 }

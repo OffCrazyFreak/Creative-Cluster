@@ -1,11 +1,13 @@
 import { cn } from "cn";
-import { useState, type ReactNode, type Ref } from "react";
+import { useEffect, useState, type ReactNode, type Ref } from "react";
 
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { m } from "@/paraglide/messages";
 
 interface IMapSheetProps {
   sheetRef: Ref<HTMLDivElement>;
+  // How much of the screen's bottom the sheet covers, as a CSS length.
+  onCoveredChange: (covered: string) => void;
   children: ReactNode;
 }
 
@@ -14,8 +16,16 @@ const HALF = 0.5;
 const FULL = 0.92;
 
 // Phone results sheet: never closes, three snap points, and the list scrolls only when fully open.
-export default function MapSheet({ sheetRef, children }: IMapSheetProps) {
+export default function MapSheet({
+  sheetRef,
+  onCoveredChange,
+  children,
+}: IMapSheetProps) {
   const [snap, setSnap] = useState<number | string | null>(HALF);
+
+  useEffect(() => {
+    onCoveredChange(typeof snap === "number" ? `${snap * 100}dvh` : PEEK);
+  }, [snap, onCoveredChange]);
 
   return (
     <Drawer
