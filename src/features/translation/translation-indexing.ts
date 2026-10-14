@@ -1,4 +1,4 @@
-import type { ITranslationView, TranslatedField } from "./translation-schemas";
+import type { ITranslationView, TranslatedField } from "./translation-fields";
 
 // Fields that have original text but no stored translation.
 export function missingFields(

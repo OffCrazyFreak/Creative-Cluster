@@ -1,5 +1,3 @@
-import "@xyflow/react/dist/style.css";
-
 import { ReactFlow, type Edge } from "@xyflow/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
@@ -12,7 +10,7 @@ import {
   SOURCE_HANDLE_ID,
   TARGET_HANDLE_ID,
 } from "../graph-handles";
-import { GRAPH_NODE } from "../graph-layout";
+import { GRAPH_BOX_CLASS, GRAPH_NODE } from "../graph-layout";
 import GraphNode, { type GraphNodeData } from "./graph-node";
 
 const NODE_TYPES = { partner: GraphNode };
@@ -62,7 +60,7 @@ export default function ConnectionGraph({
     <div
       role="img"
       aria-label={m.connections_graph_label()}
-      className="h-96 md:h-[32rem]"
+      className={GRAPH_BOX_CLASS}
     >
       <ReactFlow
         nodes={nodes}

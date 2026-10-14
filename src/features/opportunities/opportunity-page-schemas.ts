@@ -6,7 +6,7 @@ import {
   type OpportunityCategory,
   type OpportunityType,
 } from "@/constants/opportunities";
-import type { SerializableDoc } from "@/features/translation/translation-schemas";
+import type { SerializableDoc } from "@/features/translation/translation-fields";
 import type { IImageRef } from "@/typings/images";
 
 import type { IOpportunityTagRef } from "./opportunity-list-schemas";

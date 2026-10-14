@@ -9,7 +9,7 @@ import {
   SHORT_TEXT_MAX_CHARS,
   type ITranslationView,
   type TranslatedField,
-} from "../translation-schemas";
+} from "../translation-fields";
 
 export interface IEditValues {
   description: RichTextDoc | null;

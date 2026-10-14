@@ -7,6 +7,8 @@ import {
   type SimulationNodeDatum,
 } from "d3-force";
 
+// Shared by the graph and its loading placeholder so the page does not jump when the chunk arrives.
+export const GRAPH_BOX_CLASS = "h-96 md:h-[32rem]";
 export const GRAPH_NODE = { width: 150, height: 44 } as const;
 const TICKS = 300;
 const LINK_DISTANCE = 190;

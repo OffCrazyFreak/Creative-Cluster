@@ -1,11 +1,17 @@
+import "@xyflow/react/dist/style.css";
+
 import { useQuery } from "@tanstack/react-query";
-import { useId } from "react";
+import { CatchBoundary } from "@tanstack/react-router";
+import { lazy, Suspense, useId } from "react";
 
 import { m } from "@/paraglide/messages";
 
 import { publicConnectionsQuery } from "../connections-queries";
-import ConnectionGraph from "./connection-graph";
+import { GRAPH_BOX_CLASS } from "../graph-layout";
 import PublicPartnerItem from "./public-partner-item";
+
+// The stylesheet (about 2.5 kB gzip) is imported above, not in the lazy chunk, so server-rendered markup is styled before the graph code arrives. A failed chunk load drops only the graph; the partner list below stays.
+const ConnectionGraph = lazy(() => import("./connection-graph"));
 
 interface IEntryConnectionsProps {
   entryId: string;
@@ -29,7 +35,22 @@ export default function EntryConnections({ entryId }: IEntryConnectionsProps) {
           </h2>
           {data.graph ? (
             <>
-              <ConnectionGraph graph={data.graph} centerId={entryId} />
+              <CatchBoundary
+                getResetKey={() => entryId}
+                errorComponent={() => null}
+              >
+                <Suspense
+                  fallback={
+                    <div
+                      role="img"
+                      aria-label={m.connections_graph_label()}
+                      className={GRAPH_BOX_CLASS}
+                    />
+                  }
+                >
+                  <ConnectionGraph graph={data.graph} centerId={entryId} />
+                </Suspense>
+              </CatchBoundary>
               {data.graph.more > 0 ? (
                 <p>
                   <a href={`#${listId}`} className="inline-block py-1">

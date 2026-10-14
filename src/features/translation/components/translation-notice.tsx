@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { m } from "@/paraglide/messages";
 
 import { missingFields } from "../translation-indexing";
-import type { ITranslationView } from "../translation-schemas";
+import type { ITranslationView } from "../translation-fields";
 import TranslationEditForm from "./translation-edit-form";
 
 interface ITranslationNoticeProps {

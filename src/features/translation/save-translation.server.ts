@@ -16,7 +16,7 @@ import {
   valueFor,
   type SaveInput,
 } from "./translation-edit-rows.server";
-import { TRANSLATED_FIELDS } from "./translation-schemas";
+import { TRANSLATED_FIELDS } from "./translation-fields";
 
 // `enqueued` tells the caller whether a machine translation job needs a drain.
 export async function saveOwnerTranslation(
