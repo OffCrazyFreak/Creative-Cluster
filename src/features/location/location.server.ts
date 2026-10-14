@@ -46,11 +46,13 @@ async function acquireNominatim() {
     insert into usage_counter (key, window_start, count) values ('nominatim:slot', now(), 0)
     on conflict (key) do update
       set window_start = greatest(usage_counter.window_start + interval '1 second', now())
+      -- A caller that would wait too long is turned away without taking a slot.
+      where greatest(usage_counter.window_start + interval '1 second', now())
+        <= now() + make_interval(secs => ${NOMINATIM_MAX_WAIT_MS / 1000})
     returning extract(epoch from (window_start - now())) * 1000 as wait_ms`);
-  const wait = Number(
-    (result as { rows: { wait_ms: string }[] }).rows[0]?.wait_ms ?? 0,
-  );
-  if (wait > NOMINATIM_MAX_WAIT_MS) throw new GeocodeError("rate_limited");
+  const row = (result as { rows: { wait_ms: string }[] }).rows[0];
+  if (!row) throw new GeocodeError("rate_limited");
+  const wait = Number(row.wait_ms);
   if (wait > 0) await sleep(wait);
 }
 
