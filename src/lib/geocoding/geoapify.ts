@@ -26,7 +26,7 @@ const resultSchema = z.object({
     })
     .optional(),
 });
-const responseSchema = z.object({ results: z.array(resultSchema).default([]) });
+const responseSchema = z.object({ results: z.array(resultSchema) });
 
 export function parseGeoapify(body: unknown): GeoHit[] {
   const parsed = responseSchema.safeParse(body);
