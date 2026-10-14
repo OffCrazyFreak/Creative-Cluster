@@ -1,5 +1,11 @@
 {
-  "include": ["**/*.ts", "**/*.tsx", "eslint.config.js", "scripts/**/*.mjs"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "netlify/**/*.mts",
+    "eslint.config.js",
+    "scripts/**/*.mjs"
+  ],
   "exclude": ["node_modules", "dist", ".netlify", ".tanstack", "src/paraglide"],
   "compilerOptions": {
     "target": "ES2022",
