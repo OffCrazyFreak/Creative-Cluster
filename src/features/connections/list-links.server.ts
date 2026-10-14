@@ -14,10 +14,13 @@ import type {
 import { DAY_MS, isLiveLink, recipientEntryId } from "./link-conditions.server";
 import { loadEvidenceByLink } from "./link-evidence.server";
 
-const fromEntry = alias(entry, "from_entry");
-const toEntry = alias(entry, "to_entry");
+export const fromEntry = alias(entry, "from_entry");
+export const toEntry = alias(entry, "to_entry");
 
-function refOf(row: typeof entry.$inferSelect): ILinkEntryRef {
+// The owner of the entry that has to decide; null while that listing is unclaimed.
+export const recipientOwnerId = sql`case when ${link.proposedByEntryId} = ${link.fromId} then ${toEntry.ownerUserId} else ${fromEntry.ownerUserId} end`;
+
+export function refOf(row: typeof entry.$inferSelect): ILinkEntryRef {
   return {
     id: row.id,
     name: row.name,
@@ -112,11 +115,10 @@ export async function countPendingProposals(userId: string): Promise<number> {
 export function listUnclaimedWaiting(
   adminId: string,
 ): Promise<IConnectionItem[]> {
-  const recipientOwner = sql`case when ${link.proposedByEntryId} = ${link.fromId} then ${toEntry.ownerUserId} else ${fromEntry.ownerUserId} end`;
   return loadItems(
     and(
       eq(link.status, "proposed"),
-      sql`${recipientOwner} is null`,
+      sql`${recipientOwnerId} is null`,
       or(isNull(link.proposedBy), ne(link.proposedBy, adminId)),
     ),
     (from, proposedById) => (from.id === proposedById ? "to" : "from"),
