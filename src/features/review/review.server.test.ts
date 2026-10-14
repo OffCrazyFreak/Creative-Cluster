@@ -272,6 +272,43 @@ describe.skipIf(!temp)("review services", () => {
     expect(saved).toEqual([]);
   });
 
+  it("rolls the whole approval back when a queued tag is no longer usable", async () => {
+    const boss = await admin();
+    const live = await addEntry(db, "Tags Fail", {}, { ownerUserId: boss.id });
+    const [item] = await db
+      .insert(schema.reviewItem)
+      .values({
+        type: "untrusted_edit",
+        entityType: "entry",
+        entityId: live.id,
+        payload: {
+          patch: { name: "Never Applied" },
+          tags: {
+            topic: ["00000000-0000-7000-8000-000000000000"],
+            offering: [],
+            seeking: [],
+          },
+          submittedBy: boss.id,
+        },
+      })
+      .returning();
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("failed");
+    const [after] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, live.id));
+    expect(after.name).toBe("Tags Fail");
+    const [still] = await db
+      .select()
+      .from(schema.reviewItem)
+      .where(eq(schema.reviewItem.id, item.id));
+    expect(still.status).toBe("open");
+  });
+
   it("closes an edit that has nothing editable left without failing", async () => {
     const boss = await admin();
     const listing = await addEntry(db, "Nothing To Do");
