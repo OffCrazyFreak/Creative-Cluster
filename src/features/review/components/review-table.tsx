@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table";
 import { m } from "@/paraglide/messages";
 
+import { removesPost } from "../review-rows";
 import type { IReviewRow } from "../review-schemas";
 import ReviewRow from "./review-row";
 
@@ -28,7 +29,7 @@ export default function ReviewTable({
   onApprove,
   onReject,
 }: IReviewTableProps) {
-  const decidable = rows.filter((row) => row.decidable);
+  const decidable = rows.filter((row) => row.decidable && !removesPost(row));
   const allSelected =
     decidable.length > 0 && decidable.every((row) => selected.has(row.id));
   return (

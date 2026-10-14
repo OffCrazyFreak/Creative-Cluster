@@ -34,6 +34,8 @@ export interface IRejection {
 
 interface IRejectDialogProps {
   count: number;
+  // The same reason form serves taking a post down after a report.
+  mode?: "reject" | "remove";
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (rejection: IRejection) => Promise<void>;
@@ -41,6 +43,7 @@ interface IRejectDialogProps {
 
 export default function RejectDialog({
   count,
+  mode = "reject",
   open,
   onOpenChange,
   onConfirm,
@@ -49,6 +52,13 @@ export default function RejectDialog({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const noteRequired = NOTE_REQUIRED_REASON_CODES.includes(reasonCode);
+
+  // A removal always emails the owner, spam included, so the "no email" hint would be wrong there.
+  function label(code: ReasonCode): string {
+    return mode === "remove" && code === "spam"
+      ? m.review_reason_spam_removed()
+      : reasonLabel(code);
+  }
 
   async function confirm() {
     setBusy(true);
@@ -60,8 +70,16 @@ export default function RejectDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{m.review_reject_title({ count })}</DialogTitle>
-          <DialogDescription>{m.review_reject_body()}</DialogDescription>
+          <DialogTitle>
+            {mode === "remove"
+              ? m.review_remove_title()
+              : m.review_reject_title({ count })}
+          </DialogTitle>
+          <DialogDescription>
+            {mode === "remove"
+              ? m.review_remove_body()
+              : m.review_reject_body()}
+          </DialogDescription>
         </DialogHeader>
         <Field>
           <FieldLabel htmlFor="reject-reason">
@@ -70,7 +88,7 @@ export default function RejectDialog({
           <Select
             items={REASON_CODES.map((code) => ({
               value: code,
-              label: reasonLabel(code),
+              label: label(code),
             }))}
             value={reasonCode}
             onValueChange={(next) =>
@@ -85,7 +103,7 @@ export default function RejectDialog({
             <SelectContent>
               {REASON_CODES.map((code) => (
                 <SelectItem key={code} value={code}>
-                  {reasonLabel(code)}
+                  {label(code)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -112,7 +130,9 @@ export default function RejectDialog({
             disabled={busy || (noteRequired && note.trim() === "")}
             onClick={() => void confirm()}
           >
-            {m.review_reject_confirm()}
+            {mode === "remove"
+              ? m.review_remove_confirm()
+              : m.review_reject_confirm()}
           </Button>
         </DialogFooter>
       </DialogContent>

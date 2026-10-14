@@ -9,6 +9,7 @@ import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
 import { reviewTypeLabel } from "../review-labels";
+import { removesPost } from "../review-rows";
 import type { IReviewRow } from "../review-schemas";
 import ReviewAge from "./review-age";
 
@@ -28,6 +29,7 @@ export default function ReviewRow({
   onReject,
 }: IReviewRowProps) {
   const isReport = row.type === "report";
+  const removes = removesPost(row);
   const place = [
     row.city,
     row.countryCode && countryName(row.countryCode, getLocale()),
@@ -37,7 +39,7 @@ export default function ReviewRow({
   return (
     <TableRow data-state={selected ? "selected" : undefined}>
       <TableCell>
-        {row.decidable && (
+        {row.decidable && !removes && (
           <Checkbox
             checked={selected}
             onCheckedChange={onSelect}
@@ -49,6 +51,11 @@ export default function ReviewRow({
         <div className="flex flex-col gap-1">
           <span className="font-medium">{row.label}</span>
           {row.kind && <span className="text-xs">{row.kind}</span>}
+          {row.postedBy && (
+            <span className="text-xs">
+              {m.review_posted_by({ name: row.postedBy })}
+            </span>
+          )}
           {place && <span className="text-xs">{place}</span>}
           {row.contactEmail && (
             <span className="text-xs break-all">
@@ -57,13 +64,22 @@ export default function ReviewRow({
           )}
           {(row.type === "application" ||
             row.type === "untrusted_edit" ||
-            row.type === "report") && (
+            (isReport && !removes)) && (
             <Link
               to="/admin/entry/$id"
               params={{ id: row.entityId }}
               className="text-xs"
             >
               {m.review_open_listing()}
+            </Link>
+          )}
+          {removes && (
+            <Link
+              to="/opportunities/$id"
+              params={{ id: row.entityId }}
+              className="text-xs"
+            >
+              {m.review_open_post()}
             </Link>
           )}
           {row.summary && (
@@ -77,7 +93,12 @@ export default function ReviewRow({
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant="secondary">{reviewTypeLabel(row.type)}</Badge>
+        <div className="flex flex-wrap gap-1">
+          <Badge variant="secondary">{reviewTypeLabel(row.type)}</Badge>
+          {row.automatic && (
+            <Badge variant="outline">{m.review_automatic()}</Badge>
+          )}
+        </div>
       </TableCell>
       <TableCell>
         <ReviewAge days={row.ageDays} stale={row.stale} />
@@ -86,7 +107,11 @@ export default function ReviewRow({
         {row.decidable && (
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" onClick={onApprove}>
-              {isReport ? m.review_resolve() : m.review_approve()}
+              {removes
+                ? m.review_remove()
+                : isReport
+                  ? m.review_resolve()
+                  : m.review_approve()}
             </Button>
             <Button
               type="button"

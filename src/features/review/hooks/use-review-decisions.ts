@@ -21,7 +21,12 @@ export function useReviewDecisions() {
       const gone = countOf(results, "gone");
       const unsupported = countOf(results, "unsupported");
       const failed = countOf(results, "failed");
-      if (done) toast.success(m.review_done({ count: done }));
+      const expired = countOf(results, "expired");
+      const noAccount = countOf(results, "no_account");
+      if (done + noAccount)
+        toast.success(m.review_done({ count: done + noAccount }));
+      if (noAccount) toast.info(m.review_no_account({ count: noAccount }));
+      if (expired) toast.error(m.review_expired({ count: expired }));
       if (gone) toast.info(m.review_gone({ count: gone }));
       if (unsupported) toast.info(m.review_unsupported({ count: unsupported }));
       if (failed) toast.error(m.review_failed({ count: failed }));

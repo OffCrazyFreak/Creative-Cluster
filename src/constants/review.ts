@@ -1,4 +1,4 @@
-import type { ReasonCode } from "./moderation";
+import { REVIEW_TYPES, type ReasonCode } from "./moderation";
 
 export const REPORT_REASONS = [
   "inaccurate",
@@ -18,6 +18,11 @@ export const REVIEW_NOTE_MAX = 1000;
 export const SILENT_REASON_CODES: readonly ReasonCode[] = ["spam"];
 // The free note is the whole explanation for "other".
 export const NOTE_REQUIRED_REASON_CODES: readonly ReasonCode[] = ["other"];
+
+// No code creates link disputes, so the queue filter leaves them out; the type stays in the database check.
+export const QUEUE_REVIEW_TYPES = REVIEW_TYPES.filter(
+  (type) => type !== "link_dispute",
+);
 
 export const REVIEW_AGE_FILTERS = ["all", "stale", "fresh"] as const;
 export type ReviewAgeFilter = (typeof REVIEW_AGE_FILTERS)[number];
