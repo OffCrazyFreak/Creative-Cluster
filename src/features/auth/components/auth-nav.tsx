@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { Link, useRouteContext } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,11 @@ import { m } from "@/paraglide/messages";
 import { safeAuthCall } from "../safe-auth-call";
 import { useRefreshViewer } from "../hooks/use-refresh-viewer";
 
-export default function AuthNav() {
+interface IAuthNavProps {
+  className?: string;
+}
+
+export default function AuthNav({ className }: IAuthNavProps) {
   const { viewer } = useRouteContext({ from: "__root__" });
   const refreshViewer = useRefreshViewer();
 
@@ -19,7 +24,12 @@ export default function AuthNav() {
 
   if (!viewer) return <Link to="/login">{m.common_nav_login()}</Link>;
   return (
-    <ul className="flex flex-wrap items-center gap-x-4 [&_a]:inline-block [&_a]:py-2">
+    <ul
+      className={cn(
+        "flex flex-wrap items-center gap-x-4 [&_a]:inline-block [&_a]:py-2",
+        className,
+      )}
+    >
       <li>
         <Link to="/account">{m.common_nav_account()}</Link>
       </li>
