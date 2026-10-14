@@ -38,8 +38,7 @@ export default function CollaborationCards({
             <CollaborationCardItem
               card={card}
               locale={locale}
-              entryName={data.entryName}
-              viewerOwns={data.viewerOwns}
+              perspective={data}
             />
           </li>
         ))}

@@ -1,7 +1,8 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import type { Db } from "@/db/client.server";
 import { entry } from "@/db/schema";
+import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 
 import type { ICollaborationView } from "./matching-schemas";
 import { findCollaborators } from "./matching.server";
@@ -18,12 +19,15 @@ export async function findCollaborationView(
     db
       .select({ name: entry.name, ownerUserId: entry.ownerUserId })
       .from(entry)
-      .where(eq(entry.id, entryId))
+      .where(and(eq(entry.id, entryId), publicEntryCondition()))
       .limit(1),
   ]);
+  // The endpoint is public: an entry that is not shown must not leak its name.
+  if (!owner)
+    return { mode: "collaborate", cards: [], entryName: "", viewerOwns: false };
   return {
     ...result,
-    entryName: owner?.name ?? "",
-    viewerOwns: Boolean(viewerId) && owner?.ownerUserId === viewerId,
+    entryName: owner.name,
+    viewerOwns: Boolean(viewerId) && owner.ownerUserId === viewerId,
   };
 }

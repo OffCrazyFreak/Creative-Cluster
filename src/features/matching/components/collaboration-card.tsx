@@ -11,21 +11,22 @@ import {
 import type { AppLocale } from "@/constants/locales";
 import { m } from "@/paraglide/messages";
 
-import type { ICollaborationCard } from "../matching-schemas";
+import type {
+  ICollaborationCard,
+  IMatchPerspective,
+} from "../matching-schemas";
 import MatchReasonLine from "./match-reason-line";
 
 interface ICollaborationCardProps {
   card: ICollaborationCard;
   locale: AppLocale;
-  entryName: string;
-  viewerOwns: boolean;
+  perspective: IMatchPerspective;
 }
 
 export default function CollaborationCardItem({
   card,
   locale,
-  entryName,
-  viewerOwns,
+  perspective,
 }: ICollaborationCardProps) {
   const place = [card.city, card.countryCode].filter(Boolean).join(", ");
   return (
@@ -51,8 +52,7 @@ export default function CollaborationCardItem({
             key={reason.relation}
             reason={reason}
             locale={locale}
-            entryName={entryName}
-            viewerOwns={viewerOwns}
+            perspective={perspective}
           />
         ))}
       </CardContent>

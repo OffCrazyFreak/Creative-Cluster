@@ -30,4 +30,21 @@ describe.skipIf(!temp)("findCollaborationView", () => {
       false,
     );
   });
+
+  it("gives nothing away about an entry that is not public", async () => {
+    const draft = await addEntry(db, "Secret Draft", {}, { status: "draft" });
+    expect(await findCollaborationView(db, draft.id, null)).toEqual({
+      mode: "collaborate",
+      cards: [],
+      entryName: "",
+      viewerOwns: false,
+    });
+  });
+
+  it("never treats an entry without an owner as the reader's", async () => {
+    const orphan = await addEntry(db, "No Owner");
+    expect((await findCollaborationView(db, orphan.id, null)).viewerOwns).toBe(
+      false,
+    );
+  });
 });

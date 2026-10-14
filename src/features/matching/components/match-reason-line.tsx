@@ -2,20 +2,18 @@ import type { AppLocale } from "@/constants/locales";
 import { tagLabel } from "@/features/tags/tag-label";
 import { m } from "@/paraglide/messages";
 
-import type { IMatchReason } from "../matching-schemas";
+import type { IMatchPerspective, IMatchReason } from "../matching-schemas";
 
 interface IMatchReasonLineProps {
   reason: IMatchReason;
   locale: AppLocale;
-  entryName: string;
-  viewerOwns: boolean;
+  perspective: IMatchPerspective;
 }
 
 export default function MatchReasonLine({
   reason,
   locale,
-  entryName,
-  viewerOwns,
+  perspective: { entryName, viewerOwns },
 }: IMatchReasonLineProps) {
   const tags = new Intl.ListFormat(locale, { type: "conjunction" }).format(
     reason.tags.map((tag) => tagLabel(tag, locale)),
