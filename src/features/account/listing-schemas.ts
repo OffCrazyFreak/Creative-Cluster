@@ -7,8 +7,10 @@ import { LOCALES } from "@/constants/locales";
 import { MAX_TAGS_PER_FIELD, TAG_FIELDS } from "@/constants/tags";
 import { VISIBILITY_FIELDS } from "@/features/entry/entry-visibility";
 import { locationValueSchema } from "@/features/location/location-schemas";
+import type { IParsedRichText } from "@/lib/rich-text/parse-rich-text";
 import { richTextInput } from "@/lib/rich-text/rich-text-input";
 import { m } from "@/paraglide/messages";
+import type { IFormRichText } from "@/typings/rich-text";
 import { normalizeHttpUrl } from "@/utils/http-url";
 
 const L = LISTING_LIMITS;
@@ -46,7 +48,14 @@ const imageValue = z
   })
   .nullable();
 
-const nonEmptyRichText = richTextInput(L.description).refine(
+function richText(max: number) {
+  return richTextInput(max) as unknown as z.ZodType<
+    IParsedRichText,
+    IFormRichText
+  >;
+}
+
+const nonEmptyRichText = richText(L.description).refine(
   (parsed) => parsed.text.length > 0,
   { error: () => m.account_error_description() },
 );
@@ -76,7 +85,7 @@ export const listingSchema = z
       z.array(z.uuid()).max(MAX_TAGS_PER_FIELD),
     ),
     legalStatus: plain(L.legalStatus),
-    references: richTextInput(L.references),
+    references: richText(L.references),
     matchingOptOut: z.boolean(),
   })
   .superRefine((value, ctx) => {
@@ -84,14 +93,14 @@ export const listingSchema = z
     if (!value.location.countryCode) {
       ctx.addIssue({
         code: "custom",
-        path: ["location", "countryCode"],
+        path: ["location"],
         message: m.account_error_location_country(),
       });
     }
     if (!value.location.city) {
       ctx.addIssue({
         code: "custom",
-        path: ["location", "city"],
+        path: ["location"],
         message: m.account_error_location_city(),
       });
     }
@@ -105,3 +114,27 @@ export const saveListingInput = z.object({
   entryId: z.uuid(),
   values: listingSchema,
 });
+
+type FieldIssues = Record<string, { message: string }[]>;
+
+// Nested issues land on the field that is mounted: every location.* issue on "location", every
+// logo.* and cover.* issue on the image field. Messages are localized here, not taken from Zod.
+export function validateListing({ value }: { value: ListingFormValues }) {
+  const result = listingSchema.safeParse(value);
+  if (result.success) return undefined;
+  const fields: FieldIssues = {};
+  for (const issue of result.error.issues) {
+    const [head, ...rest] = issue.path.map(String);
+    const isGroup = ["location", "logo", "cover"].includes(head);
+    const name = isGroup ? head : issue.path.join(".");
+    const nested = isGroup && rest.length > 0;
+    const message =
+      nested && issue.code === "too_big"
+        ? m.account_error_too_long({ max: Number(issue.maximum) })
+        : nested
+          ? m.account_error_location_invalid()
+          : issue.message;
+    (fields[name] ??= []).push({ message });
+  }
+  return { fields };
+}

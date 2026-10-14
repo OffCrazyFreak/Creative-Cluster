@@ -19,3 +19,13 @@ export const LISTING_LIMITS = {
   contactEmail: 254,
   legalStatus: 120,
 } as const;
+
+// Brand names are not translated.
+export const SOCIAL_LABELS: Record<SocialPlatform, string> = {
+  instagram: "Instagram",
+  facebook: "Facebook",
+  linkedin: "LinkedIn",
+  x: "X",
+  youtube: "YouTube",
+  tiktok: "TikTok",
+};

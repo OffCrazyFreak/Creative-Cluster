@@ -23,6 +23,8 @@ export interface ITownPickerProps {
   value: LocationValue;
   onChange: (value: LocationValue) => void;
   defaultCountryCode?: string;
+  invalid?: boolean;
+  describedBy?: string;
 }
 
 // For people: only a town from the static GeoNames list, never an address (privacy by default).
@@ -30,6 +32,8 @@ export default function TownPicker({
   value,
   onChange,
   defaultCountryCode,
+  invalid,
+  describedBy,
 }: ITownPickerProps) {
   const base = useId();
   const countryCode = value.countryCode ?? defaultCountryCode ?? null;
@@ -49,6 +53,8 @@ export default function TownPicker({
         </FieldLabel>
         <CountrySelect
           id={`${base}-country`}
+          invalid={invalid}
+          describedBy={describedBy}
           value={countryCode}
           onChange={(code) => {
             setText("");
@@ -105,6 +111,9 @@ export default function TownPicker({
         >
           <ComboboxInput
             id={`${base}-town`}
+            maxLength={120}
+            aria-invalid={invalid}
+            aria-describedby={describedBy}
             placeholder={m.location_town_placeholder()}
             autoComplete="off"
             disabled={!countryCode}
