@@ -1,32 +1,31 @@
-import { and, asc, count, eq, gte, lt } from "drizzle-orm";
+import { and, asc, count, eq, gte, isNotNull, lt, or, sql } from "drizzle-orm";
 
 import { LOCALES, type AppLocale } from "@/constants/locales";
-import { REPORT_REASONS, type ReportReason } from "@/constants/review";
 import { db } from "@/db/client.server";
-import { entry, reviewItem, usageCounter, user } from "@/db/schema";
+import {
+  entry,
+  opportunity,
+  reviewItem,
+  usageCounter,
+  user,
+} from "@/db/schema";
 import type { IDigestItem } from "@/emails/email-types";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
+import { BOUNCE_SOURCE } from "@/features/contact/bounce-events.server";
 import { kindLabel } from "@/features/admin-entries/entry-kind-label";
-import { m } from "@/paraglide/messages";
 import { site } from "@/sites";
 
-import { reportReasonLabel } from "./review-labels";
+import {
+  reportReasonLabel,
+  reviewAgeLabel,
+  reviewTypeLabel,
+} from "./review-labels";
 
 const DAY_MS = 86_400_000;
 
 function ageDays(createdAt: Date, now: Date): number {
   return Math.floor((now.getTime() - createdAt.getTime()) / DAY_MS);
-}
-
-function isReportReason(value: unknown): value is ReportReason {
-  return REPORT_REASONS.includes(value as ReportReason);
-}
-
-function ageText(days: number, locale: AppLocale): string {
-  return days <= 0
-    ? m.review_age_today({}, { locale })
-    : m.review_age_days({ count: days }, { locale });
 }
 
 async function recentItems(
@@ -39,16 +38,32 @@ async function recentItems(
       id: reviewItem.id,
       createdAt: reviewItem.createdAt,
       payload: reviewItem.payload,
-      name: entry.name,
+      // Reports can target an opportunity post as well as a listing.
+      name: sql<string>`coalesce(${entry.name}, ${opportunity.title})`,
+      isOpportunity: isNotNull(opportunity.id),
       kind: entry.kind,
       countryCode: entry.countryCode,
     })
     .from(reviewItem)
-    .innerJoin(entry, eq(entry.id, reviewItem.entityId))
+    .leftJoin(
+      entry,
+      and(
+        eq(reviewItem.entityType, "entry"),
+        eq(entry.id, reviewItem.entityId),
+      ),
+    )
+    .leftJoin(
+      opportunity,
+      and(
+        eq(reviewItem.entityType, "opportunity"),
+        eq(opportunity.id, reviewItem.entityId),
+      ),
+    )
     .where(
       and(
         eq(reviewItem.type, type),
         eq(reviewItem.status, "open"),
+        or(isNotNull(entry.id), isNotNull(opportunity.id)),
         gte(reviewItem.createdAt, since),
         // Items after this run's start belong to the next window, not to both.
         lt(reviewItem.createdAt, until),
@@ -59,7 +74,10 @@ async function recentItems(
 
 type DigestRow = Awaited<ReturnType<typeof recentItems>>[number];
 
-// Each admin reads the lines in their own language.
+function joinDetail(parts: (string | null)[]) {
+  return parts.filter(Boolean).join(", ");
+}
+
 function applicationLines(
   rows: DigestRow[],
   now: Date,
@@ -69,13 +87,11 @@ function applicationLines(
     const days = ageDays(row.createdAt, now);
     return {
       name: row.name,
-      detail: [
-        kindLabel(row.kind, locale),
+      detail: joinDetail([
+        row.kind && kindLabel(row.kind, locale),
         row.countryCode,
-        ageText(days, locale),
-      ]
-        .filter(Boolean)
-        .join(", "),
+        reviewAgeLabel(days, locale),
+      ]),
       ageDays: days,
     };
   });
@@ -86,13 +102,23 @@ function reportLines(
   now: Date,
   locale: AppLocale,
 ): IDigestItem[] {
-  return rows.map((row) => ({
-    name: row.name,
-    detail: isReportReason(row.payload.reason)
-      ? reportReasonLabel(row.payload.reason, locale)
-      : "",
-    ageDays: ageDays(row.createdAt, now),
-  }));
+  return rows.map((row) => {
+    const days = ageDays(row.createdAt, now);
+    // The automatic bounce report carries a fixed "other" reason that tells the admin nothing.
+    const reason =
+      row.payload.source === BOUNCE_SOURCE
+        ? null
+        : reportReasonLabel(row.payload.reason, locale);
+    return {
+      name: row.name,
+      detail: joinDetail([
+        row.isOpportunity ? reviewTypeLabel("opportunity", locale) : null,
+        reason,
+        reviewAgeLabel(days, locale),
+      ]),
+      ageDays: days,
+    };
+  });
 }
 
 async function openApplicationTotal() {
@@ -161,11 +187,21 @@ export async function queueReviewDigests(now = new Date()) {
   const window = since.toISOString();
   const openTotal = await openApplicationTotal();
   const oldestAgeDays = await oldestOpenApplication(now);
+  const lines = new Map(
+    LOCALES.map((locale) => [
+      locale,
+      {
+        applications: applicationLines(applications, now, locale),
+        reports: reportLines(reports, now, locale),
+      },
+    ]),
+  );
 
   await db.transaction(async (tx) => {
     for (const admin of admins) {
       const locale = adminLocale(admin.locale);
       const link = pageLink("/admin", locale);
+      const localized = lines.get(locale);
       if (applications.length > 0)
         await enqueueEmail(tx, {
           template: "application_digest",
@@ -175,7 +211,7 @@ export async function queueReviewDigests(now = new Date()) {
             count: applications.length,
             openTotal,
             oldestAgeDays,
-            items: applicationLines(applications, now, locale),
+            items: localized?.applications ?? [],
             link,
           },
           idempotencyKey: `digest:application:${window}:${admin.id}`,
@@ -187,7 +223,7 @@ export async function queueReviewDigests(now = new Date()) {
           props: {
             locale,
             count: reports.length,
-            items: reportLines(reports, now, locale),
+            items: localized?.reports ?? [],
             link,
           },
           idempotencyKey: `digest:report:${window}:${admin.id}`,
