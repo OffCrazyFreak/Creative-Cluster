@@ -10,7 +10,7 @@ import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
 import { reviewTypeLabel } from "../review-labels";
-import { removesPost } from "../review-rows";
+import { canMovePin, removesPost } from "../review-rows";
 import type { IReviewRow } from "../review-schemas";
 import ReviewAge from "./review-age";
 
@@ -39,10 +39,6 @@ export default function ReviewRow({
   ]
     .filter(Boolean)
     .join(", ");
-  // People are shown at town level only, so the service refuses a hand-placed pin for them.
-  const canMovePin =
-    (row.type === "application" || row.type === "untrusted_edit") &&
-    row.kind !== "person";
   return (
     <TableRow data-state={selected ? "selected" : undefined}>
       <TableCell>
@@ -128,7 +124,7 @@ export default function ReviewRow({
             >
               {isReport ? m.review_dismiss() : m.review_reject()}
             </Button>
-            {canMovePin && (
+            {canMovePin(row) && (
               <Button
                 type="button"
                 size="sm"

@@ -29,7 +29,10 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [rejecting, setRejecting] = useState<string[] | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
-  const [pinRow, setPinRow] = useState<IReviewRow | null>(null);
+  const [pinRow, setPinRow] = useState<{
+    entityId: string;
+    label: string;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
 
   const rows = data?.rows ?? [];
@@ -151,7 +154,9 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
               removesPost(row) ? setRemoving(row.id) : void approve([row.id])
             }
             onReject={(row) => void startReject([row.id])}
-            onMovePin={setPinRow}
+            onMovePin={(row) =>
+              setPinRow({ entityId: row.entityId, label: row.label })
+            }
           />
         </div>
       )}

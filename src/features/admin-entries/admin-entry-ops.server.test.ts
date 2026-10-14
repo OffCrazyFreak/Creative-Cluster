@@ -222,6 +222,23 @@ describe.skipIf(!temp)("admin entry operations", () => {
       pinMovedByHand: true,
       locationSource: "manual",
     });
+    const [queued] = await db
+      .insert(schema.reviewItem)
+      .values({
+        type: "untrusted_edit",
+        entityType: "entry",
+        entityId: org.id,
+        payload: { patch: { lat: 1, lng: 2, city: "Old" } },
+      })
+      .returning();
+    await movePin(org.id, { lat: 46, lng: 17 }, boss.id);
+    const [after] = await db
+      .select()
+      .from(schema.reviewItem)
+      .where(eq(schema.reviewItem.id, queued.id));
+    expect(after.payload).toMatchObject({
+      patch: { lat: 46, lng: 17, city: "Old", pinMovedByHand: true },
+    });
     await db
       .update(schema.entry)
       .set({ kind: "person" })
