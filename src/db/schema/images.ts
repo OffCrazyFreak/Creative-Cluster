@@ -1,9 +1,9 @@
 import { check, integer, pgTable, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-import { bytea, createdAt, id } from "../columns";
+import { IMAGE_ACCEPTED_TYPES, IMAGE_MAX_BYTES } from "@/constants/images";
 
-export const IMAGE_MAX_BYTES = 1_000_000;
+import { bytea, createdAt, id, oneOf } from "../columns";
 
 // Never select `bytes` in list queries; only the /img route reads it.
 export const image = pgTable(
@@ -20,6 +20,7 @@ export const image = pgTable(
     createdAt: createdAt(),
   },
   (t) => [
+    check("image_mime_check", oneOf(t.mime, IMAGE_ACCEPTED_TYPES)),
     check(
       "image_size_check",
       sql`${t.size} = octet_length(${t.bytes}) and ${t.size} between 1 and ${sql.raw(String(IMAGE_MAX_BYTES))}`,

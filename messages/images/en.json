@@ -1,3 +1,20 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "images_remove": "Remove image",
+  "images_none": "No image yet",
+  "images_hint": "JPEG, PNG or WebP. SVG is not supported.",
+  "images_crop_title": "Crop your image",
+  "images_crop_description": "Drag the image to move it and use the slider to zoom.",
+  "images_zoom": "Zoom",
+  "images_alt_label": "Image description",
+  "images_alt_hint": "Describe the image for people who cannot see it. Leave it as the name if the image is only a logo.",
+  "images_use": "Use this image",
+  "images_working": "Preparing image",
+  "images_error_type": "This file type is not supported. Choose a JPEG, PNG or WebP image.",
+  "images_error_too_big": "This file is too large. Choose an image under {size} MB.",
+  "images_error_decode": "We could not read this image. Try another file.",
+  "images_error_upload": "The image could not be saved. Please try again.",
+  "images_error_limit": "You have uploaded many images recently. Please try again later.",
+  "images_error_too_small": "This image is too small. Choose one that is at least {size} pixels wide and tall.",
+  "images_error_dimensions": "This image size is not accepted. Crop it again or choose another image."
 }
