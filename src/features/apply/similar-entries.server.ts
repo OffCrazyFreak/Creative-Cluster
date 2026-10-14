@@ -33,7 +33,7 @@ export async function findSimilarEntries(
           // A longer typed name that contains an existing short name ("Studio X Zagreb" vs "Studio X").
           and(
             sql`length(${entry.name}) >= 4`,
-            sql`${name.trim().toLowerCase()} like '%' || lower(${entry.name}) || '%'`,
+            sql`strpos(${name.trim().toLowerCase()}, lower(${entry.name})) > 0`,
           ),
         ),
       ),

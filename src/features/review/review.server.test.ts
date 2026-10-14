@@ -6,7 +6,7 @@ import { emptyLocation } from "@/features/location";
 import { richTextFromPlain } from "@/lib/rich-text/empty-rich-text";
 import { parseRichText } from "@/lib/rich-text/parse-rich-text";
 
-import { addEntry } from "../../../tests/helpers/fixture-data";
+import { addEntry, addTag } from "../../../tests/helpers/fixture-data";
 import type { ITempDatabase } from "../../../tests/helpers/temp-database";
 import type { ApplicationInput } from "../apply/apply-schemas";
 
@@ -233,6 +233,43 @@ describe.skipIf(!temp)("review services", () => {
       entityType: "entry",
       entityId: listing.id,
     });
+  });
+
+  it("saves the tags of an approved edit only while the listing is still published", async () => {
+    const boss = await admin();
+    const wanted = await addTag(db, "late-tag");
+    const gone = await addEntry(
+      db,
+      "Tags Gone",
+      {},
+      {
+        ownerUserId: boss.id,
+        status: "archived",
+      },
+    );
+    const [item] = await db
+      .insert(schema.reviewItem)
+      .values({
+        type: "untrusted_edit",
+        entityType: "entry",
+        entityId: gone.id,
+        payload: {
+          patch: {},
+          tags: { topic: [wanted.id], offering: [], seeking: [] },
+          submittedBy: boss.id,
+        },
+      })
+      .returning();
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("gone");
+    const saved = await db
+      .select()
+      .from(schema.entryTag)
+      .where(eq(schema.entryTag.entryId, gone.id));
+    expect(saved).toEqual([]);
   });
 
   it("closes an edit that has nothing editable left without failing", async () => {

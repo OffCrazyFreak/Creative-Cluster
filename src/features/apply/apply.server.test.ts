@@ -268,6 +268,50 @@ describe.skipIf(!temp)("apply services", () => {
     expect(names).toEqual(["Harbour Collective"]);
   });
 
+  it("treats percent and underscore in stored names as plain text in similar hints", async () => {
+    await addEntry(db, "Ab_Cd");
+    await addEntry(db, "Ef%Gh");
+    expect(await findSimilarEntries("Join abXcd and efXYZgh now")).toEqual([]);
+    const hits = (await findSimilarEntries("Join ab_cd now")).map(
+      (r) => r.name,
+    );
+    expect(hits).toEqual(["Ab_Cd"]);
+  });
+
+  it("keeps a placeholder slug when a resubmission changes both name and address", async () => {
+    await createApplication(
+      application({ name: "Both Old", contactEmail: "bothold@example.test" }),
+      "en",
+    );
+    await verifyApplication(await verifyLinkToken("bothold@example.test"));
+    const [row] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.name, "Both Old"));
+    expect(row.slug).toBe("both-old");
+    await db
+      .update(schema.entry)
+      .set({ status: "rejected" })
+      .where(eq(schema.entry.id, row.id));
+    const edit = await issueApplicationToken(db, "apply-edit", row.id, 3600);
+    await resubmitApplication(
+      application({ name: "Both New", contactEmail: "bothnew@example.test" }),
+      edit,
+    );
+    const [draft] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, row.id));
+    expect(draft.status).toBe("draft");
+    expect(draft.slug.startsWith("draft-")).toBe(true);
+    await verifyApplication(await verifyLinkToken("bothnew@example.test"));
+    const [confirmed] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, row.id));
+    expect(confirmed.slug).toBe("both-new");
+  });
+
   it("invalidates earlier confirm links when a resubmission changes the address", async () => {
     await createApplication(
       application({ name: "Moved Mail", contactEmail: "old@example.test" }),
