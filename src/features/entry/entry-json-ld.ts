@@ -4,7 +4,11 @@ import { absoluteUrl } from "@/utils/seo-links";
 import type { IPublicEntry } from "./entry-schemas";
 
 // Town only, by design: people never expose a street, and organizations keep their address on the page.
-export function entryJsonLd(entry: IPublicEntry): Record<string, unknown> {
+export function entryJsonLd(
+  entry: IPublicEntry,
+  // The description in the page language, when a translation replaces the original.
+  description: string = entry.descriptionText,
+): Record<string, unknown> {
   const { city, countryCode } = entry.location;
   const sameAs = Object.values(entry.socials).flatMap(
     (url) => safeHttpUrl(url) ?? [],
@@ -15,9 +19,7 @@ export function entryJsonLd(entry: IPublicEntry): Record<string, unknown> {
     "@type": entry.kind === "person" ? "Person" : "Organization",
     name: entry.name,
     url: absoluteUrl(`/e/${entry.slug}`),
-    ...(entry.descriptionText
-      ? { description: entry.descriptionText.slice(0, 300) }
-      : {}),
+    ...(description ? { description: description.slice(0, 300) } : {}),
     ...(website
       ? { sameAs: [website, ...sameAs] }
       : sameAs.length
