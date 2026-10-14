@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { adminGuard, memberGuard, publicGuard } from "@/server/guards";
 
+import { adminLinksSearchSchema } from "./admin-links-schemas";
 import {
   decideLinkInput,
   linkIdInput,
@@ -13,6 +14,7 @@ import {
 } from "./connections-schemas";
 import { connectionPartnerSlugs } from "./connection-slugs.server";
 import { decideLink, withdrawLink } from "./decide-link.server";
+import { listAdminProposedLinks } from "./list-admin-links.server";
 import {
   countPendingProposals,
   listMyConnections,
@@ -60,6 +62,13 @@ export const getUnclaimedProposals = createServerFn({ method: "GET" })
   .middleware([adminGuard])
   .inputValidator(z.void())
   .handler(({ context }) => listUnclaimedWaiting(context.user.id));
+
+export const getAdminProposedLinks = createServerFn({ method: "GET" })
+  .middleware([adminGuard])
+  .inputValidator(adminLinksSearchSchema)
+  .handler(({ data, context }) =>
+    listAdminProposedLinks(data, context.user.id),
+  );
 
 export const decideUnclaimedProposal = createServerFn({ method: "POST" })
   .middleware([adminGuard])

@@ -1,6 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import type { AdminLinksSearch } from "./admin-links-schemas";
 import {
+  getAdminProposedLinks,
   getConnectionPartnerSlugs,
   getMyConnections,
   getPublicConnections,
@@ -29,6 +31,13 @@ export function unclaimedProposalsQuery() {
   return queryOptions({
     queryKey: [...CONNECTIONS_QUERY_KEY, "unclaimed"],
     queryFn: () => getUnclaimedProposals(),
+  });
+}
+
+export function adminProposedLinksQuery(input: AdminLinksSearch) {
+  return queryOptions({
+    queryKey: [...CONNECTIONS_QUERY_KEY, "admin-proposed", input],
+    queryFn: () => getAdminProposedLinks({ data: input }),
   });
 }
 
