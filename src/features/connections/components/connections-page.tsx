@@ -8,6 +8,7 @@ import {
   unclaimedProposalsQuery,
 } from "../connections-queries";
 import ConnectionSection from "./connection-section";
+import ProposeForm from "./propose-form";
 
 export default function ConnectionsPage() {
   const { viewer } = useRouteContext({ from: "__root__" });
@@ -42,6 +43,7 @@ export default function ConnectionsPage() {
         showSelf={showSelf}
       />
       {items.length === 0 ? <p>{m.connections_empty()}</p> : null}
+      {entries.length > 0 ? <ProposeForm entries={entries} /> : null}
       <ConnectionSection
         title={m.connections_section_unclaimed()}
         description={m.connections_unclaimed_hint()}
