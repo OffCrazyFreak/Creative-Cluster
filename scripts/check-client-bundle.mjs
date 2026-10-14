@@ -2,9 +2,10 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 // Names of server-only values and modules that must never reach dist/client.
+// BETTER_AUTH_SECRET is left out: the better-auth client ships an env getter with that
+// name; the value check below still catches the secret itself.
 const FORBIDDEN = [
   "DATABASE_URL",
-  "BETTER_AUTH_SECRET",
   "PSEUDONYM_SECRET",
   "RESEND_API_KEY",
   "CLOUDFLARE_AI_TOKEN",
