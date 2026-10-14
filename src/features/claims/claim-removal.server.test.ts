@@ -3,7 +3,7 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 
 import * as schema from "@/db/schema";
 
-import { addEntry } from "../../../tests/helpers/fixture-data";
+import { addEntry, addUser } from "../../../tests/helpers/fixture-data";
 import type { ITempDatabase } from "../../../tests/helpers/temp-database";
 
 const { temp } = await vi.hoisted(async () => {
@@ -55,6 +55,49 @@ describe.skipIf(!temp)("claim removal link", () => {
     expect(gone.status).toBe("archived");
     expect(await isSuppressed(db, "TOK-ONE@example.com")).toBe(true);
     expect(await removeListingByToken("tok-one")).toEqual({
+      status: "invalid",
+    });
+  });
+
+  it("does not archive a listing that already has an owner", async () => {
+    const owner = await addUser(db, "Owner");
+    const listing = await invited("tok-owned", "Owned Listing");
+    await db
+      .update(schema.entry)
+      .set({ ownerUserId: owner.id })
+      .where(eq(schema.entry.id, listing.id));
+    expect(await removeListingByToken("tok-owned")).toEqual({
+      status: "invalid",
+    });
+    expect(await isSuppressed(db, "tok-owned@example.com")).toBe(false);
+  });
+
+  it("archives a pending listing, logs it, and retires unsent invites of the same address", async () => {
+    const first = await invited("tok-twin", "Twin One");
+    const second = await addEntry(db, "Twin Two");
+    await db.insert(schema.claimInvite).values({
+      entryId: second.id,
+      email: "TOK-TWIN@example.com",
+      tokenHash: hashClaimToken("tok-twin-2"),
+      expiresAt: new Date(Date.now() + 86_400_000),
+    });
+    await db
+      .update(schema.entry)
+      .set({ status: "pending" })
+      .where(eq(schema.entry.id, first.id));
+
+    expect(await removeListingByToken("tok-twin")).toEqual({ status: "ok" });
+    const [row] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, first.id));
+    expect(row.status).toBe("archived");
+    const logs = await db
+      .select()
+      .from(schema.changeLog)
+      .where(eq(schema.changeLog.entityId, first.id));
+    expect(logs.map((l) => l.action)).toEqual(["status_change"]);
+    expect(await removeListingByToken("tok-twin-2")).toEqual({
       status: "invalid",
     });
   });

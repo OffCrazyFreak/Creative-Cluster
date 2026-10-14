@@ -8,6 +8,7 @@ import { emailSuppression } from "@/db/schema";
 import { env } from "@/env.server";
 
 // Keyed with the site secret so a leaked table cannot be checked against a list of addresses.
+// Rotating PSEUDONYM_SECRET empties the list in effect: re-add the addresses first.
 export function suppressionHash(email: string): string {
   return createHmac("sha256", env.PSEUDONYM_SECRET)
     .update(email.trim().toLowerCase())

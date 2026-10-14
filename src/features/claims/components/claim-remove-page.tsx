@@ -13,7 +13,7 @@ interface IClaimRemovePageProps {
   invite: { entryName: string } | null;
 }
 
-type RemoveState = "ready" | "done" | "error";
+type RemoveState = "ready" | "done" | "invalid" | "retry";
 
 export default function ClaimRemovePage({
   token,
@@ -26,27 +26,34 @@ export default function ClaimRemovePage({
     setBusy(true);
     try {
       const result = await removeImportedListing({ data: { token } });
-      setState(result.status === "ok" ? "done" : "error");
+      setState(result.status === "ok" ? "done" : "invalid");
     } catch {
-      setState("error");
+      // A rate limit or a dropped connection says nothing about the link, so the button stays.
+      setState("retry");
     } finally {
       setBusy(false);
     }
   }
 
+  const view = state === "ready" && !invite ? "invalid" : state;
   return (
     <PageContainer size="narrow">
       <h1 className="text-2xl font-semibold">{m.auth_claim_remove_title()}</h1>
-      {state === "done" ? (
+      {view === "done" ? (
         <p role="status">{m.auth_claim_remove_done()}</p>
-      ) : state === "error" || !invite ? (
+      ) : view === "invalid" ? (
         <>
           <FormError message={m.auth_claim_remove_invalid()} />
           <Link to="/">{m.auth_claim_remove_home()}</Link>
         </>
       ) : (
         <div className="flex flex-col gap-4">
-          <p>{m.auth_claim_remove_intro({ entryName: invite.entryName })}</p>
+          {view === "retry" ? (
+            <FormError message={m.auth_error_generic()} />
+          ) : null}
+          <p>
+            {m.auth_claim_remove_intro({ entryName: invite?.entryName ?? "" })}
+          </p>
           <p>{m.auth_claim_remove_effect()}</p>
           <div>
             <Button
