@@ -202,8 +202,26 @@ describe.skipIf(!temp)("public opportunities", () => {
       expiresAt: new Date(Date.now() - 1000),
     });
     await live(hidden.id, "sitemap-suspended");
-    const ids = (await listSitemapOpportunities()).map((row) => row.id);
+    const listed = await listSitemapOpportunities();
+    const ids = listed.map((row) => row.id);
     expect(ids).toContain(liveOne.id);
+    // No translation yet: only the owner's language is listed, since the other variant is noindex.
+    expect(listed.find((row) => row.id === liveOne.id)?.locales).toEqual([
+      "en",
+    ]);
+    await db.insert(schema.translation).values({
+      entityType: "opportunity",
+      entityId: liveOne.id,
+      field: "title",
+      locale: "hr",
+      text: "Prijevod",
+      origin: "machine",
+      sourceHash: "x",
+    });
+    const after = await listSitemapOpportunities();
+    expect(
+      [...(after.find((row) => row.id === liveOne.id)?.locales ?? [])].sort(),
+    ).toEqual(["en", "hr"]);
     const all = await db.select().from(schema.opportunity);
     const unwanted = all.filter(
       (row) => row.title.startsWith("sitemap-") && row.id !== liveOne.id,

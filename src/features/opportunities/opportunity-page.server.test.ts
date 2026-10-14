@@ -73,6 +73,24 @@ describe.skipIf(!temp)("opportunity page", () => {
     expect((await page({}, "suspended")).result).toEqual({ status: "gone" });
   });
 
+  it("keeps unapproved posts of a suspended entry hidden as missing, not gone", async () => {
+    expect((await page({ status: "pending" }, "suspended")).result).toEqual({
+      status: "missing",
+    });
+  });
+
+  it("only shows a closed post as filled when it was filled", async () => {
+    expect(
+      (
+        await page({
+          status: "closed",
+          closedAt: ago(1),
+          closedReason: "other",
+        })
+      ).result,
+    ).toEqual({ status: "gone" });
+  });
+
   it("answers missing for posts nobody approved", async () => {
     expect((await page({ status: "pending" })).result).toEqual({
       status: "missing",

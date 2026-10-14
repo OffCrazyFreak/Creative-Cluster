@@ -79,19 +79,35 @@ describe.skipIf(!temp)("reportOpportunity", () => {
     expect(await reports(found.id)).toHaveLength(0);
   });
 
-  it("limits reports per visitor", async () => {
+  it("lets one visitor report a post twice a day and 5 posts an hour", async () => {
     const found = await post();
-    for (let i = 0; i < 5; i += 1) await reportOpportunity(input(found.id));
+    await reportOpportunity(input(found.id));
+    await reportOpportunity(input(found.id));
     expect(await reportOpportunity(input(found.id))).toEqual({
       status: "limited",
     });
-    expect(await reports(found.id)).toHaveLength(5);
+    expect(await reports(found.id)).toHaveLength(2);
+    await db.delete(schema.usageCounter);
+    for (let i = 0; i < 5; i += 1)
+      await reportOpportunity(input((await post()).id));
+    expect(await reportOpportunity(input((await post()).id))).toEqual({
+      status: "limited",
+    });
   });
 
-  it("refuses posts a visitor cannot see", async () => {
+  it("refuses posts a visitor cannot open and leaves no counter rows behind", async () => {
     const found = await post("pending");
     await expect(reportOpportunity(input(found.id))).rejects.toBeInstanceOf(
       NotFoundError,
     );
+    const ended = await post();
+    await db
+      .update(schema.opportunity)
+      .set({ expiresAt: new Date(Date.now() - 40 * 86_400_000) })
+      .where(eq(schema.opportunity.id, ended.id));
+    await expect(reportOpportunity(input(ended.id))).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+    expect(await db.select().from(schema.usageCounter)).toHaveLength(0);
   });
 });

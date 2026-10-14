@@ -30,7 +30,10 @@ export const Route = createFileRoute("/_map/opportunities/$id")({
     const path = `/opportunities/${params.id}`;
     const title = opportunity.translation?.title ?? opportunity.title;
     const description =
-      opportunity.bodyText.slice(0, 200) ||
+      (opportunity.translation?.bodyText ?? opportunity.bodyText).slice(
+        0,
+        200,
+      ) ||
       m.opportunities_detail_meta_fallback({
         title,
         name: opportunity.entry.name,

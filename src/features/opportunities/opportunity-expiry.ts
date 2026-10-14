@@ -74,3 +74,8 @@ export function canRenew(post: IRenewable, now: Date): boolean {
 export function renewalStart(expiresAt: Date, now: Date): Date {
   return expiresAt > now ? expiresAt : now;
 }
+
+// Closed and expired pages stay up with a banner for 30 days, then answer 410.
+export function pageGoneAt(endedAt: Date): Date {
+  return addDays(endedAt, L.closedNoindexDays);
+}

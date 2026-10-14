@@ -1,8 +1,8 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import type { z } from "zod";
 
 import { db } from "@/db/client.server";
 import { entry, opportunity, reviewItem } from "@/db/schema";
-import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 import { enforceLimits } from "@/lib/limits/check-limit.server";
 import {
   TurnstileError,
@@ -11,9 +11,8 @@ import {
 import { LimitError, NotFoundError } from "@/server/errors";
 import { clientIp } from "@/server/request.server";
 
-import type { z } from "zod";
-
 import type { reportOpportunityInput } from "./opportunity-page-schemas";
+import { pageStateOf } from "./opportunity-page-state";
 
 export type ReportResult = { status: "ok" | "captcha" | "limited" };
 
@@ -31,28 +30,37 @@ export async function reportOpportunity(
     if (error instanceof TurnstileError) return { status: "captcha" };
     throw error;
   }
+  const [row] = await db
+    .select({
+      id: opportunity.id,
+      status: opportunity.status,
+      closedReason: opportunity.closedReason,
+      closedAt: opportunity.closedAt,
+      expiresAt: opportunity.expiresAt,
+      entryStatus: entry.status,
+    })
+    .from(opportunity)
+    .innerJoin(entry, eq(entry.id, opportunity.entryId))
+    .where(eq(opportunity.id, input.id))
+    .limit(1);
+  // Only posts a visitor can open can be reported; dead or unknown ids cost nothing and leave no counter rows.
+  const state = row && pageStateOf(row, row.entryStatus, new Date());
+  if (!row || !["active", "expired", "filled"].includes(state ?? ""))
+    throw new NotFoundError();
   try {
     await enforceLimits([
       { key: `opp-report:ip:${clientIp()}`, max: 5, windowSeconds: 3600 },
-      { key: `opp-report:post:${input.id}`, max: 10, windowSeconds: 86_400 },
+      // One visitor cannot flood a post, and several visitors cannot lock each other out of reporting it.
+      {
+        key: `opp-report:post:${input.id}:${clientIp()}`,
+        max: 2,
+        windowSeconds: 86_400,
+      },
     ]);
   } catch (error) {
     if (error instanceof LimitError) return { status: "limited" };
     throw error;
   }
-  const [row] = await db
-    .select({ id: opportunity.id })
-    .from(opportunity)
-    .innerJoin(entry, eq(entry.id, opportunity.entryId))
-    .where(
-      and(
-        eq(opportunity.id, input.id),
-        inArray(opportunity.status, ["published", "closed"]),
-        publicEntryCondition(),
-      ),
-    )
-    .limit(1);
-  if (!row) throw new NotFoundError();
   await db.insert(reviewItem).values({
     type: "report",
     entityType: "opportunity",

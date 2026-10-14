@@ -78,13 +78,8 @@
   "opportunities_refused_not_editable": "Ovu objavu više nije moguće uređivati.",
   "opportunities_expiring_notice": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} tvoja prilika uskoro istječe ili je istekla.",
         "countPlural=few": "{count} tvoje prilike uskoro ističu ili su istekle.",
@@ -98,13 +93,8 @@
   "opportunities_board_meta_description": "Otvoreni pozivi i ponude kreativnih organizacija na {site}: partneri, vještine, prostori, usluge i natječaji.",
   "opportunities_board_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} prilika",
         "countPlural=few": "{count} prilike",
@@ -132,7 +122,7 @@
   "opportunities_detail_banner_filled": "Ova prilika je popunjena. Još neko vrijeme ostaje ovdje radi uvida.",
   "opportunities_detail_posted_by": "Objavio unos",
   "opportunities_detail_can_help": "Mogu pomoći",
-  "opportunities_detail_can_help_hint": "Otvori unos {name} i u dijelu za kontakt odgovori na ovu objavu.",
+  "opportunities_detail_can_help_hint": "Otvori unos {name} i javi se u vezi s ovom objavom.",
   "opportunities_detail_section_about": "O ovoj prilici",
   "opportunities_detail_remote": "Može se raditi na daljinu",
   "opportunities_detail_gone_title": "Ova prilika više nije dostupna",

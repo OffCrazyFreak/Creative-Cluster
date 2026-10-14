@@ -78,13 +78,8 @@
   "opportunities_refused_not_editable": "This post can no longer be edited.",
   "opportunities_expiring_notice": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} of your opportunities expires soon or has expired.",
         "countPlural=other": "{count} of your opportunities expire soon or have expired."
@@ -97,13 +92,8 @@
   "opportunities_board_meta_description": "Open calls and offers from creative organizations on {site}: partners, skills, spaces, services and funding calls.",
   "opportunities_board_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} opportunity",
         "countPlural=other": "{count} opportunities"
@@ -130,7 +120,7 @@
   "opportunities_detail_banner_filled": "This opportunity has been filled. It stays here for reference for a while.",
   "opportunities_detail_posted_by": "Posted by",
   "opportunities_detail_can_help": "I can help",
-  "opportunities_detail_can_help_hint": "Open the listing of {name} and use its contact section to answer this post.",
+  "opportunities_detail_can_help_hint": "Open the listing of {name} to get in touch about this post.",
   "opportunities_detail_section_about": "About this opportunity",
   "opportunities_detail_remote": "Can be done remotely",
   "opportunities_detail_gone_title": "This opportunity is no longer available",

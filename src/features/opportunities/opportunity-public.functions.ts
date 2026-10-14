@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeader } from "@tanstack/react-start/server";
 
 import { GONE_HEADER } from "@/features/entry/gone-status-middleware";
 import { publicGuard } from "@/server/guards";
-import { setResponseHeader } from "@tanstack/react-start/server";
 
 import { publicOpportunitiesInput } from "./opportunity-list-schemas";
 import {

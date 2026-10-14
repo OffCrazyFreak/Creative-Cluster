@@ -30,6 +30,7 @@ export type OpportunityPageState = "active" | "expired" | "filled";
 export interface IOpportunityTranslation {
   title: string | null;
   body: SerializableDoc | null;
+  bodyText: string | null;
   origin: "machine" | "human";
 }
 

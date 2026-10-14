@@ -8,7 +8,7 @@ import { toSerializableDoc } from "@/features/translation/translation-schemas";
 import { EMPTY_RICH_TEXT } from "@/lib/rich-text/empty-rich-text";
 import { safeParseRichText } from "@/lib/rich-text/parse-rich-text";
 
-import { isExpired, pageGoneAt } from "./opportunity-expiry";
+import { pageStateOf } from "./opportunity-page-state";
 import {
   loadOpportunityTranslations,
   type IStoredTranslation,
@@ -16,24 +16,7 @@ import {
 import type {
   IOpportunityPage,
   OpportunityPageResult,
-  OpportunityPageState,
 } from "./opportunity-page-schemas";
-
-type Row = typeof opportunity.$inferSelect;
-
-// Active posts are indexed. Ended ones (expired, or closed as filled) answer 200 with a banner
-// for 30 days, then 410. Posts of a suspended entry or removed by an admin answer 410 at once.
-function pageState(
-  row: Row,
-  now: Date,
-): OpportunityPageState | "gone" | "missing" {
-  if (row.status === "removed") return "gone";
-  if (row.status === "closed")
-    return row.closedAt && now < pageGoneAt(row.closedAt) ? "filled" : "gone";
-  if (row.status !== "published") return "missing";
-  if (!isExpired(row.expiresAt, now)) return "active";
-  return now < pageGoneAt(row.expiresAt) ? "expired" : "gone";
-}
 
 export async function findOpportunityForPage(
   id: string,
@@ -57,10 +40,8 @@ export async function findOpportunityForPage(
     .where(eq(opportunity.id, id))
     .limit(1);
   if (!found || found.kind === "outside_partner") return { status: "missing" };
-  if (found.entryStatus === "suspended") return { status: "gone" };
-  if (found.entryStatus !== "published") return { status: "missing" };
 
-  const state = pageState(found.opp, new Date());
+  const state = pageStateOf(found.opp, found.entryStatus, new Date());
   if (state === "gone" || state === "missing") return { status: state };
 
   const { opp } = found;
@@ -110,6 +91,7 @@ export async function findOpportunityForPage(
         ? {
             title: translated.title ?? null,
             body: translated.body ? toSerializableDoc(translated.body) : null,
+            bodyText: translated.bodyText ?? null,
             origin: translated.origin ?? "machine",
           }
         : null,

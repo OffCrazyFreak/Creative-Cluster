@@ -71,7 +71,14 @@ export default function OpportunityReportDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        // The widget unmounts with the dialog, so a token kept from before would be stale on reopening.
+        if (!next) resetCheck(null);
+      }}
+    >
       <DialogTrigger render={<Button type="button" variant="outline" />}>
         {m.opportunities_report_button()}
       </DialogTrigger>
