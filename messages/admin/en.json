@@ -171,5 +171,22 @@
   "admin_nav_users": "Users",
   "admin_nav_tags": "Tags",
   "admin_nav_changes": "Changes",
-  "admin_nav_export": "Export"
+  "admin_nav_export": "Export",
+  "admin_links_title": "Proposed links",
+  "admin_links_intro": "Every connection proposal still waiting for an answer. You can decide only for listings nobody has claimed yet; otherwise the owner of the listing answers.",
+  "admin_links_filter_search": "Search listing name",
+  "admin_links_filter_kind": "Kind",
+  "admin_links_filter_unclaimed": "Waiting for an unclaimed listing",
+  "admin_links_count": "Proposed links: {count}",
+  "admin_links_none": "No proposed links match these filters.",
+  "admin_links_pagination": "Proposed links pages",
+  "admin_links_col_proposer": "Proposed by",
+  "admin_links_col_relation": "Connection",
+  "admin_links_col_recipient": "Waiting for",
+  "admin_links_col_proposed": "Proposed on",
+  "admin_links_col_expires": "Expires on",
+  "admin_links_owner_decides": "The owner decides",
+  "admin_nav_links": "Proposed links",
+  "admin_links_other_admin_decides": "You proposed this; another admin decides",
+  "admin_links_none_at_all": "No links are waiting for an answer."
 }
