@@ -204,6 +204,9 @@ describe.skipIf(!temp)("listing lifecycle", () => {
     const boss = await addUser(db, "Boss2", "admin");
     await admin.restoreEntryAsAdmin(stale.id, boss.id);
     expect((await statusOf(stale.id)).status).toBe("published");
+    // The restore restarts the clock, so the next run leaves it alone.
+    expect(await scheduled.archiveStaleImports()).toBe(0);
+    expect((await statusOf(stale.id)).status).toBe("published");
   });
 
   it("deletes expired rejected applications and unconfirmed drafts, nothing else", async () => {
@@ -227,7 +230,7 @@ describe.skipIf(!temp)("listing lifecycle", () => {
       .where(eq(schema.entry.id, rejected.id));
     await db
       .update(schema.entry)
-      .set({ createdAt: longAgo })
+      .set({ updatedAt: longAgo })
       .where(eq(schema.entry.id, draft.id));
     await db.insert(schema.reviewItem).values({
       type: "application",
@@ -253,5 +256,52 @@ describe.skipIf(!temp)("listing lifecycle", () => {
         .from(schema.reviewItem)
         .where(eq(schema.reviewItem.entityId, rejected.id)),
     ).toHaveLength(0);
+  });
+
+  it("keeps a suspension from being lifted by an archive and restore round trip", async () => {
+    const boss = await addUser(db, "Boss3", "admin");
+    const { user, listing } = await ownedListing("Stay Suspended");
+    await admin.suspendEntry(listing.id, "Rule break", boss.id);
+    await expect(
+      admin.archiveEntryAsAdmin(listing.id, boss.id),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    await expect(
+      owner.unarchiveOwnListing(user.id, false),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    expect((await statusOf(listing.id)).status).toBe("suspended");
+  });
+
+  it("does not publish a person who withdrew consent", async () => {
+    const boss = await addUser(db, "Boss4", "admin");
+    const { user, listing } = await ownedListing("Withdrawn Person", {
+      kind: "person",
+      consentAt: new Date(),
+      consentVersion: "v1",
+    });
+    await owner.withdrawOwnConsent(user.id);
+    await expect(
+      admin.restoreEntryAsAdmin(listing.id, boss.id),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    expect((await statusOf(listing.id)).status).toBe("archived");
+  });
+
+  it("keeps a re-verified draft until its new confirm link expires", async () => {
+    const recent = await addEntry(
+      db,
+      "Resubmitted Draft",
+      {},
+      { status: "draft" },
+    );
+    await db
+      .update(schema.entry)
+      .set({ createdAt: new Date(Date.now() - 100 * 86_400_000) })
+      .where(eq(schema.entry.id, recent.id));
+    await scheduled.purgeExpiredApplications();
+    expect(
+      await db
+        .select()
+        .from(schema.entry)
+        .where(eq(schema.entry.id, recent.id)),
+    ).toHaveLength(1);
   });
 });
