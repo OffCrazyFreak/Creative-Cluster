@@ -1,4 +1,5 @@
-import { LOCALES } from "@/constants/locales";
+import { LOCALES, type AppLocale } from "@/constants/locales";
+import { listSitemapOpportunities } from "@/features/opportunities/public-opportunities.server";
 import { site } from "@/sites";
 import { absoluteUrl } from "@/utils/seo-links";
 
@@ -23,6 +24,8 @@ const STATIC_PATHS = [
 interface ISitemapPage {
   path: string;
   lastmod?: Date;
+  // Indexable language variants; all of them when omitted.
+  locales?: readonly AppLocale[];
 }
 
 function escapeXml(value: string) {
@@ -33,28 +36,34 @@ function escapeXml(value: string) {
     .replaceAll('"', "&quot;");
 }
 
-// Each language variant is its own <url> with the full reciprocal alternate set.
-function urlBlocks({ path, lastmod }: ISitemapPage) {
+// Each indexable language variant is its own <url> with the full reciprocal alternate set.
+function urlBlocks({ path, lastmod, locales = LOCALES }: ISitemapPage) {
+  const defaultLocale = locales.includes(site.baseLocale)
+    ? site.baseLocale
+    : locales[0];
   const alternates = [
-    ...LOCALES.map(
+    ...locales.map(
       (locale) =>
         `<xhtml:link rel="alternate" hreflang="${locale}" href="${escapeXml(absoluteUrl(path, locale))}"/>`,
     ),
-    `<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(path, site.baseLocale))}"/>`,
+    `<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(path, defaultLocale))}"/>`,
   ].join("");
-  return LOCALES.map(
-    (locale) =>
-      `<url><loc>${escapeXml(absoluteUrl(path, locale))}</loc>${
-        lastmod ? `<lastmod>${lastmod.toISOString()}</lastmod>` : ""
-      }${alternates}</url>`,
-  ).join("");
+  return locales
+    .map(
+      (locale) =>
+        `<url><loc>${escapeXml(absoluteUrl(path, locale))}</loc>${
+          lastmod ? `<lastmod>${lastmod.toISOString()}</lastmod>` : ""
+        }${alternates}</url>`,
+    )
+    .join("");
 }
 
 // Only public, indexable pages: never account, admin or filtered URLs.
 export async function buildSitemap(): Promise<string> {
-  const [entries, facets] = await Promise.all([
+  const [entries, facets, opportunities] = await Promise.all([
     listSitemapEntries(),
     listDirectoryFacets(),
+    listSitemapOpportunities(),
   ]);
   const pages: ISitemapPage[] = [
     ...STATIC_PATHS.map((path) => ({ path })),
@@ -65,6 +74,11 @@ export async function buildSitemap(): Promise<string> {
     ...entries.map((item) => ({
       path: `/e/${item.slug}`,
       lastmod: item.updatedAt,
+    })),
+    ...opportunities.map((item) => ({
+      path: `/opportunities/${item.id}`,
+      lastmod: item.updatedAt,
+      locales: item.locales,
     })),
   ];
   return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${pages.map(urlBlocks).join("")}</urlset>`;
