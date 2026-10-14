@@ -1,5 +1,6 @@
 import type {
   CircleLayerSpecification,
+  LineLayerSpecification,
   ExpressionSpecification,
 } from "maplibre-gl";
 
@@ -60,6 +61,20 @@ export const pointLayer: Omit<CircleLayerSpecification, "source"> = {
     "circle-radius": ["case", ["any", active, selected], 11, 7],
     "circle-stroke-width": 2,
     "circle-stroke-color": COLORS.outline,
+  },
+};
+
+export const ARC_LAYER_ID = "connection-arcs";
+
+// One line layer for every arc of the selected entry; it sits under the pins.
+export const arcLayer: Omit<LineLayerSpecification, "source"> = {
+  id: ARC_LAYER_ID,
+  type: "line",
+  layout: { "line-cap": "round", "line-join": "round" },
+  paint: {
+    "line-color": COLORS.selected,
+    "line-width": 2,
+    "line-opacity": 0.7,
   },
 };
 

@@ -24,6 +24,7 @@
       "./messages/images/{locale}.json",
       "./messages/editor/{locale}.json",
       "./messages/contact/{locale}.json",
+      "./messages/notices/{locale}.json",
       "./messages/admin/{locale}.json",
       "./messages/legal/{locale}.json",
       "./messages/email/{locale}.json",

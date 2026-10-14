@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 
 import { buttonVariants } from "@/components/ui/button";
 import ListingStatusPanel from "@/features/lifecycle/components/listing-status-panel";
+import PendingConnectionsLink from "@/features/connections/components/pending-connections-link";
 import { m } from "@/paraglide/messages";
 
 import { mySummaryQuery } from "../account-queries";
@@ -53,12 +54,9 @@ export default function AccountHomePage() {
           >
             {m.account_home_opportunities()}
           </Link>
-          <Link
-            to="/account/connections"
+          <PendingConnectionsLink
             className={buttonVariants({ variant: "outline" })}
-          >
-            {m.account_home_connections()}
-          </Link>
+          />
         </nav>
       )}
       <div
