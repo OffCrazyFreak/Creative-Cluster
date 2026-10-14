@@ -4,7 +4,12 @@ import { db } from "@/db/client.server";
 import { link } from "@/db/schema";
 
 import type { IConnectionGraph, IPublicPartner } from "./connections-schemas";
-import { GRAPH_NODE, layoutGraph, type IPoint } from "./graph-layout";
+import {
+  GRAPH_NODE,
+  layoutGraph,
+  uniquePairs,
+  type IPoint,
+} from "./graph-layout";
 
 const CACHE_LIMIT = 200;
 const ORIGIN: IPoint = { x: 0, y: 0 };
@@ -24,23 +29,6 @@ function cached(key: string, build: () => Map<string, IPoint>) {
 interface ISelf {
   id: string;
   name: string;
-}
-
-// One edge per pair of entries, even when they are linked under several kinds.
-export function uniquePairs(
-  rows: { id: string; fromId: string; toId: string }[],
-) {
-  const seen = new Map<
-    string,
-    { id: string; source: string; target: string }
-  >();
-  for (const row of rows) {
-    // Directed kinds can exist both ways; the pair is still one edge.
-    const key = [row.fromId, row.toId].sort().join(":");
-    if (!seen.has(key))
-      seen.set(key, { id: row.id, source: row.fromId, target: row.toId });
-  }
-  return [...seen.values()];
 }
 
 // Confirmed links among the shown partners make the picture a network instead of a star.

@@ -36,17 +36,12 @@ export default function ImportPage() {
     setJson("");
     const file = event.target.files?.[0];
     if (!file) return;
-    // The limit counts characters; a UTF-8 character is at most 4 bytes, so only skip reading files that cannot fit.
-    if (file.size > IMPORT_FILE_MAX_CHARS * 4) {
+    if (file.size > IMPORT_FILE_MAX_CHARS) {
       toast.error(m.import_error_size());
       return;
     }
     try {
       const text = await file.text();
-      if (text.length > IMPORT_FILE_MAX_CHARS) {
-        toast.error(m.import_error_size());
-        return;
-      }
       // A slower read of an earlier choice must not overwrite a later one.
       if (read === latestRead.current) setJson(text);
     } catch {

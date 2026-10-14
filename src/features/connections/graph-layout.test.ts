@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { GRAPH_NODE, layoutGraph } from "./graph-layout";
+import { GRAPH_NODE, layoutGraph, uniquePairs } from "./graph-layout";
 
 const edges = [
   { source: "c", target: "a" },
@@ -46,5 +46,20 @@ describe("layoutGraph", () => {
           Math.abs(p.x - q.x) >= GRAPH_NODE.width ||
             Math.abs(p.y - q.y) >= GRAPH_NODE.height,
         ).toBe(true);
+  });
+});
+
+describe("uniquePairs", () => {
+  it("draws one edge per pair, whatever the direction or number of kinds", () => {
+    const edges = uniquePairs([
+      { id: "l1", fromId: "a", toId: "b" },
+      { id: "l2", fromId: "b", toId: "a" },
+      { id: "l3", fromId: "a", toId: "b" },
+      { id: "l4", fromId: "a", toId: "c" },
+    ]);
+    expect(edges).toEqual([
+      { id: "l1", source: "a", target: "b" },
+      { id: "l4", source: "a", target: "c" },
+    ]);
   });
 });
