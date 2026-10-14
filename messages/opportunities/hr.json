@@ -1,3 +1,6 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "opportunities_error_title": "Daj prilici naslov od 3 do 120 znakova.",
+  "opportunities_error_body": "Opiši priliku.",
+  "opportunities_error_deadline": "Odaberi ispravan datum."
 }

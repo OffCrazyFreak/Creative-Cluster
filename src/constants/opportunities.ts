@@ -32,3 +32,18 @@ export const OPPORTUNITY_LIMITS = {
   filledLabelDays: 7,
   closedNoindexDays: 30,
 } as const;
+
+export const OPPORTUNITY_TAG_MAX = 5;
+
+// Why a rule refused a post. The service returns these; the UI maps each to a message.
+export const OPPORTUNITY_RULE_CODES = [
+  "entry_not_published",
+  "limit_active",
+  "limit_daily",
+  "duplicate",
+  "bad_deadline",
+  "invalid_tags",
+  "not_renewable",
+  "not_editable",
+] as const;
+export type OpportunityRuleCode = (typeof OPPORTUNITY_RULE_CODES)[number];

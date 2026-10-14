@@ -1,3 +1,6 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "opportunities_error_title": "Give the opportunity a title of 3 to 120 characters.",
+  "opportunities_error_body": "Describe the opportunity.",
+  "opportunities_error_deadline": "Pick a valid date."
 }

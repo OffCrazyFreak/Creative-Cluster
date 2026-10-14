@@ -24,3 +24,48 @@ export function periodEnd({ start, deadline }: IPeriod): Date {
   const cap = addDays(start, L.maxLifetimeDays);
   return natural < cap ? natural : cap;
 }
+
+// "YYYY-MM-DD" of the UTC day, the shape of the deadline column.
+export function isoDay(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+// 2027-02-30 matches the pattern but is not a day: it must round-trip to count.
+export function isRealDate(value: string): boolean {
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && isoDay(date) === value;
+}
+
+export function isDeadlineAllowed(deadline: string, now: Date): boolean {
+  return (
+    isRealDate(deadline) &&
+    deadline >= isoDay(now) &&
+    deadline <= isoDay(addDays(now, L.maxLifetimeDays))
+  );
+}
+
+interface IRenewable {
+  status: string;
+  expiresAt: Date;
+  renewals: number;
+}
+
+export function isExpired(expiresAt: Date, now: Date): boolean {
+  return expiresAt <= now;
+}
+
+export function isExpiringSoon(expiresAt: Date, now: Date): boolean {
+  return (
+    expiresAt > now &&
+    expiresAt.getTime() - now.getTime() <= L.renewWindowDays * DAY_MS
+  );
+}
+
+// From the last 8 days or after expiry, up to 3 times, without a new review.
+export function canRenew(post: IRenewable, now: Date): boolean {
+  return (
+    post.status === "published" &&
+    post.renewals < L.maxRenewals &&
+    (isExpired(post.expiresAt, now) || isExpiringSoon(post.expiresAt, now))
+  );
+}
