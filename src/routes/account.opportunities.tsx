@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import PagePlaceholder from "@/components/custom/layout/page-placeholder";
+import MyOpportunitiesPage from "@/features/opportunities/components/my-opportunities-page";
+import { myOpportunitiesQuery } from "@/features/opportunities/opportunity-queries";
+import { pickerTagsQuery } from "@/features/tags/tag-queries";
 
 export const Route = createFileRoute("/account/opportunities")({
-  component: () => <PagePlaceholder title="My opportunities" />,
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(myOpportunitiesQuery()),
+      context.queryClient.ensureQueryData(pickerTagsQuery()),
+    ]);
+  },
+  component: MyOpportunitiesPage,
 });

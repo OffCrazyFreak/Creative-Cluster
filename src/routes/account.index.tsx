@@ -1,20 +1,17 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { mySummaryQuery } from "@/features/account/account-queries";
-import AccountHomePage from "@/features/account/components/account-home-page";
-import { isUnauthorized } from "@/features/account/is-unauthorized";
-import { VIEWER_QUERY_KEY } from "@/features/session/session-queries";
+import PageContainer from "@/components/custom/layout/page-container";
+import PagePlaceholder from "@/components/custom/layout/page-placeholder";
+import ExpiringSoonNotice from "@/features/opportunities/components/expiring-soon-notice";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/account/")({
-  // The cached viewer can outlive its session; the guard then says so and the visitor goes to log in.
-  loader: async ({ context, location }) => {
-    try {
-      await context.queryClient.ensureQueryData(mySummaryQuery());
-    } catch (error) {
-      if (!isUnauthorized(error)) throw error;
-      context.queryClient.setQueryData(VIEWER_QUERY_KEY, null);
-      throw redirect({ to: "/login", search: { redirect: location.href } });
-    }
-  },
-  component: AccountHomePage,
+  component: () => (
+    <>
+      <PagePlaceholder title={m.common_nav_account()} />
+      <PageContainer size="prose" className="pt-0">
+        <ExpiringSoonNotice />
+      </PageContainer>
+    </>
+  ),
 });

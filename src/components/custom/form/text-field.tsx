@@ -10,7 +10,7 @@ import { useFieldContext } from "./form-context";
 
 interface ITextFieldProps {
   label: string;
-  type?: "text" | "email" | "password";
+  type?: "text" | "email" | "password" | "date";
   autoComplete?: string;
   description?: string;
   onFocus?: () => void;
