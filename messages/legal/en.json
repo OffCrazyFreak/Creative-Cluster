@@ -1,3 +1,19 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "legal_title_privacy": "Privacy policy",
+  "legal_title_terms": "Terms of use",
+  "legal_title_imprint": "Imprint",
+  "legal_title_accessibility": "Accessibility statement",
+  "legal_title_about": "About",
+  "legal_title_help": "Help",
+  "legal_description_privacy": "What personal data we collect, why, how long we keep it and what you can do about it.",
+  "legal_description_terms": "The rules for using this directory and for publishing a listing.",
+  "legal_description_imprint": "Who runs this website and how to reach them.",
+  "legal_description_accessibility": "How we built this site for everyone and where it still falls short.",
+  "legal_description_about": "What this site is, who runs it and how to take part.",
+  "legal_description_help": "Step by step guides for listing owners and administrators.",
+  "legal_help_owner_tab": "Owner guide",
+  "legal_help_admin_tab": "Admin guide",
+  "legal_help_guides_label": "Help guides",
+  "legal_eu_emblem_alt": "Co-funded by the European Union"
 }
