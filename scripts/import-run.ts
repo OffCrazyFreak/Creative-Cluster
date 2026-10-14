@@ -5,7 +5,10 @@ import { parseArgs } from "node:util";
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
-  options: { "dry-run": { type: "boolean", default: false } },
+  options: {
+    "dry-run": { type: "boolean", default: false },
+    "allow-duplicates": { type: "boolean", default: false },
+  },
 });
 const path = positionals[0];
 if (!path) {
@@ -40,6 +43,13 @@ for (const warning of plan.warnings)
 if (values["dry-run"]) {
   console.log("Dry run: nothing was written.");
   process.exit(0);
+}
+
+if (plan.duplicates.length > 0 && !values["allow-duplicates"]) {
+  console.error(
+    "Possible duplicates found. Fix the file, or pass --allow-duplicates to import them anyway.",
+  );
+  process.exit(1);
 }
 
 const result = await runImport(file);

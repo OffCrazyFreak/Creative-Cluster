@@ -10,6 +10,7 @@ import { site } from "@/sites";
 
 import { entryValuesOf } from "./import-entry-values";
 import type { StagingFile } from "./import-schemas";
+import { assertStagingSite, existingLegacyIds } from "./legacy-ids.server";
 
 export interface IImportResult {
   created: number;
@@ -21,13 +22,14 @@ const IMPORT_LOCK_KEY = 7_315_001;
 
 // Idempotent by extra.legacy_id: an organization that is already in is left alone, so later edits survive a rerun.
 export async function runImport(file: StagingFile): Promise<IImportResult> {
-  if (file.site !== site.id)
-    throw new Error(
-      `Staging file is for ${file.site}, this site is ${site.id}`,
-    );
+  assertStagingSite(file);
 
   const result = await db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${IMPORT_LOCK_KEY})`);
+    const existing = await existingLegacyIds(
+      tx,
+      file.organizations.map((org) => org.legacyId),
+    );
     const wanted = [...new Set(file.organizations.flatMap((o) => o.topics))];
     const tagRows = wanted.length
       ? await tx
@@ -36,17 +38,18 @@ export async function runImport(file: StagingFile): Promise<IImportResult> {
           .where(and(inArray(tag.slug, wanted), isNull(tag.canonicalId)))
       : [];
     const tagId = new Map(tagRows.map((row) => [row.slug, row.id]));
+    // A skipped organization is never revisited, so a missing tag would be lost for good: stop before writing.
+    const missing = wanted.filter((slug) => !tagId.has(slug));
+    if (missing.length)
+      throw new Error(
+        `Topic tags not seeded: ${missing.join(", ")}. Run pnpm seed:tags first.`,
+      );
     const now = new Date();
     let created = 0;
     let skipped = 0;
 
     for (const org of file.organizations) {
-      const [existing] = await tx
-        .select({ id: entry.id })
-        .from(entry)
-        .where(sql`${entry.extra}->>'legacy_id' = ${org.legacyId}`)
-        .limit(1);
-      if (existing) {
+      if (existing.has(org.legacyId)) {
         skipped += 1;
         continue;
       }
@@ -114,6 +117,8 @@ export async function listImportedWithoutPrecisePin(): Promise<
     .where(
       and(
         sql`${entry.importedAt} is not null`,
+        eq(entry.status, "published"),
+        isNull(entry.erasureRequestedAt),
         eq(entry.onlineOnly, false),
         sql`(${entry.lat} is null or ${entry.precision} is distinct from 'house' and ${entry.precision} is distinct from 'street')`,
       ),

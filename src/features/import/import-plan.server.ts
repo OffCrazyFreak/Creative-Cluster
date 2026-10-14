@@ -1,9 +1,11 @@
-import { and, inArray, isNull, sql } from "drizzle-orm";
+import { and, inArray, isNull } from "drizzle-orm";
+import { z } from "zod";
 
 import { db } from "@/db/client.server";
 import { entry, tag } from "@/db/schema";
 
 import type { StagingFile, StagingOrganization } from "./import-schemas";
+import { assertStagingSite, existingLegacyIds } from "./legacy-ids.server";
 import type {
   ImportDuplicateReason,
   ImportWarningCode,
@@ -47,7 +49,7 @@ function warningsOf(
 ): IImportWarning[] {
   const found: Pick<IImportWarning, "code" | "detail">[] = [];
   if (org.contactEmail === "") found.push({ code: "no_email" });
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(org.contactEmail))
+  else if (!z.email().safeParse(org.contactEmail).success)
     found.push({ code: "bad_email" });
   if (org.location.lat === null) found.push({ code: "no_pin" });
   else if (org.location.precision === "town") found.push({ code: "town_pin" });
@@ -65,25 +67,14 @@ function warningsOf(
 export async function planImport(file: StagingFile): Promise<IImportPlan> {
   const orgs = file.organizations;
   const legacyIds = orgs.map((org) => org.legacyId);
-  const existingIds = new Set(
-    (
-      await db
-        .select({ legacyId: sql<string>`${entry.extra}->>'legacy_id'` })
-        .from(entry)
-        .where(inArray(sql`${entry.extra}->>'legacy_id'`, legacyIds))
-    ).map((row) => row.legacyId),
-  );
+  assertStagingSite(file);
+  const existingIds = await existingLegacyIds(db, legacyIds);
   const fresh = orgs.filter((org) => !existingIds.has(org.legacyId));
 
-  const names = fresh.map((org) => org.name.toLowerCase());
-  const existing = names.length
-    ? await db
-        .select({ name: entry.name, website: entry.website })
-        .from(entry)
-        .where(
-          sql`lower(${entry.name}) in ${names} or ${entry.website} is not null`,
-        )
-    : [];
+  // Names compare in JS on both sides so the case rule is the same everywhere.
+  const existing = await db
+    .select({ name: entry.name, website: entry.website })
+    .from(entry);
   const byName = new Map(existing.map((row) => [row.name.toLowerCase(), row]));
   const byHost = new Map<string, string>();
   for (const row of existing) {
