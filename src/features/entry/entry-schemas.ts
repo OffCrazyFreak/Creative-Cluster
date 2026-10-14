@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import type { EntryKind } from "@/constants/entry";
 import type { TagField } from "@/constants/tags";
+import type { IPublicImage } from "@/typings/images";
+import type { JsonRichTextDoc } from "@/typings/rich-text";
 
 export const slugInputSchema = z.object({ slug: z.string().min(1).max(120) });
 
@@ -30,6 +32,8 @@ export interface IPublicEntry {
   kind: EntryKind;
   name: string;
   sourceLocale: string;
+  // Rich text as stored; null for entries written before the editor, which fall back to descriptionText.
+  description: JsonRichTextDoc | null;
   descriptionText: string;
   offeringText: string;
   seekingText: string;
@@ -42,6 +46,8 @@ export interface IPublicEntry {
   legalStatus: string | null;
   location: IPublicLocation;
   tags: ITagRef[];
+  logo: IPublicImage | null;
+  cover: IPublicImage | null;
   publishedAt: string | null;
   updatedAt: string;
   lastConfirmedAt: string | null;
