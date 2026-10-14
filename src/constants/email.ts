@@ -28,4 +28,15 @@ export const EMAIL_SOFT_CAP_RATIO = 0.8;
 export const EMAIL_EXPIRY_KEYS = ["hour", "days7", "days30"] as const;
 export type EmailExpiry = (typeof EMAIL_EXPIRY_KEYS)[number];
 
-export const INVITE_TOKEN_TTL_SECONDS = 7 * 24 * 3600;
+export const EMAIL_EXPIRY_SECONDS: Record<EmailExpiry, number> = {
+  hour: 3600,
+  days7: 7 * 24 * 3600,
+  days30: 30 * 24 * 3600,
+};
+
+// The mail text and the token lifetime must agree, so each lifetime is one key plus this map.
+export const AUTH_LINK_EXPIRY: EmailExpiry = "hour";
+export const AUTH_LINK_TTL_SECONDS = EMAIL_EXPIRY_SECONDS[AUTH_LINK_EXPIRY];
+
+export const INVITE_EXPIRY: EmailExpiry = "days7";
+export const INVITE_TOKEN_TTL_SECONDS = EMAIL_EXPIRY_SECONDS[INVITE_EXPIRY];
