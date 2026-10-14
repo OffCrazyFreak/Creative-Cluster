@@ -4,6 +4,11 @@ import { RichTextError } from "./rich-text-error";
 
 const TAG_PATTERN = /<(\/?)(\d+)>/g;
 
+// The text as a reader sees it: numbered tags removed, nothing else touched.
+export function stripInlineTags(value: string) {
+  return value.replace(TAG_PATTERN, "");
+}
+
 function escapeText(value: string) {
   return value
     .replaceAll("&", "&amp;")

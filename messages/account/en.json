@@ -1,3 +1,12 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "account_error_name": "Enter a name of 2 to 120 characters.",
+  "account_error_description": "Describe your listing.",
+  "account_error_rich_text": "This text is too long or not valid.",
+  "account_error_too_long": "Use at most {max} characters.",
+  "account_error_url": "Enter a web address that starts with http:// or https://.",
+  "account_error_email": "Enter a valid email address.",
+  "account_error_phone": "Enter a valid phone number, for example +385 1 234 5678.",
+  "account_error_location_city": "Choose a town or city.",
+  "account_error_location_country": "Choose a country."
 }
