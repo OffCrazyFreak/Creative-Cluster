@@ -361,6 +361,47 @@ describe.skipIf(!temp)("tag services", () => {
       expect([b.tag.slug, c.tag.slug].sort()).toEqual(["fizz", "fizz-2"]);
     });
 
+    it("does not rate limit picking a label that already exists", async () => {
+      const picker = await addUser(db, "picker");
+      await addTag(db, "pottery");
+      for (let i = 0; i < 35; i += 1) {
+        const { created } = await suggestTag({
+          userId: picker.id,
+          label: "Pottery",
+          locale: "en",
+        });
+        expect(created).toBe(false);
+      }
+      await expect(
+        suggestTag({ userId: picker.id, label: "Bookbinding", locale: "en" }),
+      ).resolves.toMatchObject({ created: true });
+    });
+
+    it("counts refused new suggestions toward the hourly limit", async () => {
+      const admin = await addUser(db, "admin-hourly", "admin");
+      const eager = await addUser(db, "eager");
+      const first = await suggestTag({
+        userId: eager.id,
+        label: "Eager 0",
+        locale: "en",
+      });
+      for (let i = 1; i < 30; i += 1) {
+        await suggestTag({
+          userId: eager.id,
+          label: `Eager ${i}`,
+          locale: "en",
+        }).catch(() => undefined);
+      }
+      await decideSuggestion({
+        tagId: first.tag.id,
+        decision: "reject",
+        adminId: admin.id,
+      });
+      await expect(
+        suggestTag({ userId: eager.id, label: "Eager more", locale: "en" }),
+      ).rejects.toThrow("Too many requests");
+    });
+
     it("cannot exceed the suggestion cap with parallel requests", async () => {
       const member = await addUser(db, "m4");
       const results = await Promise.allSettled(
