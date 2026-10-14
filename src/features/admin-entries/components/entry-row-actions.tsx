@@ -81,6 +81,24 @@ export default function EntryRowActions({
               : m.admin_entries_action_trust()}
           </DropdownMenuItem>
         )}
+        {!isStub && (
+          <DropdownMenuItem onClick={() => onDialog({ kind: "transfer", row })}>
+            {m.admin_entries_action_transfer()}
+          </DropdownMenuItem>
+        )}
+        {isStub && (
+          <DropdownMenuItem onClick={() => onDialog({ kind: "merge", row })}>
+            {m.admin_entries_action_merge()}
+          </DropdownMenuItem>
+        )}
+        {row.kind !== "person" && (
+          <DropdownMenuItem onClick={() => onDialog({ kind: "pin", row })}>
+            {m.admin_entries_action_pin()}
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem onClick={() => onDialog({ kind: "slug", row })}>
+          {m.admin_entries_action_slug()}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -27,7 +27,7 @@ interface IAdminEntryPageProps {
 
 export default function AdminEntryPage({ id }: IAdminEntryPageProps) {
   const { data } = useQuery(adminEntryQueryOptions(id));
-  const run = useLifecycleAction(adminEntryQueryOptions(id).queryKey);
+  const run = useLifecycleAction(["admin"]);
   const [suspending, setSuspending] = useState(false);
   if (!data) return null;
 

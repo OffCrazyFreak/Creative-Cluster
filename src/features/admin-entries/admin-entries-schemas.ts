@@ -40,3 +40,85 @@ export interface IAdminEntriesPage {
   total: number;
   pageSize: number;
 }
+
+export type OpResult<E extends string> = { ok: true } | { ok: false; error: E };
+
+export const entryIdSchema = z.object({ id: z.uuid() });
+
+export const transferOwnerSchema = z.object({
+  id: z.uuid(),
+  userId: z.uuid(),
+});
+export type TransferError = "owner_has_entry" | "not_found" | "blocked";
+
+export const mergeSchema = z.object({
+  stubId: z.uuid(),
+  targetId: z.uuid(),
+});
+export type MergeError = "not_found" | "not_a_stub" | "bad_target";
+
+export const movePinSchema = z.object({
+  id: z.uuid(),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+});
+export type MovePinError = "not_found" | "person";
+
+export const changeSlugSchema = z.object({
+  id: z.uuid(),
+  slug: z.string().trim().min(1).max(80),
+});
+export type SlugError = "taken" | "invalid" | "not_found";
+
+export const searchSchema = z.object({ q: z.string().trim().min(2).max(100) });
+
+export interface IUserHit {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface IEntryHit {
+  id: string;
+  name: string;
+  slug: string;
+  status: EntryStatus;
+}
+
+export type DetailFieldType = "text" | "date" | "bool" | "json";
+
+export interface IDetailField {
+  key: string;
+  type: DetailFieldType;
+  value: string | null;
+}
+
+export interface IStatusChange {
+  id: string;
+  createdAt: string;
+  actor: string | null;
+  source: string;
+  from: string | null;
+  to: string | null;
+  reason: string | null;
+}
+
+export interface IOpenReview {
+  id: string;
+  type: string;
+  createdAt: string;
+}
+
+export interface IAdminEntryDetail {
+  id: string;
+  name: string;
+  kind: EntryKind;
+  status: EntryStatus;
+  slug: string;
+  lat: number | null;
+  lng: number | null;
+  countryCode: string | null;
+  fields: IDetailField[];
+  history: IStatusChange[];
+  reviews: IOpenReview[];
+}
