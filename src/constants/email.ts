@@ -8,6 +8,10 @@ export const EMAIL_TEMPLATE_NAMES = [
   "reset",
   "change",
   "application_received",
+  "approved",
+  "rejected",
+  "application_digest",
+  "report_digest",
 ] as const;
 export type EmailTemplateName = (typeof EMAIL_TEMPLATE_NAMES)[number];
 
@@ -22,6 +26,10 @@ export const EMAIL_TEMPLATE_PRIORITY: Record<
   reset: "urgent",
   change: "urgent",
   application_received: "normal",
+  approved: "normal",
+  rejected: "normal",
+  application_digest: "normal",
+  report_digest: "normal",
 };
 
 // Non-urgent mail waits for the next UTC day once this share of the cap is sent.

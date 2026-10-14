@@ -1,0 +1,258 @@
+import { eq } from "drizzle-orm";
+import { afterAll, describe, expect, it, vi } from "vitest";
+
+import * as schema from "@/db/schema";
+import { emptyLocation } from "@/features/location";
+import { richTextFromPlain } from "@/lib/rich-text/empty-rich-text";
+import { parseRichText } from "@/lib/rich-text/parse-rich-text";
+
+import { addEntry } from "../../../tests/helpers/fixture-data";
+import type { ITempDatabase } from "../../../tests/helpers/temp-database";
+import type { ApplicationInput } from "../apply/apply-schemas";
+
+const { temp } = await vi.hoisted(async () => {
+  const helper = await import("../../../tests/helpers/temp-database");
+  return { temp: await helper.createTempDatabase("review") };
+});
+vi.mock("@/db/client.server", () => ({ db: temp?.db }));
+const { createApplication } = await import("../apply/apply.server");
+const { verifyApplication } =
+  await import("../apply/verify-application.server");
+const { decideReviewItems } = await import("./decide-review.server");
+const { listReviewItems } = await import("./review-queue.server");
+const { createReport } = await import("./report.server");
+const { queueReviewDigests } = await import("./review-digest.server");
+const { submitUntrustedEdit } = await import("./untrusted-edit.server");
+
+function application(name: string, email: string): ApplicationInput {
+  return {
+    kind: "organization",
+    name,
+    description: parseRichText(
+      richTextFromPlain("We run workshops for schools every week."),
+    ),
+    contactName: "",
+    contactEmail: email,
+    contactPhone: "",
+    website: null,
+    location: { ...emptyLocation("HR"), city: "Zagreb" },
+    consent: false,
+    ageConfirmed: false,
+  };
+}
+
+describe.skipIf(!temp)("review services", () => {
+  const { db } = temp as ITempDatabase;
+  afterAll(async () => {
+    await temp?.drop();
+  });
+
+  async function admin() {
+    const [row] = await db
+      .insert(schema.user)
+      .values({
+        name: "Admin",
+        email: "admin@example.test",
+        role: "admin",
+        locale: "en",
+      })
+      .onConflictDoNothing()
+      .returning();
+    return (
+      row ??
+      (
+        await db
+          .select()
+          .from(schema.user)
+          .where(eq(schema.user.email, "admin@example.test"))
+      )[0]
+    );
+  }
+
+  async function verifiedApplication(name: string, email: string) {
+    await createApplication(application(name, email), "en");
+    const jobs = await db.select().from(schema.job);
+    const mail = jobs
+      .map(
+        (j) =>
+          j.payload as {
+            template: string;
+            to: string;
+            props: { link?: string };
+          },
+      )
+      .filter((p) => p.template === "verify" && p.to === email)
+      .at(-1);
+    const token =
+      new URL(mail?.props.link ?? "http://x").searchParams.get("token") ?? "";
+    await verifyApplication(token);
+    const [item] = await db
+      .select()
+      .from(schema.reviewItem)
+      .innerJoin(schema.entry, eq(schema.entry.id, schema.reviewItem.entityId))
+      .where(eq(schema.entry.name, name));
+    return item;
+  }
+
+  async function mailsTo(email: string) {
+    return (await db.select().from(schema.job))
+      .map((j) => j.payload as { template: string; to: string })
+      .filter((p) => p.to === email);
+  }
+
+  it("approving publishes, creates the owner and mails a set-password link", async () => {
+    const boss = await admin();
+    const { review_item: item, entry: row } = await verifiedApplication(
+      "Approved Place",
+      "approved@example.test",
+    );
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("ok");
+    const [after] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, row.id));
+    expect(after.status).toBe("published");
+    expect(after.ownerUserId).toBeTruthy();
+    const [owner] = await db
+      .select()
+      .from(schema.user)
+      .where(eq(schema.user.email, "approved@example.test"));
+    expect(owner.emailVerified).toBe(true);
+    expect(
+      (await mailsTo("approved@example.test")).map((m) => m.template),
+    ).toContain("approved");
+    const tokens = await db.select().from(schema.verification);
+    expect(tokens.some((t) => t.identifier.startsWith("reset-password:"))).toBe(
+      true,
+    );
+    // Deciding the same item twice reports it as gone.
+    const [again] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(again.outcome).toBe("gone");
+  });
+
+  it("rejecting mails the reason and an edit link, except for spam", async () => {
+    const boss = await admin();
+    const first = await verifiedApplication("Rejected One", "r1@example.test");
+    const second = await verifiedApplication(
+      "Rejected Spam",
+      "r2@example.test",
+    );
+    const results = await decideReviewItems(
+      {
+        ids: [first.review_item.id],
+        decision: "reject",
+        reasonCode: "incomplete",
+        note: "Add a website",
+      },
+      boss.id,
+    );
+    expect(results[0].outcome).toBe("ok");
+    await decideReviewItems(
+      { ids: [second.review_item.id], decision: "reject", reasonCode: "spam" },
+      boss.id,
+    );
+    expect((await mailsTo("r1@example.test")).map((m) => m.template)).toContain(
+      "rejected",
+    );
+    expect(
+      (await mailsTo("r2@example.test")).map((m) => m.template),
+    ).not.toContain("rejected");
+    const [entryRow] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, first.entry.id));
+    expect(entryRow.status).toBe("rejected");
+  });
+
+  it("refuses a rejection without a reason or without the note that other needs", async () => {
+    const boss = await admin();
+    const item = await verifiedApplication("Needs Reason", "nr@example.test");
+    const noReason = await decideReviewItems(
+      { ids: [item.review_item.id], decision: "reject" },
+      boss.id,
+    );
+    expect(noReason[0].outcome).toBe("failed");
+    const noNote = await decideReviewItems(
+      { ids: [item.review_item.id], decision: "reject", reasonCode: "other" },
+      boss.id,
+    );
+    expect(noNote[0].outcome).toBe("failed");
+  });
+
+  it("applies an approved sensitive edit and ignores fields that are not editable", async () => {
+    const boss = await admin();
+    const listing = await addEntry(db, "Trusted Not");
+    const itemId = await db.transaction((tx) =>
+      submitUntrustedEdit(tx, {
+        entryId: listing.id,
+        userId: boss.id,
+        changes: { name: "Renamed", status: "suspended", ownerUserId: boss.id },
+      }),
+    );
+    await decideReviewItems({ ids: [itemId], decision: "approve" }, boss.id);
+    const [after] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, listing.id));
+    expect(after.name).toBe("Renamed");
+    expect(after.status).toBe("published");
+    expect(after.ownerUserId).toBeNull();
+  });
+
+  it("reports only public listings and never hides them", async () => {
+    const listing = await addEntry(db, "Reported Place");
+    const hidden = await addEntry(
+      db,
+      "Hidden Place",
+      {},
+      { status: "pending" },
+    );
+    await createReport({ entryId: listing.id, reason: "spam", message: "ads" });
+    await expect(
+      createReport({ entryId: hidden.id, reason: "spam", message: "" }),
+    ).rejects.toThrow();
+    const [after] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, listing.id));
+    expect(after.status).toBe("published");
+    const page = await listReviewItems({ age: "all", page: 1, type: "report" });
+    expect(page.rows.map((r) => r.label)).toContain("Reported Place");
+  });
+
+  it("filters by age and country and flags stale items", async () => {
+    await verifiedApplication("Old Place", "old@example.test");
+    await db
+      .update(schema.reviewItem)
+      .set({ createdAt: new Date(Date.now() - 9 * 86_400_000) })
+      .where(eq(schema.reviewItem.entityType, "entry"));
+    const stale = await listReviewItems({
+      age: "stale",
+      page: 1,
+      type: "application",
+    });
+    expect(stale.rows.length).toBeGreaterThan(0);
+    expect(stale.rows.every((r) => r.stale)).toBe(true);
+    const none = await listReviewItems({ age: "all", page: 1, country: "DE" });
+    expect(none.rows).toHaveLength(0);
+  });
+
+  it("queues one digest per admin and day, none when nothing is new", async () => {
+    await admin();
+    const listing = await addEntry(db, "Digest Place");
+    await createReport({ entryId: listing.id, reason: "spam", message: "" });
+    await queueReviewDigests();
+    await queueReviewDigests();
+    const digests = (await db.select().from(schema.job)).filter(
+      (j) => (j.payload as { template?: string }).template === "report_digest",
+    );
+    expect(digests).toHaveLength(1);
+  });
+});
