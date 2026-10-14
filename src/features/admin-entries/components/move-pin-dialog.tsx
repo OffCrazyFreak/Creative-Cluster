@@ -31,7 +31,7 @@ interface IMovePinDialogProps {
 function errorText(error: MovePinError): string {
   return error === "person"
     ? m.admin_entries_pin_person()
-    : m.admin_entries_transfer_not_found();
+    : m.admin_entries_entry_gone();
 }
 
 export default function MovePinDialog({

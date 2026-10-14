@@ -22,13 +22,16 @@ export async function transferOwner(
       .for("update");
     if (!row || row.kind === "outside_partner")
       return { ok: false, error: "not_found" };
+    // Locking the account row serializes two transfers to the same account, so it cannot end up with two listings.
     const [target] = await tx
       .select({ id: user.id, banned: user.banned })
       .from(user)
       .where(eq(user.id, newOwnerId))
-      .limit(1);
+      .limit(1)
+      .for("update");
     if (!target) return { ok: false, error: "not_found" };
     if (target.banned) return { ok: false, error: "blocked" };
+    if (row.owner === newOwnerId) return { ok: true };
     const [other] = await tx
       .select({ id: entry.id })
       .from(entry)

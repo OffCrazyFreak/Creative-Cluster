@@ -13,17 +13,13 @@ import {
 import { STALE_CONFIRM_MONTHS } from "@/constants/lifecycle";
 import { db } from "@/db/client.server";
 import { entry, user } from "@/db/schema";
+import { escapeLike } from "@/utils/escape-like";
 
 import {
   ADMIN_ENTRIES_PAGE_SIZE,
   type AdminEntriesSearch,
   type IAdminEntriesPage,
 } from "./admin-entries-schemas";
-
-// The user's text is matched literally: % and _ would otherwise act as wildcards.
-function escapeLike(text: string): string {
-  return text.replace(/[\\%_]/g, (char) => `\\${char}`);
-}
 
 function filters(input: AdminEntriesSearch): SQL | undefined {
   const conditions: SQL[] = [];
