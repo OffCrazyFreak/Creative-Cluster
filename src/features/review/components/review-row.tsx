@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { kindLabel } from "@/features/admin-entries/entry-kind-label";
 import { countryName } from "@/features/directory/country-name";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
@@ -50,7 +51,7 @@ export default function ReviewRow({
       <TableCell className="max-w-xs whitespace-normal">
         <div className="flex flex-col gap-1">
           <span className="font-medium">{row.label}</span>
-          {row.kind && <span className="text-xs">{row.kind}</span>}
+          {row.kind && <span className="text-xs">{kindLabel(row.kind)}</span>}
           {row.postedBy && (
             <span className="text-xs">
               {m.review_posted_by({ name: row.postedBy })}

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import type { EntryKind } from "@/constants/entry";
 import {
   REASON_CODES,
   REVIEW_TYPES,
@@ -61,7 +62,7 @@ export interface IReviewRow {
   postedBy: string | null;
   // Set when the system, not a visitor, raised the item (for example an email bounce).
   automatic: boolean;
-  kind: string | null;
+  kind: EntryKind | null;
   countryCode: string | null;
   city: string | null;
   summary: string;

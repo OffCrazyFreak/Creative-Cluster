@@ -109,7 +109,7 @@ Run it only after the migrations were applied (the Migrate workflow). UNVERIFIED
 
 ## Search Console
 
-Per site, URL-prefix property (not Domain) so the meta tag method works: https://support.google.com/webmasters/answer/9008080. Choose "HTML tag", put the token in `searchConsoleToken` in `src/sites/<site>.ts` (currently `null`), deploy, click Verify. Then submit `https://<site origin>/sitemap.xml` at https://search.google.com/search-console/sitemaps (https://support.google.com/webmasters/answer/7451001). The tag must stay in the page. In this branch nothing renders `searchConsoleToken` into a meta tag (searched `src/` for it and for `google-site-verification`), so that wiring is still to do before this step works.
+Per site, URL-prefix property (not Domain) so the meta tag method works: https://support.google.com/webmasters/answer/9008080. Choose "HTML tag", put the token in `searchConsoleToken` in `src/sites/<site>.ts` (currently `null`), deploy, click Verify. Then submit `https://<site origin>/sitemap.xml` at https://search.google.com/search-console/sitemaps (https://support.google.com/webmasters/answer/7451001). The tag must stay in the page: `src/routes/__root.tsx` renders it as `google-site-verification` on every page once the token is set.
 
 ## Rotating secrets
 
@@ -145,7 +145,7 @@ When credits run out, all projects on the team are paused until the next monthly
 
 ## Claim emails need the owner's go-ahead
 
-Imported listings can be claimed through a one-time link (`/claim/<token>`, tokens stored as hashes, the spec plans 30 days; nothing in this branch creates invites yet, so confirm the expiry when the sender is written). The email that carries the link must not be sent to imported contacts until the project owner says so: the plan is one email plus one reminder about 10 days later, business addresses only, with the Art. 14 notice and a one-click removal. As of this branch no code path enqueues the `claim` email template (checked with `grep -rn 'template: "claim"' src`); before launch, repeat that search and make sending a deliberate, manual step.
+Imported listings can be claimed through a one-time link (`/claim/<token>`, tokens stored as hashes, 30 days, created by `pnpm claims:prepare`). The email that carries the link must not be sent to imported contacts until the project owner says so: the plan is one email plus one reminder about 10 days later, business addresses only, with the Art. 14 notice and a one-click removal. Sending is a deliberate manual step: `pnpm claims:send` refuses to run without `CLAIMS_SENDING_APPROVED=yes`, `--confirm`, a batch of 500 or fewer and a final import source text.
 
 ## Everyday tasks
 

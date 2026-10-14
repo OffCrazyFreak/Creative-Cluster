@@ -40,7 +40,6 @@
   "admin_users_self": "Ti",
   "admin_users_failed": "Promjena nije uspjela. Pokušaj ponovno.",
   "admin_users_empty": "Još nema korisnika.",
-  "admin_home_title": "Administracija",
   "admin_users_self_blocked": "Ne možeš promijeniti vlastitu ulogu. Zamoli drugog administratora.",
   "admin_entries_title": "Unosi",
   "admin_entries_intro": "Svi unosi na ovoj stranici, s filtrima koji su administratorima potrebni za održavanje.",

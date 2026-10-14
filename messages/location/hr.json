@@ -1,6 +1,5 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "location_section_label": "Lokacija",
   "location_online_only": "Samo online (bez fizičke lokacije)",
   "location_address_label": "Adresa",
   "location_address_placeholder": "Počni upisivati ulicu i kućni broj",
