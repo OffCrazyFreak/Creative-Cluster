@@ -42,7 +42,7 @@ export function useSaveListing(listing: IOwnListing) {
       } catch {
         throw new TagsNotSavedError();
       }
-      return tagsSaved ? { status: "saved", changed: true } : result;
+      return tagsSaved ? { ...result, changed: true } : result;
     },
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: accountKeys.all }),

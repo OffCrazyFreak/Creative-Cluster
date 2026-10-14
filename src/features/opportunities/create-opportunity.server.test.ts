@@ -237,4 +237,22 @@ describe.skipIf(!temp)("createOpportunity", () => {
     const own = await listOwnOpportunities(owner.id);
     expect(own.openCount).toBe(0);
   });
+
+  it("detects Croatian text saved with English chosen, and keeps the choice for short text", async () => {
+    const { owner, row } = await setup();
+    await post(owner, "Tražimo partnera", {
+      body: richTextFromPlain(
+        "Vodimo radionice za mlade dizajnere i objavljujemo godišnji časopis o lokalnom obrtu.",
+      ),
+    });
+    await post(owner, "Short", { sourceLocale: "hr" });
+    const posts = await db
+      .select()
+      .from(schema.opportunity)
+      .where(eq(schema.opportunity.entryId, row.id));
+    const bySource = Object.fromEntries(
+      posts.map((p) => [p.title, p.sourceLocale]),
+    );
+    expect(bySource).toEqual({ "Tražimo partnera": "hr", Short: "hr" });
+  });
 });

@@ -1,6 +1,7 @@
 import { dequal } from "dequal";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 
+import type { AppLocale } from "@/constants/locales";
 import { TAG_FIELDS } from "@/constants/tags";
 import { db, type Tx } from "@/db/client.server";
 import { entry, entryTag, image, reviewItem } from "@/db/schema";
@@ -137,17 +138,19 @@ export async function saveOwnListing({
 
       const patch = buildListingPatch(current, values);
       const keys = changedKeys(current, patch);
+      const sourceLocale = patch.sourceLocale as AppLocale;
       await assertImagesExist(tx, values);
       if (!current.trusted) {
         // Tags are saved by their own service, so an untrusted entry's tag edits ride in the review item.
         if (keys.length === 0 && !(await tagsDiffer(tx, entryId, values))) {
           await dismissOpenEdits(tx, entryId);
-          return { status: "saved", changed: false };
+          return { status: "saved", changed: false, sourceLocale };
         }
         await queueForReview(tx, entryId, userId, patch, values);
-        return { status: "pending_review" };
+        return { status: "pending_review", sourceLocale };
       }
-      if (keys.length === 0) return { status: "saved", changed: false };
+      if (keys.length === 0)
+        return { status: "saved", changed: false, sourceLocale };
 
       const moved = keys.some((key) => ["lat", "lng"].includes(key));
       const [updated] = await tx
@@ -174,7 +177,7 @@ export async function saveOwnListing({
           idempotencyKey: `translate:entry:${entryId}:${log.id}`,
         });
       }
-      return { status: "saved", changed: true };
+      return { status: "saved", changed: true, sourceLocale };
     },
   );
 

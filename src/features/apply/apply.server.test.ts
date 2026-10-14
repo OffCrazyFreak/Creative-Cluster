@@ -316,4 +316,23 @@ describe.skipIf(!temp)("apply services", () => {
       "kind",
     );
   });
+
+  it("stores the language the description is written in, not the page language", async () => {
+    await createApplication(
+      application({
+        name: "Studio Luka",
+        description: parseRichText(
+          richTextFromPlain(
+            "Vodimo radionice za mlade dizajnere i objavljujemo godišnji časopis o lokalnom obrtu.",
+          ),
+        ),
+      }),
+      "en",
+    );
+    const [row] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.name, "Studio Luka"));
+    expect(row.sourceLocale).toBe("hr");
+  });
 });

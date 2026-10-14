@@ -171,5 +171,22 @@
   "admin_nav_users": "Korisnici",
   "admin_nav_tags": "Oznake",
   "admin_nav_changes": "Promjene",
-  "admin_nav_export": "Izvoz"
+  "admin_nav_export": "Izvoz",
+  "admin_links_title": "Predložene veze",
+  "admin_links_intro": "Svaki prijedlog veze koji još čeka odgovor. Odlučiti možeš samo za unose koje još nitko nije preuzeo; inače odgovara vlasnik unosa.",
+  "admin_links_filter_search": "Traži po nazivu unosa",
+  "admin_links_filter_kind": "Vrsta",
+  "admin_links_filter_unclaimed": "Čeka nepreuzeti unos",
+  "admin_links_count": "Broj predloženih veza: {count}",
+  "admin_links_none": "Nijedna predložena veza ne odgovara ovim filtrima.",
+  "admin_links_pagination": "Stranice predloženih veza",
+  "admin_links_col_proposer": "Predložio",
+  "admin_links_col_relation": "Veza",
+  "admin_links_col_recipient": "Čeka odgovor",
+  "admin_links_col_proposed": "Predloženo",
+  "admin_links_col_expires": "Istječe",
+  "admin_links_owner_decides": "Odlučuje vlasnik",
+  "admin_nav_links": "Predložene veze",
+  "admin_links_other_admin_decides": "Prijedlog je tvoj; odlučuje drugi administrator",
+  "admin_links_none_at_all": "Nijedna veza ne čeka odgovor."
 }

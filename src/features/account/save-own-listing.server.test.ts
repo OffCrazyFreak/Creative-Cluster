@@ -107,7 +107,7 @@ describe.skipIf(!temp)("saveOwnListing", () => {
       userId: owner.id,
       values: parse(formValues()),
     });
-    expect(result).toEqual({ status: "saved", changed: true });
+    expect(result).toMatchObject({ status: "saved", changed: true });
     const saved = await reload(row.id);
     expect(saved.slug).toBe(row.slug);
     expect(saved.name).toBe("Studio Test");
@@ -117,6 +117,44 @@ describe.skipIf(!temp)("saveOwnListing", () => {
     expect(logs.filter((l) => l.entityId === row.id)).toHaveLength(1);
     const jobs = await db.select().from(schema.job);
     expect(jobs.filter((j) => j.type === "translate")).toHaveLength(1);
+  });
+
+  it("detects the source language when the text changes and reports it", async () => {
+    const { owner, row } = await setup();
+    const croatian = richTextFromPlain(
+      "Vodimo radionice za mlade dizajnere i objavljujemo godišnji časopis o lokalnom obrtu.",
+    );
+    const first = await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues({ description: croatian, sourceLocale: "en" })),
+    });
+    expect(first).toMatchObject({ sourceLocale: "hr" });
+    expect((await reload(row.id)).sourceLocale).toBe("hr");
+
+    // Same text, other fields edited: the language the form sends is kept, so a manual correction sticks.
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(
+        formValues({
+          description: croatian,
+          sourceLocale: "en",
+          contactName: "Ana",
+        }),
+      ),
+    });
+    expect((await reload(row.id)).sourceLocale).toBe("en");
+  });
+
+  it("keeps the chosen language when the text is too short to detect", async () => {
+    const { owner, row } = await setup();
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues({ sourceLocale: "hr" })),
+    });
+    expect((await reload(row.id)).sourceLocale).toBe("hr");
   });
 
   it("does nothing and queues no translation when nothing changed", async () => {
@@ -129,7 +167,7 @@ describe.skipIf(!temp)("saveOwnListing", () => {
       userId: owner.id,
       values,
     });
-    expect(again).toEqual({ status: "saved", changed: false });
+    expect(again).toMatchObject({ status: "saved", changed: false });
     expect(await db.select().from(schema.job)).toHaveLength(before.length);
   });
 
@@ -183,7 +221,7 @@ describe.skipIf(!temp)("saveOwnListing", () => {
       userId: owner.id,
       values: parse(formValues()),
     });
-    expect(result).toEqual({ status: "pending_review" });
+    expect(result).toMatchObject({ status: "pending_review" });
     expect((await reload(row.id)).name).toBe("Studio");
     const items = await db
       .select()
@@ -218,14 +256,14 @@ describe.skipIf(!temp)("saveOwnListing", () => {
       userId: owner.id,
       values: parse(formValues({ name: "Studio Changed" })),
     });
-    expect(pending).toEqual({ status: "pending_review" });
+    expect(pending).toMatchObject({ status: "pending_review" });
     const logsBefore = await db.select().from(schema.changeLog);
     const reverted = await saveOwnListing({
       entryId: row.id,
       userId: owner.id,
       values: live,
     });
-    expect(reverted).toEqual({ status: "saved", changed: false });
+    expect(reverted).toMatchObject({ status: "saved", changed: false });
     const items = await db
       .select()
       .from(schema.reviewItem)
@@ -321,7 +359,7 @@ describe.skipIf(!temp)("saveOwnListing", () => {
         formValues({ tags: { topic: [tag.id], offering: [], seeking: [] } }),
       ),
     });
-    expect(same).toEqual({ status: "pending_review" });
+    expect(same).toMatchObject({ status: "pending_review" });
   });
 
   it("stores a person at an offset town pin with no address or cover", async () => {
