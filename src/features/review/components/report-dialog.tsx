@@ -29,6 +29,8 @@ import {
 } from "@/constants/review";
 import { m } from "@/paraglide/messages";
 
+import { reportReasonLabel } from "../review-labels";
+
 export interface IReportSubmission {
   // Only set when the dialog asks for a reason.
   reason?: ReportReason;
@@ -47,14 +49,6 @@ interface IReportDialogProps {
   send: (
     submission: IReportSubmission,
   ) => Promise<"sent" | "captcha" | "limited">;
-}
-
-function reasonText(reason: ReportReason): string {
-  if (reason === "inaccurate") return m.review_report_reason_inaccurate();
-  if (reason === "spam") return m.review_report_reason_spam();
-  if (reason === "offensive") return m.review_report_reason_offensive();
-  if (reason === "illegal") return m.review_report_reason_illegal();
-  return m.review_report_reason_other();
 }
 
 export default function ReportDialog({
@@ -141,7 +135,7 @@ export default function ReportDialog({
             <Select
               items={REPORT_REASONS.map((item) => ({
                 value: item,
-                label: reasonText(item),
+                label: reportReasonLabel(item),
               }))}
               value={reason}
               onValueChange={(next) =>
@@ -156,7 +150,7 @@ export default function ReportDialog({
               <SelectContent>
                 {REPORT_REASONS.map((item) => (
                   <SelectItem key={item} value={item}>
-                    {reasonText(item)}
+                    {reportReasonLabel(item)}
                   </SelectItem>
                 ))}
               </SelectContent>
