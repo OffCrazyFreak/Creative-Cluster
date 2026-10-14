@@ -12,10 +12,27 @@ on:
   schedule:
     - cron: "0 6 * * 6"
 
-permissions: {}
+permissions:
+  actions: read
 
 jobs:
+  # A build hook builds whatever main is now, so main must have passed CI and its migrations.
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          sha=$(gh api "repos/$GH_REPO/commits/main" --jq .sha)
+          for workflow in ci.yml migrate.yml; do
+            conclusion=$(gh run list --workflow "$workflow" --commit "$sha" --limit 1 --json conclusion --jq '.[0].conclusion // "missing"')
+            echo "$workflow on $sha: $conclusion"
+            [ "$conclusion" = "success" ] || { echo "main is not ready to deploy."; exit 1; }
+          done
+
   trigger:
+    needs: gate
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -24,9 +41,14 @@ jobs:
       - name: Call the Netlify build hook
         if: ${{ github.event_name == 'schedule' || inputs.site == 'both' || inputs.site == matrix.site }}
         env:
+          PRODUCTION_READY: ${{ vars.PRODUCTION_READY }}
           HOOK_RPCC: ${{ secrets.NETLIFY_BUILD_HOOK_RPCC }}
           HOOK_DNZ: ${{ secrets.NETLIFY_BUILD_HOOK_DNZ }}
         run: |
           hook="$([ "${{ matrix.site }}" = rpcc ] && echo "$HOOK_RPCC" || echo "$HOOK_DNZ")"
-          if [ -z "$hook" ]; then echo "No build hook secret for ${{ matrix.site }} yet."; exit 0; fi
+          # Until the accounts exist (repository variable PRODUCTION_READY unset) a missing secret is a skip; after that it fails.
+          if [ -z "$hook" ]; then
+            if [ "$PRODUCTION_READY" = "true" ]; then echo "Missing build hook secret for ${{ matrix.site }}."; exit 1; fi
+            echo "No build hook secret for ${{ matrix.site }} yet."; exit 0
+          fi
           curl -fsS -X POST -d '{}' "$hook?trigger_title=deploy-action"
