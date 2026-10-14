@@ -35,7 +35,7 @@ export default function EntryDetail({ entry, translation }: IEntryDetailProps) {
 
   return (
     <article className="flex flex-col gap-5">
-      <Link to="/" className="text-sm">
+      <Link to="/" className="inline-block self-start py-1 text-sm">
         {m.entry_back_to_results()}
       </Link>
       <EntryCover entry={entry} />
