@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -88,13 +88,13 @@ export default function OwnOpportunityCard({
       </CardContent>
       <CardFooter className="flex flex-wrap items-end gap-2">
         {publicPage ? (
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={<Link to="/opportunities/$id" params={{ id: item.id }} />}
+          <Link
+            to="/opportunities/$id"
+            params={{ id: item.id }}
+            className={buttonVariants({ variant: "outline" })}
           >
             {m.opportunities_action_view()}
-          </Button>
+          </Link>
         ) : null}
         {editable ? (
           <Button type="button" variant="outline" onClick={onEdit}>

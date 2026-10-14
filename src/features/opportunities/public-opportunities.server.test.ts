@@ -12,8 +12,11 @@ const { temp } = await vi.hoisted(async () => {
   return { temp: await helper.createTempDatabase("opp_public") };
 });
 vi.mock("@/db/client.server", () => ({ db: temp?.db }));
-const { listPublicOpportunities, countActiveByEntry } =
-  await import("./public-opportunities.server");
+const {
+  listPublicOpportunities,
+  countActiveByEntry,
+  listSitemapOpportunities,
+} = await import("./public-opportunities.server");
 
 const DAY = 86_400_000;
 
@@ -169,5 +172,28 @@ describe.skipIf(!temp)("public opportunities", () => {
       expiresAt: new Date(Date.now() - 1000),
     });
     expect((await countActiveByEntry()).get(owner.id)).toBe(2);
+  });
+
+  it("puts only live posts of public entries in the sitemap", async () => {
+    const owner = await addEntry(db, "Mapped");
+    const hidden = await addEntry(
+      db,
+      "Mapped hidden",
+      {},
+      { status: "suspended" },
+    );
+    const liveOne = await live(owner.id, "sitemap-live");
+    await live(owner.id, "sitemap-expired", {
+      expiresAt: new Date(Date.now() - 1000),
+    });
+    await live(hidden.id, "sitemap-suspended");
+    const ids = (await listSitemapOpportunities()).map((row) => row.id);
+    expect(ids).toContain(liveOne.id);
+    const all = await db.select().from(schema.opportunity);
+    const unwanted = all.filter(
+      (row) => row.title.startsWith("sitemap-") && row.id !== liveOne.id,
+    );
+    expect(unwanted.length).toBe(2);
+    for (const row of unwanted) expect(ids).not.toContain(row.id);
   });
 });

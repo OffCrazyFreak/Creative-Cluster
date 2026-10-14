@@ -181,3 +181,13 @@ export async function countActiveByEntry(): Promise<Map<string, number>> {
     .groupBy(opportunity.entryId);
   return new Map(rows.map((row) => [row.entryId, row.n]));
 }
+
+// Only live posts are indexed; ended pages leave the sitemap at once (they are noindex, then 410).
+export async function listSitemapOpportunities() {
+  return db
+    .select({ id: opportunity.id, updatedAt: opportunity.updatedAt })
+    .from(opportunity)
+    .innerJoin(entry, eq(entry.id, opportunity.entryId))
+    .where(and(activeOpportunityCondition(), publicEntryCondition()))
+    .orderBy(asc(opportunity.id));
+}

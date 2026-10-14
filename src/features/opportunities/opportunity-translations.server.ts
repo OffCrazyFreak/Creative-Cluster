@@ -6,7 +6,7 @@ import { translation } from "@/db/schema";
 import { safeParseRichText } from "@/lib/rich-text/parse-rich-text";
 import type { RichTextDoc } from "@/typings/rich-text";
 
-export interface IOpportunityTranslation {
+export interface IStoredTranslation {
   title?: string;
   // Plain text of the translated body, for list snippets.
   bodyText?: string;
@@ -19,8 +19,8 @@ export async function loadOpportunityTranslations(
   db: DbOrTx,
   ids: string[],
   locale: AppLocale,
-): Promise<Map<string, IOpportunityTranslation>> {
-  const result = new Map<string, IOpportunityTranslation>();
+): Promise<Map<string, IStoredTranslation>> {
+  const result = new Map<string, IStoredTranslation>();
   if (ids.length === 0) return result;
   const rows = await db
     .select()

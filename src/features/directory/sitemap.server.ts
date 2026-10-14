@@ -1,4 +1,5 @@
 import { LOCALES } from "@/constants/locales";
+import { listSitemapOpportunities } from "@/features/opportunities/public-opportunities.server";
 import { site } from "@/sites";
 import { absoluteUrl } from "@/utils/seo-links";
 
@@ -52,9 +53,10 @@ function urlBlocks({ path, lastmod }: ISitemapPage) {
 
 // Only public, indexable pages: never account, admin or filtered URLs.
 export async function buildSitemap(): Promise<string> {
-  const [entries, facets] = await Promise.all([
+  const [entries, facets, opportunities] = await Promise.all([
     listSitemapEntries(),
     listDirectoryFacets(),
+    listSitemapOpportunities(),
   ]);
   const pages: ISitemapPage[] = [
     ...STATIC_PATHS.map((path) => ({ path })),
@@ -64,6 +66,10 @@ export async function buildSitemap(): Promise<string> {
     })),
     ...entries.map((item) => ({
       path: `/e/${item.slug}`,
+      lastmod: item.updatedAt,
+    })),
+    ...opportunities.map((item) => ({
+      path: `/opportunities/${item.id}`,
       lastmod: item.updatedAt,
     })),
   ];
