@@ -13,6 +13,8 @@ import { m } from "@/paraglide/messages";
 import { DEFAULT_COUNTRY, emptyListingValues } from "../listing-defaults";
 import VisibilitySelect from "./visibility-select";
 
+const ERROR_ID = "location-error";
+
 const LocationSection = withForm({
   defaultValues: emptyListingValues(),
   props: {} as { kind: EntryKind },
@@ -24,6 +26,10 @@ const LocationSection = withForm({
           {(field) => {
             const invalid =
               field.state.meta.isTouched && !field.state.meta.isValid;
+            const aria = {
+              invalid,
+              describedBy: invalid ? ERROR_ID : undefined,
+            };
             return (
               <Field data-invalid={invalid} data-field={field.name}>
                 {kind === "person" ? (
@@ -31,6 +37,7 @@ const LocationSection = withForm({
                     value={field.state.value}
                     onChange={field.handleChange}
                     defaultCountryCode={DEFAULT_COUNTRY}
+                    {...aria}
                   />
                 ) : (
                   <>
@@ -38,6 +45,7 @@ const LocationSection = withForm({
                       value={field.state.value}
                       onChange={field.handleChange}
                       defaultCountryCode={DEFAULT_COUNTRY}
+                      {...aria}
                     />
                     {!field.state.value.onlineOnly && (
                       <PinPicker
@@ -49,6 +57,7 @@ const LocationSection = withForm({
                 )}
                 {invalid && (
                   <FieldError
+                    id={ERROR_ID}
                     errors={field.state.meta.errors.map((error) => ({
                       message: errorMessage(error),
                     }))}

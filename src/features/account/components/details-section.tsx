@@ -3,11 +3,11 @@ import { FieldGroup, FieldLegend, FieldSet } from "@/components/ui/field";
 import { LISTING_LIMITS } from "@/constants/account";
 import type { EntryKind } from "@/constants/entry";
 import { m } from "@/paraglide/messages";
-import { site } from "@/sites";
 
 import { emptyListingValues } from "../listing-defaults";
+import { hasLegalStatus } from "../listing-rules";
 
-// Legal status is a Creative Cluster field and organisations only; references show on both sites.
+// References show on both sites; legal status follows hasLegalStatus.
 const DetailsSection = withForm({
   defaultValues: emptyListingValues(),
   props: {} as { kind: EntryKind },
@@ -16,7 +16,7 @@ const DetailsSection = withForm({
       <FieldSet>
         <FieldLegend>{m.account_section_details()}</FieldLegend>
         <FieldGroup>
-          {site.id === "rpcc" && kind !== "person" && (
+          {hasLegalStatus(kind) && (
             <form.AppField name="legalStatus">
               {(field) => (
                 <field.TextField

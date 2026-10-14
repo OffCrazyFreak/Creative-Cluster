@@ -9,7 +9,11 @@ import { InvalidListingError } from "./listing-errors";
 
 import { addEntry, addUser } from "../../../tests/helpers/fixture-data";
 import type { ITempDatabase } from "../../../tests/helpers/temp-database";
-import { listingSchema, type ListingFormValues } from "./listing-schemas";
+import {
+  listingSchema,
+  validateListing,
+  type ListingFormValues,
+} from "./listing-schemas";
 
 const { temp } = await vi.hoisted(async () => {
   const helper = await import("../../../tests/helpers/temp-database");
@@ -344,5 +348,22 @@ describe("listingSchema", () => {
       formValues({ location: { ...emptyLocation("HR"), onlineOnly: true } }),
     );
     expect(result.success).toBe(true);
+  });
+});
+
+describe("validateListing", () => {
+  it("puts nested location and image issues on the mounted field with localized text", () => {
+    const result = validateListing({
+      value: formValues({
+        location: { ...emptyLocation("HR"), city: "x".repeat(200), lat: 1 },
+      }),
+    });
+    expect(Object.keys(result?.fields ?? {})).toEqual(["location"]);
+    expect(result?.fields.location.length).toBeGreaterThan(1);
+    expect(
+      result?.fields.location.some((issue) =>
+        /too small|expected/i.test(issue.message),
+      ),
+    ).toBe(false);
   });
 });
