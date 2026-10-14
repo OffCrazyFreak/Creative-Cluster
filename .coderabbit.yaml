@@ -3,3 +3,9 @@
 reviews:
   auto_review:
     enabled: false
+  # Generated and vendored files only make requests bigger; large requests fail to start on the free tier.
+  path_filters:
+    - "!pnpm-lock.yaml"
+    - "!drizzle/meta/**"
+    - "!src/components/ui/**"
+    - "!public/**"

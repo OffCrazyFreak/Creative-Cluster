@@ -78,5 +78,10 @@
   "email_opportunity_reason_spam": "Prilika izgleda kao neželjena poruka ili reklama.",
   "email_opportunity_reason_other": "Pogledajte napomenu ispod.",
   "email_opportunity_note": "Napomena administratora: {note}",
-  "email_opportunity_approved_body_auto": "Sljedeće prilike objavljuju se bez pregleda."
+  "email_opportunity_approved_body_auto": "Sljedeće prilike objavljuju se bez pregleda.",
+  "email_claim_reminder_subject": "Podsjetnik: tvoj unos {entryName} na {siteName}",
+  "email_claim_reminder_preheader": "Ovo je posljednja poruka o ovom unosu.",
+  "email_claim_reminder_intro": "Prije nekoliko dana poslali smo ti poruku o unosu {entryName} na {siteName}. Ovo je jedini podsjetnik i posljednja poruka o tome.",
+  "email_claim_reminder_body": "Unos je javan, a tvoju e-adresu i telefon ne prikazujemo posjetiteljima. Poveznice iz prve poruke vrijede do {expiryDate}.",
+  "email_claim_reminder_closing": "Cijela obavijest o obradi podataka nalazi se u prvoj poruci i na {privacyLink}. Ako ne želiš više poruka, pritisni \"Ukloni moj unos\" ili odgovori na ovu poruku. Pitanja: {contactEmail}. {controllerName}."
 }
