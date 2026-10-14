@@ -26,7 +26,7 @@ export default function LoginPage({
       <Link to="/reset-password">{m.auth_login_forgot()}</Link>
       <p className="text-sm">
         {m.auth_login_invite_only()}{" "}
-        <Link to="/apply">{m.common_nav_apply()}</Link>
+        <Link to="/apply">{m.auth_login_apply_link()}</Link>.
       </p>
     </AuthPage>
   );

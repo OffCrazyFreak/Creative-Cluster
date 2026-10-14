@@ -1,14 +1,22 @@
+import { cn } from "cn";
 import { Link } from "@tanstack/react-router";
 
 import { m } from "@/paraglide/messages";
 
-export default function MainNav() {
+interface IMainNavProps {
+  className?: string;
+  listClassName?: string;
+}
+
+export default function MainNav({ className, listClassName }: IMainNavProps) {
   return (
-    <nav
-      aria-label={m.common_main_navigation()}
-      className="order-last -mx-4 -my-0.5 w-[calc(100%+2rem)] overflow-x-auto px-4 py-0.5 sm:-mx-8 sm:w-[calc(100%+4rem)] sm:px-8 lg:order-none lg:mx-0 lg:my-0 lg:w-auto lg:flex-1 lg:overflow-visible lg:px-0 lg:py-0"
-    >
-      <ul className="flex items-center gap-x-4 whitespace-nowrap [&_a]:inline-block [&_a]:py-2">
+    <nav aria-label={m.common_main_navigation()} className={className}>
+      <ul
+        className={cn(
+          "flex items-center gap-x-4 [&_a]:inline-block [&_a]:py-2",
+          listClassName,
+        )}
+      >
         <li>
           <Link to="/">{m.common_nav_map()}</Link>
         </li>
