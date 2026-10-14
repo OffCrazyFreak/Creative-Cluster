@@ -52,5 +52,19 @@
   "email_suspended_body_1": "administrator je suspendirao unos {entryName} na {siteName}. Dok je suspendiran, unos, njegove prilike i veze nisu vidljivi posjetiteljima.",
   "email_suspended_reason": "Razlog: {reason}",
   "email_suspended_body_2": "Razlog vidiš i u svom računu. Ako ga možeš riješiti ili misliš da je suspenzija pogrešna, odgovori na ovu poruku. Kad se suspenzija ukine, sve se vraća kako je bilo.",
-  "email_suspended_button": "Otvori moj račun"
+  "email_suspended_button": "Otvori moj račun",
+  "email_erasure_scheduled_subject": "Brisanje tvog računa je zakazano",
+  "email_erasure_scheduled_preheader": "Možeš ga otkazati u sljedećih 14 dana.",
+  "email_erasure_scheduled_body_entry": "primili smo tvoj zahtjev za brisanje računa i unosa {entryName} na {siteName}. Unos je već sakriven. Trajno ćemo izbrisati {deleteDate}.",
+  "email_erasure_scheduled_body_account": "primili smo tvoj zahtjev za brisanje računa na {siteName}. Trajno ćemo ga izbrisati {deleteDate}.",
+  "email_erasure_scheduled_what": "Brišemo unos, slike, prijevode, kontaktne podatke i veze. Iz zapisa izmjena uklanjamo osobne podatke.",
+  "email_erasure_scheduled_cancel": "Ako se predomisliš, brisanje možeš otkazati do tog datuma u svom računu i sve se vraća.",
+  "email_erasure_scheduled_button": "Otvori stranicu s mojim podacima za otkazivanje",
+  "email_erasure_done_subject": "Tvoj račun je izbrisan",
+  "email_erasure_done_preheader": "Brisanje je završeno.",
+  "email_erasure_done_body_entry": "izbrisali smo tvoj račun i unos {entryName} s {siteName}, zajedno sa slikama, prijevodima, kontaktnim podacima i vezama.",
+  "email_erasure_done_body_account": "izbrisali smo tvoj račun na {siteName}.",
+  "email_erasure_done_backups": "Sigurnosne kopije čuvamo najviše 90 dana, nakon toga i iz njih nestaju. [[GAP: pravnik potvrđuje rečenicu o sigurnosnim kopijama]]",
+  "email_erasure_done_last": "Ovo je posljednja poruka koju ti šaljemo. Ako se želiš vratiti, uvijek možeš poslati novu prijavu.",
+  "email_erasure_done_footer": "Ovu poruku primaš jer je za tvoj račun na {siteName} zatraženo brisanje. Šaljemo je jednom i ne pohranjujemo tvoju adresu. Pitanja: {contactEmail}. {controllerName}."
 }

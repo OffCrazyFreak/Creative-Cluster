@@ -14,6 +14,12 @@ import EditRevertedEmail, {
   subject as editRevertedSubject,
 } from "./edit-reverted-email";
 import SuspendedEmail, { subject as suspendedSubject } from "./suspended-email";
+import ErasureDoneEmail, {
+  subject as erasureDoneSubject,
+} from "./erasure-done-email";
+import ErasureScheduledEmail, {
+  subject as erasureScheduledSubject,
+} from "./erasure-scheduled-email";
 import ReportDigestEmail, {
   subject as reportDigestSubject,
 } from "./report-digest-email";
@@ -93,5 +99,15 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <SuspendedEmail {...props} />,
     subject: suspendedSubject,
     previewProps: SuspendedEmail.PreviewProps,
+  },
+  erasure_scheduled: {
+    element: (props) => <ErasureScheduledEmail {...props} />,
+    subject: erasureScheduledSubject,
+    previewProps: ErasureScheduledEmail.PreviewProps,
+  },
+  erasure_done: {
+    element: (props) => <ErasureDoneEmail {...props} />,
+    subject: erasureDoneSubject,
+    previewProps: ErasureDoneEmail.PreviewProps,
   },
 };

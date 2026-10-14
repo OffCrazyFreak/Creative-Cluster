@@ -89,6 +89,17 @@ export interface ISuspendedEmailProps extends IBaseEmailProps {
   link: string;
 }
 
+export interface IErasureScheduledEmailProps extends IBaseEmailProps {
+  entryName: string | null;
+  // ISO timestamp; the template formats it for the recipient's language.
+  deleteDate: string;
+  link: string;
+}
+
+export interface IErasureDoneEmailProps extends IBaseEmailProps {
+  entryName: string | null;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
@@ -102,6 +113,8 @@ export interface IEmailPropsMap {
   report_digest: IReportDigestEmailProps;
   edit_reverted: IEditRevertedEmailProps;
   suspended: ISuspendedEmailProps;
+  erasure_scheduled: IErasureScheduledEmailProps;
+  erasure_done: IErasureDoneEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

@@ -50,5 +50,19 @@
   "lifecycle_withdraw_button": "Withdraw my consent",
   "lifecycle_withdraw_hint": "Your listing is hidden at once. Copies that search engines already stored can stay until they refresh.",
   "lifecycle_withdraw_done": "Consent withdrawn. Your listing is hidden.",
-  "lifecycle_data_title": "My data"
+  "lifecycle_data_title": "My data",
+  "lifecycle_export_title": "Download my data",
+  "lifecycle_export_body": "A JSON file with your account, your listing, its translations, opportunities, connections, decisions about it and its change history. It contains only your own data.",
+  "lifecycle_export_button": "Download my data",
+  "lifecycle_export_failed": "The download failed. Please try again.",
+  "lifecycle_erase_title": "Delete my listing and account",
+  "lifecycle_erase_body": "Your listing is hidden at once and everything is deleted after {days} days. Until then you can cancel here.",
+  "lifecycle_erase_button": "Delete my listing and account",
+  "lifecycle_erase_confirm_title": "Delete your listing and account?",
+  "lifecycle_erase_confirm_body": "Your listing is archived now. After {days} days we delete the listing, images, translations, contact data and connections, remove personal details from the change log and delete your account. You can cancel until then.",
+  "lifecycle_erase_confirm": "Yes, delete",
+  "lifecycle_erase_scheduled": "Deletion is scheduled for {date}. Your listing is hidden. We sent you an email about it.",
+  "lifecycle_erase_scheduled_toast": "Deletion scheduled. Your listing is hidden.",
+  "lifecycle_erase_cancel": "Cancel deletion",
+  "lifecycle_erase_cancelled": "Deletion cancelled. Your listing is back as it was."
 }

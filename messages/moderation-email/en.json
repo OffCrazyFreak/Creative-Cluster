@@ -52,5 +52,19 @@
   "email_suspended_body_1": "an administrator suspended the listing {entryName} on {siteName}. While it is suspended, the listing, its opportunities and its connections are not visible to visitors.",
   "email_suspended_reason": "Reason: {reason}",
   "email_suspended_body_2": "You can also see the reason in your account. If you can fix it, or think the suspension is wrong, reply to this message. When the suspension is lifted, everything returns as it was.",
-  "email_suspended_button": "Open my account"
+  "email_suspended_button": "Open my account",
+  "email_erasure_scheduled_subject": "Your account deletion is scheduled",
+  "email_erasure_scheduled_preheader": "You can cancel it within the next 14 days.",
+  "email_erasure_scheduled_body_entry": "we received your request to delete your account and the listing {entryName} on {siteName}. The listing is already hidden. We will delete everything for good on {deleteDate}.",
+  "email_erasure_scheduled_body_account": "we received your request to delete your account on {siteName}. We will delete it for good on {deleteDate}.",
+  "email_erasure_scheduled_what": "We delete the listing, images, translations, contact details and connections. We remove personal data from the change log.",
+  "email_erasure_scheduled_cancel": "Changed your mind? Until that date you can cancel the deletion in your account and everything returns.",
+  "email_erasure_scheduled_button": "Open my data page to cancel",
+  "email_erasure_done_subject": "Your account is deleted",
+  "email_erasure_done_preheader": "The deletion is complete.",
+  "email_erasure_done_body_entry": "we deleted your account and the listing {entryName} from {siteName}, with the images, translations, contact details and connections.",
+  "email_erasure_done_body_account": "we deleted your account from {siteName}.",
+  "email_erasure_done_backups": "We keep backups for at most 90 days, after which the data disappears from them too. [[GAP: lawyer to confirm the backup sentence]]",
+  "email_erasure_done_last": "This is the last message we send you. If you want to return, you can always send a new application.",
+  "email_erasure_done_footer": "You are getting this message because you asked to delete your account on {siteName}. We send it once and we do not keep your address. Questions: {contactEmail}. {controllerName}."
 }

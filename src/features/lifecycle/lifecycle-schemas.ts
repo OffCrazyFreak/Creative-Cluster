@@ -42,3 +42,7 @@ export interface IAdminEntry {
   erasureRequestedAt: string | null;
   ownerEmail: string | null;
 }
+
+export interface IErasureState {
+  scheduledFor: string | null;
+}

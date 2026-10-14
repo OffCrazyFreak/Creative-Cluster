@@ -1,6 +1,10 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getAdminEntryFn, getOwnListingStatusFn } from "./lifecycle.functions";
+import {
+  getAdminEntryFn,
+  getErasureStateFn,
+  getOwnListingStatusFn,
+} from "./lifecycle.functions";
 
 export function adminEntryQueryOptions(id: string) {
   return queryOptions({
@@ -15,5 +19,14 @@ export function ownListingStatusQueryOptions() {
   return queryOptions({
     queryKey: OWN_LISTING_KEY,
     queryFn: () => getOwnListingStatusFn(),
+  });
+}
+
+export const ERASURE_KEY = ["account", "erasure"] as const;
+
+export function erasureStateQueryOptions() {
+  return queryOptions({
+    queryKey: ERASURE_KEY,
+    queryFn: () => getErasureStateFn(),
   });
 }
