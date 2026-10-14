@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import PagePlaceholder from "@/components/custom/layout/page-placeholder";
+import ConnectionsPage from "@/features/connections/components/connections-page";
+import { myConnectionsQuery } from "@/features/connections/connections-queries";
 
 export const Route = createFileRoute("/account/connections")({
-  component: () => <PagePlaceholder title="Connections" />,
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(myConnectionsQuery()),
+  component: ConnectionsRoute,
 });
+
+function ConnectionsRoute() {
+  const { viewer } = Route.useRouteContext();
+  return <ConnectionsPage isAdmin={viewer?.role === "admin"} />;
+}
