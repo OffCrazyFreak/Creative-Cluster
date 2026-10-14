@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -19,10 +18,9 @@ import {
   OWN_LISTING_KEY,
   ownListingStatusQueryOptions,
 } from "../lifecycle-queries";
-import { statusLabel } from "../status-label";
 
-// The owner's status block: suspension reason, "confirm up to date", hide and show again, consent withdrawal.
-// Rendered on /account/data; the /account home can render the same component.
+// The owner's listing actions on /account: "confirm up to date", hide and show again, consent withdrawal.
+// The account home already shows the status, the suspension reason and the erasure notice.
 export default function ListingStatusPanel() {
   const { data } = useQuery(ownListingStatusQueryOptions());
   const run = useLifecycleAction(OWN_LISTING_KEY);
@@ -50,22 +48,6 @@ export default function ListingStatusPanel() {
       <h2 id="listing-status" className="text-xl font-semibold">
         {m.lifecycle_owner_title()}
       </h2>
-      <p>{m.lifecycle_owner_status({ status: statusLabel(data.status) })}</p>
-      {data.status === "suspended" && data.suspendedReason && (
-        <Alert variant="destructive" role="alert">
-          <AlertTitle>{m.lifecycle_owner_suspended_title()}</AlertTitle>
-          <AlertDescription>
-            {m.lifecycle_owner_suspended_body({
-              reason: data.suspendedReason,
-            })}
-          </AlertDescription>
-        </Alert>
-      )}
-      {erasing && (
-        <Alert role="status">
-          <AlertDescription>{m.lifecycle_owner_erasure()}</AlertDescription>
-        </Alert>
-      )}
       {data.status === "published" && (
         <div className="flex flex-col gap-2">
           <p className="text-sm">
