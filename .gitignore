@@ -16,3 +16,7 @@ src/routeTree.gen.ts
 project.inlang/cache
 project.inlang/.meta.json
 project.inlang/README.md
+
+# Staging files and prepared claim emails hold real contact data and never go into git.
+data/import
+data/claims
