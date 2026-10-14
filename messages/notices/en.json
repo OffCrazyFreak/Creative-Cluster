@@ -1,0 +1,10 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "notices_terms_subject": "We are updating the terms of use for {siteName}",
+  "notices_terms_preheader": "The changes apply from {effectiveDate}.",
+  "notices_terms_body": "Hello {name}. We are updating the terms of use for {siteName}. In short: {summary}. You can read the new terms at the link below. The changes apply from {effectiveDate}. If you do not agree, you can delete your listing and account in your account settings.",
+  "notices_terms_button": "Read the new terms",
+  "notices_blocked_subject": "Your account on {siteName} has been blocked",
+  "notices_blocked_preheader": "The reason and how to appeal.",
+  "notices_blocked_body": "Hello {name}. Your account on {siteName} has been blocked. Reason: {reason}. Your listing stays visible unless an admin hides it separately. If you think this is a mistake, write to {contactEmail}."
+}

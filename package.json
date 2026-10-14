@@ -27,6 +27,8 @@
     "dgu:import": "tsx scripts/dgu-import.ts",
     "geonames:build": "tsx scripts/geonames-build.ts",
     "jobs:drain": "tsx scripts/drain-jobs.ts",
+    "terms:notify": "tsx scripts/enqueue-terms-notice.ts",
+    "maintenance:run": "tsx scripts/run-maintenance.ts",
     "email:dev": "email dev --dir src/emails --port 3020"
   },
   "dependencies": {
@@ -65,6 +67,7 @@
     "drizzle-orm": "0.45.4",
     "image-size": "^2.0.4",
     "isbot": "^5.2.2",
+    "linkifyjs": "^4.3.3",
     "lucide-react": "^1.55.0",
     "maplibre-gl": "6.13.0",
     "minisearch": "^7.2.0",
