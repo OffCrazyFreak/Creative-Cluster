@@ -49,7 +49,7 @@
   "email_opportunity_approved_subject": "Vaša prilika je objavljena",
   "email_opportunity_approved_preheader": "\"{opportunityTitle}\" sada je javna.",
   "email_opportunity_approved_body_1": "vaša prilika \"{opportunityTitle}\" za {entryName} prošla je pregled i sada je javna na {siteName}. Vrijedi do {expiresAt}.",
-  "email_opportunity_approved_body_2": "Sljedeće prilike objavljuju se bez pregleda. Poruke zainteresiranih stižu vam putem obrasca za kontakt.",
+  "email_opportunity_approved_body_2": "Poruke zainteresiranih stižu vam putem obrasca za kontakt.",
   "email_opportunity_approved_button": "Otvori priliku",
   "email_opportunity_rejected_subject": "Prilika nije objavljena",
   "email_opportunity_rejected_preheader": "Pogledajte razlog i izmijenite tekst.",
@@ -69,5 +69,6 @@
   "email_opportunity_reason_unverifiable": "Nismo uspjeli provjeriti podatke iz prilike.",
   "email_opportunity_reason_spam": "Prilika izgleda kao neželjena poruka ili reklama.",
   "email_opportunity_reason_other": "Pogledajte napomenu ispod.",
-  "email_opportunity_note": "Napomena administratora: {note}"
+  "email_opportunity_note": "Napomena administratora: {note}",
+  "email_opportunity_approved_body_auto": "Sljedeće prilike objavljuju se bez pregleda."
 }

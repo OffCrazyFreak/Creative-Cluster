@@ -13,6 +13,13 @@ import { parseSiteId } from "./src/sites/site-id.ts";
 // and a real Turnstile key (the client falls back to the always-pass test key).
 function resolveSiteId(command: string, mode: string) {
   const env = loadEnv(mode, process.cwd(), "VITE_");
+  // Cloudflare's test site keys start with 1x, 2x or 3x and must never reach a Netlify build.
+  if (
+    process.env.NETLIFY === "true" &&
+    /^[123]x0+/.test(env.VITE_TURNSTILE_SITE_KEY ?? "")
+  ) {
+    throw new Error("VITE_TURNSTILE_SITE_KEY is a Cloudflare test key");
+  }
   if (command === "build" && mode === "production") {
     for (const key of ["VITE_SITE_ID", "VITE_TURNSTILE_SITE_KEY"]) {
       if (!env[key])

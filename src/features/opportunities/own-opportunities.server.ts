@@ -109,8 +109,10 @@ export async function listOwnOpportunities(
       now,
     ),
   );
-  const openCount = items.filter((item) =>
-    ["pending", "active", "expiring_soon"].includes(item.state),
+  // The same rule the posting service counts with, so the button never disagrees with the server.
+  const openCount = rows.filter(
+    (row) =>
+      ["pending", "published"].includes(row.status) && row.expiresAt > now,
   ).length;
   return {
     entry: owned,

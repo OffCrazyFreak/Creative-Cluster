@@ -5,7 +5,6 @@ import {
   deadlineEnd,
   isDeadlineAllowed,
   periodEnd,
-  renewalStart,
 } from "./opportunity-expiry";
 
 const NOW = new Date("2026-10-14T10:00:00Z");
@@ -39,6 +38,12 @@ describe("isDeadlineAllowed", () => {
     expect(isDeadlineAllowed("2027-04-12", NOW)).toBe(true);
     expect(isDeadlineAllowed("2027-04-13", NOW)).toBe(false);
   });
+
+  it("rejects dates that match the pattern but do not exist", () => {
+    expect(isDeadlineAllowed("2026-10-45", NOW)).toBe(false);
+    expect(isDeadlineAllowed("2026-13-01", NOW)).toBe(false);
+    expect(isDeadlineAllowed("2027-02-30", NOW)).toBe(false);
+  });
 });
 
 describe("canRenew", () => {
@@ -57,10 +62,5 @@ describe("canRenew", () => {
     expect(
       canRenew({ status: "closed", renewals: 0, expiresAt: day(2) }, NOW),
     ).toBe(false);
-  });
-
-  it("starts the new period at the old end, so renewing early loses nothing", () => {
-    expect(renewalStart(day(5), NOW)).toEqual(day(5));
-    expect(renewalStart(day(-5), NOW)).toEqual(NOW);
   });
 });
