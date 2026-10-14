@@ -23,6 +23,7 @@
     "admin:create": "tsx scripts/create-admin.ts",
     "seed:tags": "tsx scripts/seed-tags.ts",
     "seed:fake": "tsx scripts/seed-fake.ts",
+    "seed:dev": "tsx scripts/assert-local-db.ts && pnpm seed:tags && pnpm seed:fake",
     "dgu:import": "tsx scripts/dgu-import.ts",
     "geonames:build": "tsx scripts/geonames-build.ts",
     "jobs:drain": "tsx scripts/drain-jobs.ts",

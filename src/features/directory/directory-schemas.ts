@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { IImageRef } from "@/typings/images";
+
 export const DIRECTORY_PAGE_SIZE = 24;
 
 export const listInputSchema = z.object({
@@ -22,6 +24,7 @@ export interface IDirectoryEntry {
   city: string | null;
   country: string | null;
   legal: string | null;
+  logo: IImageRef | null;
   blurb: string;
   tags: number[];
 }
@@ -44,6 +47,7 @@ export interface IListItem {
   kind: "organization" | "person";
   city: string | null;
   country: string | null;
+  logo: IImageRef | null;
   blurb: string;
   tags: { slug: string; labelEn: string; labelHr: string }[];
 }

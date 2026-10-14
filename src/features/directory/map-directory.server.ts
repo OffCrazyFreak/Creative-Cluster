@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 
-import { asc, sql } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db/client.server";
-import { entry } from "@/db/schema";
+import { entry, image } from "@/db/schema";
 import { loadPublicTags } from "@/features/entry/entry-tags.server";
 import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 import { publicLocation } from "@/features/entry/public-location";
@@ -40,8 +40,11 @@ async function buildMapDirectory(): Promise<IMapDirectory> {
       lng: entry.lng,
       locationDisplay: entry.locationDisplay,
       visibility: entry.visibility,
+      logoId: image.id,
+      logoHash: image.contentHash,
     })
     .from(entry)
+    .leftJoin(image, eq(image.id, entry.logoImageId))
     .where(publicEntryCondition())
     .orderBy(asc(sql`lower(${entry.name})`), asc(entry.id));
   const tagsByEntry = await loadPublicTags(
@@ -77,6 +80,10 @@ async function buildMapDirectory(): Promise<IMapDirectory> {
       city: location.city,
       country: location.countryCode,
       legal: typeof legal === "string" ? legal : null,
+      logo:
+        row.logoId && row.logoHash
+          ? { id: row.logoId, hash: row.logoHash }
+          : null,
       blurb: makeBlurb(row.descriptionText),
       tags: [...new Set(tags)],
     };
