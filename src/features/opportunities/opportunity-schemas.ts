@@ -71,3 +71,19 @@ export const renewOpportunityInput = z.object({
 export type OpportunityResult =
   | { status: "published" | "pending_review" | "saved" | "unchanged" }
   | { status: "refused"; code: OpportunityRuleCode };
+
+type FieldIssues = Record<string, { message: string }[]>;
+
+export function validateOpportunity({
+  value,
+}: {
+  value: OpportunityFormValues;
+}) {
+  const result = opportunityValuesSchema.safeParse(value);
+  if (result.success) return undefined;
+  const fields: FieldIssues = {};
+  for (const issue of result.error.issues) {
+    (fields[issue.path.join(".")] ??= []).push({ message: issue.message });
+  }
+  return { fields };
+}

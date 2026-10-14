@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { buttonVariants } from "@/components/ui/button";
+import ExpiringSoonNotice from "@/features/opportunities/components/expiring-soon-notice";
 import ListingStatusPanel from "@/features/lifecycle/components/listing-status-panel";
 import PendingConnectionsLink from "@/features/connections/components/pending-connections-link";
 import { m } from "@/paraglide/messages";
@@ -31,6 +32,7 @@ export default function AccountHomePage() {
         {summary?.status === "suspended" && !erasing && (
           <SuspensionNotice reason={summary.suspendedReason} />
         )}
+        {summary?.status === "published" && !erasing && <ExpiringSoonNotice />}
       </div>
       {summary && !erasing ? (
         <div
