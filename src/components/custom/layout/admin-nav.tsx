@@ -27,6 +27,11 @@ export default function AdminNav() {
           </Link>
         </li>
         <li>
+          <Link to="/admin/links" activeProps={ACTIVE}>
+            {m.admin_nav_links()}
+          </Link>
+        </li>
+        <li>
           <Link to="/admin/tags" activeProps={ACTIVE}>
             {m.admin_nav_tags()}
           </Link>

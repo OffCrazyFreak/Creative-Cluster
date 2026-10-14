@@ -10,6 +10,7 @@ import {
   withdrawConnection,
 } from "../connections.functions";
 import { useConnectionAction } from "../hooks/use-connection-action";
+import DecideButtons from "./decide-buttons";
 import WithdrawDialog from "./withdraw-dialog";
 
 interface IConnectionActionsProps {
@@ -30,35 +31,18 @@ export default function ConnectionActions({
 
   if (waitingForMe) {
     return (
-      <div className="flex flex-wrap gap-2">
-        <Button
-          className="max-sm:min-h-11"
-          disabled={busy}
-          aria-label={m.connections_action_confirm_label({ name })}
-          onClick={() =>
-            void run(
-              () => decide({ data: { linkId: item.id, decision: "confirm" } }),
-              m.connections_done_confirm(),
-            )
-          }
-        >
-          {m.connections_action_confirm()}
-        </Button>
-        <Button
-          variant="outline"
-          className="max-sm:min-h-11"
-          disabled={busy}
-          aria-label={m.connections_action_reject_label({ name })}
-          onClick={() =>
-            void run(
-              () => decide({ data: { linkId: item.id, decision: "reject" } }),
-              m.connections_done_reject(),
-            )
-          }
-        >
-          {m.connections_action_reject()}
-        </Button>
-      </div>
+      <DecideButtons
+        name={name}
+        busy={busy}
+        onDecide={(decision) =>
+          void run(
+            () => decide({ data: { linkId: item.id, decision } }),
+            decision === "confirm"
+              ? m.connections_done_confirm()
+              : m.connections_done_reject(),
+          )
+        }
+      />
     );
   }
 
