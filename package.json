@@ -27,6 +27,7 @@
     "dgu:import": "tsx scripts/dgu-import.ts",
     "geonames:build": "tsx scripts/geonames-build.ts",
     "import:legacy-export": "tsx scripts/import-legacy-export.ts",
+    "import:run": "tsx scripts/import-run.ts",
     "jobs:drain": "tsx scripts/drain-jobs.ts",
     "terms:notify": "tsx scripts/enqueue-terms-notice.ts",
     "maintenance:run": "tsx scripts/run-maintenance.ts",
