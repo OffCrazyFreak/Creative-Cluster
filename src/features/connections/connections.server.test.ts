@@ -28,6 +28,7 @@ const { decideLink, withdrawLink } = await import("./decide-link.server");
 const { listMyConnections, countPendingProposals } =
   await import("./list-links.server");
 const { loadPublicConnections } = await import("./public-connections.server");
+const { exportConfirmedLinks } = await import("./export-links.server");
 const { withdrawStaleProposals } = await import("./expire-links.server");
 const { enforceLimits } = await import("@/lib/limits/check-limit.server");
 
@@ -238,6 +239,41 @@ describe.skipIf(!client.temp)("connections flow", () => {
       ok: false,
       error: "limit",
     });
+  });
+
+  it("exports confirmed links only, escaping formulas and skipping hidden ends", async () => {
+    const evil = (await addEntry(db, "=SUM(A1)", {}, { ownerUserId: users.c }))
+      .id;
+    const [low, high] = [ids.a, evil].sort();
+    await db.insert(link).values({
+      fromId: low,
+      toId: high,
+      kind: "collaborated",
+      symmetric: true,
+      status: "confirmed",
+      decidedAt: new Date(),
+    });
+    const [lo2, hi2] = [ids.a, ids.hidden].sort();
+    await db.insert(link).values({
+      fromId: lo2,
+      toId: hi2,
+      kind: "eu_partner",
+      symmetric: true,
+      status: "confirmed",
+    });
+    const csv = await exportConfirmedLinks();
+    expect(csv).toContain("'=SUM(A1)");
+    expect(csv).not.toContain("hidden");
+    expect(csv).not.toContain("proposed");
+    expect(csv.split("\r\n")[0]).toContain("link_id,kind");
+  });
+
+  it("exports outside partners as unverified with their evidence and always has a header", async () => {
+    const csv = await exportConfirmedLinks();
+    const rows = csv.split("\r\n");
+    expect(rows[0]).toContain("unverified,evidence_urls");
+    expect(csv).toContain("true");
+    expect(csv).toContain("https://elsewhere.example/members");
   });
 
   describe("public connections", () => {

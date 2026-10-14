@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import {
+  getConnectionPartnerSlugs,
   getMyConnections,
   getPublicConnections,
   getPendingProposalCount,
@@ -44,6 +45,14 @@ export function publicConnectionsQuery(entryId: string) {
   return queryOptions({
     queryKey: [...CONNECTIONS_QUERY_KEY, "public", entryId],
     queryFn: () => getPublicConnections({ data: { entryId } }),
+    staleTime: 60_000,
+  });
+}
+
+export function partnerSlugsQuery(slug: string) {
+  return queryOptions({
+    queryKey: [...CONNECTIONS_QUERY_KEY, "slugs", slug],
+    queryFn: () => getConnectionPartnerSlugs({ data: { slug } }),
     staleTime: 60_000,
   });
 }

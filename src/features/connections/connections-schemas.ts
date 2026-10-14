@@ -129,6 +129,8 @@ export interface ILinkTarget {
   countryCode: string | null;
 }
 
+export const partnerSlugsInput = z.object({ slug: z.string().min(1).max(120) });
+
 export const publicConnectionsInput = z.object({ entryId: z.uuid() });
 
 export interface IPublicRelation {
