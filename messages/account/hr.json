@@ -1,3 +1,12 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "account_error_name": "Upiši naziv od 2 do 120 znakova.",
+  "account_error_description": "Opiši svoj unos.",
+  "account_error_rich_text": "Ovaj tekst je predugačak ili nije valjan.",
+  "account_error_too_long": "Upiši najviše {max} znakova.",
+  "account_error_url": "Upiši web adresu koja počinje s http:// ili https://.",
+  "account_error_email": "Upiši valjanu adresu e-pošte.",
+  "account_error_phone": "Upiši valjan broj telefona, na primjer +385 1 234 5678.",
+  "account_error_location_city": "Odaberi grad ili mjesto.",
+  "account_error_location_country": "Odaberi državu."
 }

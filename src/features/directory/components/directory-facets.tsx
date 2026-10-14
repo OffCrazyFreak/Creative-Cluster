@@ -29,7 +29,7 @@ export default function DirectoryFacets({ facets }: IDirectoryFacetsProps) {
         <h2 id="facet-tags" className="font-semibold">
           {m.directory_browse_tags()}
         </h2>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1">
+        <ul className="flex flex-wrap gap-x-4 [&_a]:inline-block [&_a]:py-1">
           {tags.map((item) => (
             <li key={item.slug}>
               <Link to="/directory/tag/$tag" params={{ tag: item.slug }}>
@@ -46,7 +46,7 @@ export default function DirectoryFacets({ facets }: IDirectoryFacetsProps) {
         <h2 id="facet-countries" className="font-semibold">
           {m.directory_browse_countries()}
         </h2>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1">
+        <ul className="flex flex-wrap gap-x-4 [&_a]:inline-block [&_a]:py-1">
           {countries.map((item) => (
             <li key={item.key}>
               <Link
