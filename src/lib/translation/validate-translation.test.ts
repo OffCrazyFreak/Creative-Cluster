@@ -76,8 +76,28 @@ describe("validateTranslation", () => {
     ).toBeNull();
   });
 
+  it("rejects a short field echoed back unchanged, but allows glossary names", () => {
+    expect(
+      validateTranslation(
+        ["Graphic designer wanted"],
+        ["Graphic designer wanted"],
+        "hr",
+      ),
+    ).toBe("unchanged");
+    expect(
+      validateTranslation(
+        ["Studio Plava Zagreb"],
+        ["Studio Plava Zagreb"],
+        "hr",
+        ["Studio Plava Zagreb"],
+      ),
+    ).toBeNull();
+  });
+
   it("rejects text that is still in the source language", () => {
-    expect(validateTranslation([EN], [`${EN} `], "hr")).toBe("language");
+    expect(validateTranslation([EN], [`${EN} Join us today.`], "hr")).toBe(
+      "language",
+    );
   });
 });
 

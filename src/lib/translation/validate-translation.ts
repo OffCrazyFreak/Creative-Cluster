@@ -15,7 +15,11 @@ export type TranslationFailure =
   | "paragraphs"
   | "urls"
   | "tags"
-  | "language";
+  | "language"
+  | "unchanged";
+
+// Names and one-word labels are legitimately identical in both languages.
+const MIN_ECHO_CHARS = 12;
 
 const URL_PATTERN = /https?:\/\/[^\s<>"']+/gi;
 
@@ -36,6 +40,7 @@ export function validateTranslation(
   source: string[],
   translated: string[],
   to: AppLocale,
+  glossary: string[] = [],
 ): TranslationFailure | null {
   if (translated.length !== source.length) return "block_count";
   if (translated.some((block) => !block.trim())) return "empty";
@@ -53,6 +58,17 @@ export function validateTranslation(
     if (urlList(block).join(" ") !== urlList(out).join(" ")) return "urls";
     if (!hasMatchingTags(block, out)) return "tags";
   }
+
+  // A model that echoes a short field back would pass every other check.
+  const echoed = source.every(
+    (block, index) =>
+      block.trim().toLowerCase() === translated[index].trim().toLowerCase() &&
+      !glossary.some(
+        (term) => term.toLowerCase() === block.trim().toLowerCase(),
+      ),
+  );
+  if (echoed && plain(source.join("")).length >= MIN_ECHO_CHARS)
+    return "unchanged";
 
   const language = detectLocale(translated.join("\n"));
   if (language && language !== to) return "language";

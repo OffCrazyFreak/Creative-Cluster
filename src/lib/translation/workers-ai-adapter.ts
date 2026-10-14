@@ -10,7 +10,8 @@ import {
 } from "./translation-adapter";
 
 export const WORKERS_AI_MODEL = "@cf/google/gemma-4-26b-a4b-it";
-const REQUEST_TIMEOUT_MS = 90_000;
+// Two attempts per field must fit the 5 minute background drain; jobs run there, not in the 30 s scheduled one.
+const REQUEST_TIMEOUT_MS = 60_000;
 // Error 3036: the 10,000 neurons per day free allocation is used up (resets 00:00 UTC).
 const QUOTA_ERROR_CODE = 3036;
 

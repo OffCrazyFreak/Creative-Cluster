@@ -99,7 +99,7 @@ describe.skipIf(!temp)("runTranslation", () => {
     expect(
       JSON.parse(stored.find((r) => r.field === "description")?.text ?? ""),
     ).toEqual(doc(DESC_HR));
-    expect(calls).toHaveLength(1);
+    expect(calls).toHaveLength(2);
     expect(calls[0].glossary).toContain("Studio Plava");
   });
 
@@ -109,7 +109,7 @@ describe.skipIf(!temp)("runTranslation", () => {
     const request = { entityType: "entry" as const, entityId: id };
     await runTranslation(db, fakeAdapter(answers, calls), request);
     await runTranslation(db, fakeAdapter(answers, calls), request);
-    expect(calls).toHaveLength(1);
+    expect(calls).toHaveLength(2);
   });
 
   it("retranslates only the field whose source changed", async () => {
@@ -127,7 +127,8 @@ describe.skipIf(!temp)("runTranslation", () => {
       fakeAdapter({ [changed]: `${OFFERING_HR} Pridruži nam se.` }, calls),
       request,
     );
-    expect(calls[1].blocks).toEqual([changed]);
+    expect(calls).toHaveLength(3);
+    expect(calls[2].blocks).toEqual([changed]);
   });
 
   it("never overwrites a human row", async () => {
@@ -162,7 +163,7 @@ describe.skipIf(!temp)("runTranslation", () => {
       entityType: "entry",
       entityId: id,
     });
-    expect(calls).toHaveLength(2);
+    expect(calls).toHaveLength(4);
     expect(await rows(id)).toHaveLength(0);
   });
 
@@ -184,6 +185,18 @@ describe.skipIf(!temp)("runTranslation", () => {
     expect(await rows(id)).toHaveLength(2);
   });
 
+  it("removes the translation of a field the owner emptied, even with nothing else to translate", async () => {
+    const id = await entryWithText();
+    const request = { entityType: "entry" as const, entityId: id };
+    await runTranslation(db, fakeAdapter(answers), request);
+    await db
+      .update(schema.entry)
+      .set({ offeringText: "" })
+      .where(eq(schema.entry.id, id));
+    await runTranslation(db, fakeAdapter(answers), request);
+    expect((await rows(id)).map((r) => r.field)).toEqual(["description"]);
+  });
+
   it("drops a stale machine row when the retranslation fails", async () => {
     const id = await entryWithText();
     const request = { entityType: "entry" as const, entityId: id };
@@ -195,6 +208,22 @@ describe.skipIf(!temp)("runTranslation", () => {
     await runTranslation(db, fakeAdapter({}), request);
     const left = await rows(id);
     expect(left.map((r) => r.field)).toEqual(["description"]);
+  });
+
+  it("keeps no stale text while a changed field waits for the quota", async () => {
+    const id = await entryWithText();
+    const request = { entityType: "entry" as const, entityId: id };
+    await runTranslation(db, fakeAdapter(answers), request);
+    await db
+      .update(schema.entry)
+      .set({ offeringText: "Completely new offer for our members this year." })
+      .where(eq(schema.entry.id, id));
+    const limited: ITranslationAdapter = {
+      name: "limited",
+      translate: () => Promise.reject(new TranslationQuotaError("used up")),
+    };
+    await runTranslation(db, limited, request);
+    expect((await rows(id)).map((r) => r.field)).toEqual(["description"]);
   });
 
   it("defers to 00:05 UTC the next day on a quota error", async () => {
