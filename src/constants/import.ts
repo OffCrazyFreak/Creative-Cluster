@@ -14,3 +14,6 @@ export const STAGING_VERSION = 1;
 export const LEGACY_SOURCE_LABEL = "legacy-creative-cluster";
 
 export const CLAIM_INVITE_TTL_DAYS = 30;
+
+export const SUPPRESSION_REASONS = ["claim_removal", "manual"] as const;
+export type SuppressionReason = (typeof SUPPRESSION_REASONS)[number];
