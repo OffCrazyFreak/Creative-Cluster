@@ -8,6 +8,7 @@ interface IEntriesPagerProps {
   canNext: boolean;
   onPrevious: () => void;
   onNext: () => void;
+  label?: string;
 }
 
 export default function EntriesPager({
@@ -17,12 +18,10 @@ export default function EntriesPager({
   canNext,
   onPrevious,
   onNext,
+  label = m.admin_entries_pagination(),
 }: IEntriesPagerProps) {
   return (
-    <nav
-      className="flex items-center gap-4"
-      aria-label={m.admin_entries_pagination()}
-    >
+    <nav className="flex items-center gap-4" aria-label={label}>
       <Button
         type="button"
         variant="outline"
