@@ -6,7 +6,7 @@ import SubmitButton from "./submit-button";
 import TextField from "./text-field";
 
 // Shared TanStack Form setup: Zod schemas go in `validators`, fields render shadcn Field parts.
-export const { useAppForm } = createFormHook({
+export const { useAppForm, withForm } = createFormHook({
   fieldContext,
   formContext,
   fieldComponents: { TextField, SelectField },
