@@ -74,3 +74,20 @@ export function layoutGraph(
     ]),
   );
 }
+
+// One edge per pair of entries, even when they are linked under several kinds.
+export function uniquePairs(
+  rows: { id: string; fromId: string; toId: string }[],
+) {
+  const seen = new Map<
+    string,
+    { id: string; source: string; target: string }
+  >();
+  for (const row of rows) {
+    // Directed kinds can exist both ways; the pair is still one edge.
+    const key = [row.fromId, row.toId].sort().join(":");
+    if (!seen.has(key))
+      seen.set(key, { id: row.id, source: row.fromId, target: row.toId });
+  }
+  return [...seen.values()];
+}
