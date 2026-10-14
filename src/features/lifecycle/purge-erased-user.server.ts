@@ -1,4 +1,4 @@
-import { and, eq, like, lte, sql } from "drizzle-orm";
+import { and, eq, like, lte } from "drizzle-orm";
 
 import {
   ERASURE_GRACE_DAYS,
@@ -11,7 +11,7 @@ import { invalidateMapDirectory } from "@/features/directory/map-directory.serve
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
 import { site } from "@/sites";
 
-import { purgeEntry } from "./purge-entry.server";
+import { purgeEntry, scrubSentEmails } from "./purge-entry.server";
 
 interface IErasedAccount {
   id: string;
@@ -37,7 +37,8 @@ export async function purgeErasedUser(
           lte(verification.createdAt, cutoff),
         ),
       )
-      .limit(1);
+      .limit(1)
+      .for("update");
     if (!due) return false;
 
     const owned = await tx
@@ -54,13 +55,7 @@ export async function purgeErasedUser(
           eq(verification.value, account.id),
         ),
       );
-    // Mail already sent to this address no longer needs it; queued mail still does.
-    await tx.execute(sql`
-      update job
-      set payload = jsonb_build_object('template', payload -> 'template', 'scrubbed', true)
-      where status in ('done', 'failed')
-        and type = 'email'
-        and lower(payload ->> 'to') = ${account.email.toLowerCase()}`);
+    await scrubSentEmails(tx, account.email);
     const locale = LOCALES.find((l) => l === account.locale) ?? site.baseLocale;
     await enqueueEmail(tx, {
       template: "erasure_done",

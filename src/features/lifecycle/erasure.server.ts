@@ -10,6 +10,7 @@ import type { EntryStatus } from "@/constants/entry";
 import { db, type DbOrTx, type Tx } from "@/db/client.server";
 import { changeLog, entry, user, verification } from "@/db/schema";
 import { invalidateMapDirectory } from "@/features/directory/map-directory.server";
+import { assertAdminsRemain } from "@/lib/auth/min-admins.server";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
@@ -56,6 +57,8 @@ export async function getErasureState(userId: string): Promise<IErasureState> {
 
 // Archives the listing at once and starts the grace period. The purge job does the rest after 14 days.
 export async function requestErasure(userId: string): Promise<IErasureState> {
+  // The last admins cannot be deleted later, so the request is refused now instead of promising a deletion.
+  await assertAdminsRemain(userId);
   const scheduledFor = await db.transaction(async (tx) => {
     // Locking the account row serialises two requests, so only one marker is ever written.
     const [account] = await tx
@@ -126,9 +129,8 @@ async function previousState(tx: Tx, entryId: string) {
     .orderBy(desc(changeLog.createdAt))
     .limit(1);
   const status = row?.before?.status;
-  const restorable: EntryStatus[] = ["published", "suspended", "archived"];
   return {
-    status: restorable.find((s) => s === status) ?? ("archived" as const),
+    status: ALL_STATUSES.find((s) => s === status) ?? ("archived" as const),
     suspendedReason:
       typeof row?.before?.suspendedReason === "string"
         ? row.before.suspendedReason
@@ -138,7 +140,7 @@ async function previousState(tx: Tx, entryId: string) {
 
 export async function cancelErasure(userId: string): Promise<void> {
   await db.transaction(async (tx) => {
-    // The lock makes cancel and the purge job take turns; once the grace period is over it is too late.
+    // The purge locks the marker row too, so cancel and the purge take turns; once the grace period is over it is too late.
     const row = await markerRow(tx, userId, true);
     if (!row || deleteDateOf(row.createdAt) <= new Date())
       throw new NotFoundError();

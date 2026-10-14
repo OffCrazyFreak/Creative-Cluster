@@ -20,7 +20,8 @@ export default function DataExportSection() {
       anchor.href = url;
       anchor.download = `my-data-${new Date().toISOString().slice(0, 10)}.json`;
       anchor.click();
-      URL.revokeObjectURL(url);
+      // Some browsers read the blob after click() returns.
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
     } catch {
       toast.error(m.lifecycle_export_failed());
     } finally {

@@ -1,7 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "moderation_email_erasure_scheduled_subject": "Your account deletion is scheduled",
-  "moderation_email_erasure_scheduled_preheader": "You can cancel it within the next 14 days.",
+  "moderation_email_erasure_scheduled_preheader": "You can cancel it within the next {days} days.",
   "moderation_email_erasure_scheduled_body_entry": "we received your request to delete your account and the listing {entryName} on {siteName}. The listing is already hidden. We will delete everything for good on {deleteDate}.",
   "moderation_email_erasure_scheduled_body_account": "we received your request to delete your account on {siteName}. We will delete it for good on {deleteDate}.",
   "moderation_email_erasure_scheduled_what": "We delete the listing, images, translations, contact details and connections. We remove personal data from the change log.",
@@ -11,7 +11,6 @@
   "moderation_email_erasure_done_preheader": "The deletion is complete.",
   "moderation_email_erasure_done_body_entry": "we deleted your account and the listing {entryName} from {siteName}, with the images, translations, contact details and connections.",
   "moderation_email_erasure_done_body_account": "we deleted your account from {siteName}.",
-  "moderation_email_erasure_done_backups": "We keep backups for at most 90 days, after which the data disappears from them too. [[GAP: lawyer to confirm the backup sentence]]",
   "moderation_email_erasure_done_last": "This is the last message we send you. If you want to return, you can always send a new application.",
   "moderation_email_erasure_done_footer": "You are getting this message because you asked to delete your account on {siteName}. We send it once and we do not keep your address. Questions: {contactEmail}. {controllerName}.",
   "moderation_email_suspended_subject": "Your listing {entryName} was taken down for now",

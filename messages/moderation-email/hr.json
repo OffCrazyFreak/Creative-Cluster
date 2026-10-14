@@ -1,7 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "moderation_email_erasure_scheduled_subject": "Brisanje tvog računa je zakazano",
-  "moderation_email_erasure_scheduled_preheader": "Možeš ga otkazati u sljedećih 14 dana.",
+  "moderation_email_erasure_scheduled_preheader": "Možeš ga otkazati u sljedećih {days} dana.",
   "moderation_email_erasure_scheduled_body_entry": "primili smo tvoj zahtjev za brisanje računa i unosa {entryName} na {siteName}. Unos je već sakriven. Trajno ćemo izbrisati {deleteDate}.",
   "moderation_email_erasure_scheduled_body_account": "primili smo tvoj zahtjev za brisanje računa na {siteName}. Trajno ćemo ga izbrisati {deleteDate}.",
   "moderation_email_erasure_scheduled_what": "Brišemo unos, slike, prijevode, kontaktne podatke i veze. Iz zapisa izmjena uklanjamo osobne podatke.",
@@ -11,7 +11,6 @@
   "moderation_email_erasure_done_preheader": "Brisanje je završeno.",
   "moderation_email_erasure_done_body_entry": "izbrisali smo tvoj račun i unos {entryName} s {siteName}, zajedno sa slikama, prijevodima, kontaktnim podacima i vezama.",
   "moderation_email_erasure_done_body_account": "izbrisali smo tvoj račun na {siteName}.",
-  "moderation_email_erasure_done_backups": "Sigurnosne kopije čuvamo najviše 90 dana, nakon toga i iz njih nestaju. [[GAP: pravnik potvrđuje rečenicu o sigurnosnim kopijama]]",
   "moderation_email_erasure_done_last": "Ovo je posljednja poruka koju ti šaljemo. Ako se želiš vratiti, uvijek možeš poslati novu prijavu.",
   "moderation_email_erasure_done_footer": "Ovu poruku primaš jer je za tvoj račun na {siteName} zatraženo brisanje. Šaljemo je jednom i ne pohranjujemo tvoju adresu. Pitanja: {contactEmail}. {controllerName}.",
   "moderation_email_suspended_subject": "Tvoj unos {entryName} je privremeno uklonjen",

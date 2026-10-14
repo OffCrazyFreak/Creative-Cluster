@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   AlertDialog,
@@ -28,7 +28,7 @@ import {
 export default function ErasureSection() {
   const { data } = useQuery(erasureStateQueryOptions());
   const run = useLifecycleAction(ERASURE_KEY);
-  const refreshListing = useLifecycleAction(OWN_LISTING_KEY);
+  const queryClient = useQueryClient();
   if (!data) return null;
 
   const date = data.scheduledFor
@@ -39,16 +39,21 @@ export default function ErasureSection() {
     : null;
 
   async function request() {
-    await run(
+    const done = await run(
       () => requestErasureFn().then(() => ({ ok: true })),
       m.lifecycle_erase_scheduled_toast(),
     );
-    await refreshListing(() => Promise.resolve({ ok: true }), "");
+    if (done)
+      await queryClient.invalidateQueries({ queryKey: OWN_LISTING_KEY });
   }
 
   async function cancel() {
-    await run(() => cancelErasureFn(), m.lifecycle_erase_cancelled());
-    await refreshListing(() => Promise.resolve({ ok: true }), "");
+    const done = await run(
+      () => cancelErasureFn(),
+      m.lifecycle_erase_cancelled(),
+    );
+    if (done)
+      await queryClient.invalidateQueries({ queryKey: OWN_LISTING_KEY });
   }
 
   return (

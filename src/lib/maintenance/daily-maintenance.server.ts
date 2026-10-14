@@ -3,7 +3,6 @@ import {
   archiveStaleImports,
   deleteDueErasedAccounts,
   purgeExpiredApplications,
-  sweepOrphanImages,
 } from "@/features/lifecycle/scheduled-lifecycle.server";
 import { queueReviewDigests } from "@/features/review/review-digest.server";
 import { triggerDrain } from "@/lib/jobs/trigger-drain.server";
@@ -16,7 +15,6 @@ const TASKS: Task[] = [
   { name: "strip-change-log", run: () => stripOldChangeLog() },
   { name: "delete-erased-accounts", run: () => deleteDueErasedAccounts() },
   { name: "archive-stale-imports", run: () => archiveStaleImports() },
-  { name: "sweep-orphan-images", run: () => sweepOrphanImages() },
   { name: "purge-expired-applications", run: () => purgeExpiredApplications() },
 ];
 

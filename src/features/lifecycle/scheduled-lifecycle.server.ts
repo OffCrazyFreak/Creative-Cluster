@@ -1,4 +1,4 @@
-import { and, eq, isNull, like, lt, notExists, or, sql } from "drizzle-orm";
+import { and, eq, isNull, like, lt, sql } from "drizzle-orm";
 
 import {
   APPLY_VERIFY_TTL_SECONDS,
@@ -10,7 +10,7 @@ import {
   IMPORT_ARCHIVE_MONTHS,
 } from "@/constants/lifecycle";
 import { db } from "@/db/client.server";
-import { entry, image, user, verification } from "@/db/schema";
+import { entry, user, verification } from "@/db/schema";
 import { auth } from "@/lib/auth/auth.server";
 import { assertAdminsRemain } from "@/lib/auth/min-admins.server";
 import { invalidateMapDirectory } from "@/features/directory/map-directory.server";
@@ -121,7 +121,8 @@ export async function deleteDueErasedAccounts(): Promise<number> {
         .limit(1);
       if (account) {
         await assertAdminsRemain(userId);
-        await purgeErasedUser(account);
+        // Not due by the app clock yet (it may lag the database): leave the marker for the next run.
+        if (!(await purgeErasedUser(account))) continue;
         await context.internalAdapter.deleteUser(userId);
       }
       await db
@@ -134,28 +135,4 @@ export async function deleteDueErasedAccounts(): Promise<number> {
     }
   }
   return deleted;
-}
-
-// Images replaced during edits lose their last reference; uploads still waiting to be saved get a week of grace.
-export async function sweepOrphanImages(): Promise<number> {
-  const removed = await db
-    .delete(image)
-    .where(
-      and(
-        lt(image.createdAt, sql`now() - interval '7 days'`),
-        notExists(
-          db
-            .select({ one: entry.id })
-            .from(entry)
-            .where(
-              or(
-                eq(entry.logoImageId, image.id),
-                eq(entry.coverImageId, image.id),
-              ),
-            ),
-        ),
-      ),
-    )
-    .returning({ id: image.id });
-  return removed.length;
 }

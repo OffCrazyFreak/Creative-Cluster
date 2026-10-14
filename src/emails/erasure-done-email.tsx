@@ -31,7 +31,6 @@ export default function ErasureDoneEmail(props: IErasureDoneEmailProps) {
               { locale },
             )}
       </Text>
-      <Text>{m.moderation_email_erasure_done_backups({}, { locale })}</Text>
       <Text>{m.moderation_email_erasure_done_last({}, { locale })}</Text>
       <Hr />
       <Text style={{ fontSize: 12 }}>

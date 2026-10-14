@@ -1,5 +1,6 @@
 import { Text } from "@react-email/components";
 
+import { ERASURE_GRACE_DAYS } from "@/constants/lifecycle";
 import { m } from "@/paraglide/messages";
 import { site } from "@/sites";
 
@@ -23,7 +24,10 @@ export default function ErasureScheduledEmail(
     <EmailLayout
       locale={locale}
       footer="account"
-      preview={m.moderation_email_erasure_scheduled_preheader({}, { locale })}
+      preview={m.moderation_email_erasure_scheduled_preheader(
+        { days: ERASURE_GRACE_DAYS },
+        { locale },
+      )}
     >
       <Text>{m.email_greeting({}, { locale })}</Text>
       <Text>

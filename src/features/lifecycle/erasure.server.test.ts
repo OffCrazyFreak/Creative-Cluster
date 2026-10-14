@@ -84,6 +84,17 @@ describe.skipIf(!temp)("erasure and export", () => {
     expect((await entryOf(listing.id)).status).toBe("archived");
   });
 
+  it("cancelling puts a pending application back in the queue", async () => {
+    const { account, listing } = await owner("Was Pending");
+    await db
+      .update(schema.entry)
+      .set({ status: "pending" })
+      .where(eq(schema.entry.id, listing.id));
+    await erasure.requestErasure(account.id);
+    await erasure.cancelErasure(account.id);
+    expect((await entryOf(listing.id)).status).toBe("pending");
+  });
+
   it("does nothing before the grace period is over", async () => {
     const { account, listing } = await owner("Not Yet");
     await erasure.requestErasure(account.id);
@@ -271,7 +282,7 @@ describe.skipIf(!temp)("erasure and export", () => {
     );
   });
 
-  it("leaves the last admins and their data alone", async () => {
+  it("refuses an erasure request from the last admins", async () => {
     const lone = await addUser(db, "Lone", "admin");
     const listing = await addEntry(
       db,
@@ -279,49 +290,9 @@ describe.skipIf(!temp)("erasure and export", () => {
       {},
       { ownerUserId: lone.id },
     );
-    await erasure.requestErasure(lone.id);
-    await backdate(lone.id, 15);
-    await scheduled.deleteDueErasedAccounts();
-    expect(
-      await db.select().from(schema.user).where(eq(schema.user.id, lone.id)),
-    ).toHaveLength(1);
-    expect(await entryOf(listing.id)).toBeDefined();
-    // The marker stays, so the run tries again once another admin exists.
-    expect(
-      (await erasure.getErasureState(lone.id)).scheduledFor,
-    ).not.toBeNull();
-  });
-
-  it("sweeps images nothing references after a week", async () => {
-    const week = new Date(Date.now() - 8 * 86_400_000);
-    const rows = await db
-      .insert(schema.image)
-      .values([
-        {
-          bytes: Buffer.from("a"),
-          mime: "image/webp",
-          width: 1,
-          height: 1,
-          size: 1,
-          contentHash: "o1",
-          createdAt: week,
-        },
-        {
-          bytes: Buffer.from("b"),
-          mime: "image/webp",
-          width: 1,
-          height: 1,
-          size: 1,
-          contentHash: "o2",
-        },
-      ])
-      .returning();
-    expect(await scheduled.sweepOrphanImages()).toBeGreaterThanOrEqual(1);
-    const left = (
-      await db.select({ id: schema.image.id }).from(schema.image)
-    ).map((r) => r.id);
-    expect(left).not.toContain(rows[0].id);
-    expect(left).toContain(rows[1].id);
+    await expect(erasure.requestErasure(lone.id)).rejects.toThrow();
+    expect((await entryOf(listing.id)).status).toBe("published");
+    expect((await erasure.getErasureState(lone.id)).scheduledFor).toBeNull();
   });
 
   it("exports connections without hidden listings or the other side's words", async () => {
