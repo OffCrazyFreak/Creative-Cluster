@@ -6,17 +6,31 @@ import { useAppForm } from "@/components/custom/form/app-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { m } from "@/paraglide/messages";
 
+import { DEFAULT_COUNTRY } from "../listing-defaults";
 import { useSaveListing, TagsNotSavedError } from "../hooks/use-save-listing";
-import { listingSchema } from "../listing-schemas";
+import { validateListing } from "../listing-schemas";
 import type { IOwnListing } from "../listing-types";
 import BasicsSection from "./basics-section";
 import ContactSection from "./contact-section";
+import DetailsSection from "./details-section";
 import ErrorSummary from "./error-summary";
+import ImagesSection from "./images-section";
 import LinksSection from "./links-section";
+import LocationSection from "./location-section";
+import TagsSection from "./tags-section";
 import UnsavedChangesDialog from "./unsaved-changes-dialog";
 
 interface IListingFormProps {
   listing: IOwnListing;
+}
+
+// The country select shows the site's home country as a default, so the value must hold it too.
+function withDefaultCountry(values: IOwnListing["values"]) {
+  const { location } = values;
+  if (location.countryCode || location.onlineOnly || !DEFAULT_COUNTRY) {
+    return values;
+  }
+  return { ...values, location: { ...location, countryCode: DEFAULT_COUNTRY } };
 }
 
 type Notice = "saved" | "unchanged" | "pending" | "failed" | "tags_failed";
@@ -33,7 +47,7 @@ export default function ListingForm({ listing }: IListingFormProps) {
   const [notice, setNotice] = useState<Notice | null>(null);
   const save = useSaveListing(listing);
   // Fixed at mount: a refetch after saving must not replace what the owner is looking at.
-  const [initial] = useState(listing.values);
+  const [initial] = useState(() => withDefaultCountry(listing.values));
 
   const form = useAppForm({
     defaultValues: initial,
@@ -41,7 +55,7 @@ export default function ListingForm({ listing }: IListingFormProps) {
       mode: "submit",
       modeAfterSubmission: "change",
     }),
-    validators: { onDynamic: listingSchema },
+    validators: { onDynamic: validateListing },
     onSubmit: async ({ value, formApi }) => {
       setNotice(null);
       try {
@@ -72,10 +86,14 @@ export default function ListingForm({ listing }: IListingFormProps) {
         void form.handleSubmit();
       }}
     >
-      <ErrorSummary form={form} />
+      <ErrorSummary form={form} kind={listing.kind} />
       <BasicsSection form={form} />
+      <LocationSection form={form} kind={listing.kind} />
+      <ImagesSection form={form} kind={listing.kind} />
       <LinksSection form={form} />
       <ContactSection form={form} />
+      <TagsSection form={form} />
+      <DetailsSection form={form} kind={listing.kind} />
       <div aria-live="polite">
         {notice && (
           <Alert

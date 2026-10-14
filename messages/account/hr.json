@@ -61,5 +61,7 @@
   "account_visibility_public": "Svi",
   "account_visibility_members": "Samo prijavljeni korisnici",
   "account_visibility_hidden": "Nitko (samo ti i tim)",
-  "account_chars_left": "Preostalo znakova: {count}"
+  "account_chars_left": "Preostalo znakova: {count}",
+  "account_error_location_invalid": "Provjeri lokaciju: adresa, mjesto ili koordinate nisu valjani.",
+  "account_field_alt_hint": "Ostavi prazno da se koristi naziv unosa."
 }

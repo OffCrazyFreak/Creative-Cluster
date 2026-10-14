@@ -61,5 +61,7 @@
   "account_visibility_public": "Everyone",
   "account_visibility_members": "Logged-in users only",
   "account_visibility_hidden": "Nobody (only you and the team)",
-  "account_chars_left": "{count} characters left"
+  "account_chars_left": "{count} characters left",
+  "account_error_location_invalid": "Check the location: the address, town or coordinates are not valid.",
+  "account_field_alt_hint": "Leave empty to use the name of the listing."
 }

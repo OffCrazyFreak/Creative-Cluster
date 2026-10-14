@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { withForm } from "@/components/custom/form/app-form";
 import { errorMessage } from "@/components/custom/form/error-message";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import type { EntryKind } from "@/constants/entry";
 import { m } from "@/paraglide/messages";
 
 import { emptyListingValues } from "../listing-defaults";
@@ -17,7 +18,8 @@ interface IProblem {
 // The browser cannot show every message at once on a long form, so a failed submit lists them at the top.
 const ErrorSummary = withForm({
   defaultValues: emptyListingValues(),
-  render: function Render({ form }) {
+  props: {} as { kind: EntryKind },
+  render: function Render({ form, kind }) {
     const heading = useRef<HTMLDivElement>(null);
     const attempts = useStore(form.store, (s) => s.submissionAttempts);
     const meta = useStore(
@@ -30,13 +32,11 @@ const ErrorSummary = withForm({
       if (attempts > 0 && !form.state.isValid) heading.current?.focus();
     }, [attempts, form]);
 
-    const problems: IProblem[] = Object.entries(meta).flatMap(
-      ([name, field]) => {
-        const first = field?.errors.find(Boolean);
-        if (!first) return [];
-        const message = errorMessage(first);
+    const problems: IProblem[] = Object.entries(meta).flatMap(([name, field]) =>
+      (field?.errors ?? []).flatMap((error) => {
+        const message = errorMessage(error);
         return message ? [{ name, message }] : [];
-      },
+      }),
     );
     if (attempts === 0 || problems.length === 0) return null;
 
@@ -46,16 +46,19 @@ const ErrorSummary = withForm({
         <AlertDescription>
           <ul className="flex list-disc flex-col gap-1 pl-4">
             {problems.map(({ name, message }) => (
-              <li key={name}>
+              <li key={`${name}:${message}`}>
                 <a
                   href={`#${name}`}
                   className="underline"
                   onClick={(event) => {
                     event.preventDefault();
-                    focusField(name);
+                    focusField(
+                      name,
+                      message === m.account_error_location_country(),
+                    );
                   }}
                 >
-                  {fieldLabel(name)}: {message}
+                  {fieldLabel(name, kind)}: {message}
                 </a>
               </li>
             ))}

@@ -114,3 +114,27 @@ export const saveListingInput = z.object({
   entryId: z.uuid(),
   values: listingSchema,
 });
+
+type FieldIssues = Record<string, { message: string }[]>;
+
+// Nested issues land on the field that is mounted: every location.* issue on "location", every
+// logo.* and cover.* issue on the image field. Messages are localized here, not taken from Zod.
+export function validateListing({ value }: { value: ListingFormValues }) {
+  const result = listingSchema.safeParse(value);
+  if (result.success) return undefined;
+  const fields: FieldIssues = {};
+  for (const issue of result.error.issues) {
+    const [head, ...rest] = issue.path.map(String);
+    const isGroup = ["location", "logo", "cover"].includes(head);
+    const name = isGroup ? head : issue.path.join(".");
+    const nested = isGroup && rest.length > 0;
+    const message =
+      nested && issue.code === "too_big"
+        ? m.account_error_too_long({ max: Number(issue.maximum) })
+        : nested
+          ? m.account_error_location_invalid()
+          : issue.message;
+    (fields[name] ??= []).push({ message });
+  }
+  return { fields };
+}
