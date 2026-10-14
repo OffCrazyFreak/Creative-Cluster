@@ -1,5 +1,3 @@
-import "@xyflow/react/dist/style.css";
-
 import { ReactFlow, type Edge } from "@xyflow/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";

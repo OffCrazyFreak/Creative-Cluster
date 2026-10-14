@@ -5,10 +5,8 @@ import type { AppLocale } from "@/constants/locales";
 import type { DbOrTx } from "@/db/client.server";
 import { translation } from "@/db/schema";
 
-import type {
-  saveTranslationInputSchema,
-  TranslatedField,
-} from "./translation-schemas";
+import type { TranslatedField } from "./translation-fields";
+import type { saveTranslationInputSchema } from "./translation-schemas";
 
 export type SaveInput = z.output<typeof saveTranslationInputSchema>;
 export type EditOutcome = "saved" | "removed" | "unchanged";

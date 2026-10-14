@@ -1,11 +1,15 @@
+import "@xyflow/react/dist/style.css";
+
 import { useQuery } from "@tanstack/react-query";
-import { useId } from "react";
+import { lazy, Suspense, useId } from "react";
 
 import { m } from "@/paraglide/messages";
 
 import { publicConnectionsQuery } from "../connections-queries";
-import ConnectionGraph from "./connection-graph";
 import PublicPartnerItem from "./public-partner-item";
+
+// The stylesheet is imported above, not in the lazy chunk, so server-rendered markup is styled before the graph code arrives.
+const ConnectionGraph = lazy(() => import("./connection-graph"));
 
 interface IEntryConnectionsProps {
   entryId: string;
@@ -29,7 +33,9 @@ export default function EntryConnections({ entryId }: IEntryConnectionsProps) {
           </h2>
           {data.graph ? (
             <>
-              <ConnectionGraph graph={data.graph} centerId={entryId} />
+              <Suspense fallback={<div className="h-96 md:h-[32rem]" />}>
+                <ConnectionGraph graph={data.graph} centerId={entryId} />
+              </Suspense>
               {data.graph.more > 0 ? (
                 <p>
                   <a href={`#${listId}`} className="inline-block py-1">

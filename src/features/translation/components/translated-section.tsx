@@ -7,7 +7,7 @@ import {
   fromSerializableDoc,
   type ITranslationView,
   type TranslatedField,
-} from "../translation-schemas";
+} from "../translation-fields";
 
 interface ITranslatedSectionProps {
   id: string;
