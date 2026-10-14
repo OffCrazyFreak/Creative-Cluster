@@ -17,13 +17,14 @@ export default function EntryTextSection({
   doc,
   lang,
 }: IEntryTextSectionProps) {
-  if (!doc && !text) return null;
+  const hasDoc = Boolean(doc?.content?.length);
+  if (!hasDoc && !text) return null;
   return (
     <section aria-labelledby={id} className="flex flex-col gap-1">
       <h2 id={id} className="font-semibold">
         {title}
       </h2>
-      {doc ? (
+      {hasDoc ? (
         <RichTextView doc={doc} lang={lang} />
       ) : (
         <p className="whitespace-pre-line">{text}</p>

@@ -70,7 +70,7 @@ export default function EntryDetail({ entry }: IEntryDetailProps) {
       <EntryTags tags={entry.tags} />
       <EntryLocation location={entry.location} />
       <EntryContactSection entry={entry} />
-      <EntryAfterContentSlot entryId={entry.id} slug={entry.slug} />
+      <EntryAfterContentSlot entryId={entry.id} />
       <EntryFreshness
         updatedAt={entry.updatedAt}
         lastConfirmedAt={entry.lastConfirmedAt}
