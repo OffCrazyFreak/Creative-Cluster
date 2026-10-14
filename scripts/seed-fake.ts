@@ -1,4 +1,4 @@
-import "./load-env";
+import "./assert-local-db";
 
 import { and, eq, isNull, sql } from "drizzle-orm";
 
@@ -17,16 +17,8 @@ import {
   STREETS,
 } from "./fake/content";
 import { DNZ_PLACES, EU_PLACES } from "./fake/places";
+import { richDescription } from "./fake/rich-description";
 import { createRandom, type Random } from "./fake/random";
-
-// Fake entries go live in the public directory, so only a local database is allowed.
-const host = new URL(process.env.DATABASE_URL ?? "postgres://invalid").hostname;
-if (!["localhost", "127.0.0.1", "::1", "[::1]"].includes(host)) {
-  console.error(
-    `Refusing to seed fake data into ${host}: local databases only.`,
-  );
-  process.exit(1);
-}
 
 const { db } = await import("@/db/client.server");
 const { entry, entryTag, slugHistory, tag } = await import("@/db/schema");
@@ -86,13 +78,21 @@ function fakeEntry(index: number, used: Set<string>): NewEntry {
   const lng = place.lng + (rand.next() - 0.5) * spread;
   const handle = baseSlug.replace(/-demo$/, "");
 
+  const lead = rand.pick(descriptions);
+  // Every third entry gets a rich-text description so the entry page shows both renderings.
+  const rich =
+    index % 3 === 1
+      ? richDescription(lead, [rand.pick(offerings), rand.pick(seekings)])
+      : null;
+
   return {
     slug,
     kind: isPerson ? "person" : "organization",
     status,
     name,
     sourceLocale: locale,
-    descriptionText: rand.pick(descriptions),
+    description: rich?.doc ?? null,
+    descriptionText: rich?.text ?? lead,
     offeringText: isPerson || rand.chance(0.8) ? rand.pick(offerings) : "",
     seekingText: rand.chance(0.7) ? rand.pick(seekings) : "",
     website: `https://example.org/${handle}`,

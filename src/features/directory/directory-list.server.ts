@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm";
 
 import { db } from "@/db/client.server";
-import { entry, entryTag, tag } from "@/db/schema";
+import { entry, entryTag, image, tag } from "@/db/schema";
 import { loadPublicTags } from "@/features/entry/entry-tags.server";
 import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 
@@ -98,8 +98,11 @@ export async function listPublicEntries(
       city: entry.city,
       countryCode: entry.countryCode,
       descriptionText: entry.descriptionText,
+      logoId: image.id,
+      logoHash: image.contentHash,
     })
     .from(entry)
+    .leftJoin(image, eq(image.id, entry.logoImageId))
     .where(where)
     .orderBy(asc(sql`lower(${entry.name})`), asc(entry.id))
     .limit(DIRECTORY_PAGE_SIZE)
@@ -115,6 +118,10 @@ export async function listPublicEntries(
     kind: row.kind === "person" ? "person" : "organization",
     city: row.city,
     country: row.countryCode?.toUpperCase() ?? null,
+    logo:
+      row.logoId && row.logoHash
+        ? { id: row.logoId, hash: row.logoHash }
+        : null,
     blurb: makeBlurb(row.descriptionText),
     tags: (tags.get(row.id) ?? [])
       .filter((item) => item.field === "topic")

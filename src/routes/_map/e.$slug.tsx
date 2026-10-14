@@ -68,7 +68,9 @@ export const Route = createFileRoute("/_map/e/$slug")({
 function EntryPage() {
   const result = Route.useLoaderData();
   const { slug } = Route.useParams();
-  useTrackEntryView(result.status === "found" ? slug : null);
+  useTrackEntryView(
+    result.status === "found" ? { slug, kind: result.entry.kind } : null,
+  );
   if (result.status === "found") return <EntryDetail entry={result.entry} />;
   return <EntryGone />;
 }

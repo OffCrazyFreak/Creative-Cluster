@@ -1,12 +1,22 @@
+import type { JsonRichTextDoc, RichTextDoc } from "@/typings/rich-text";
+
 import type { IPublicEntry, ITagRef } from "./entry-schemas";
 import { publicLocation, type ILocationRow } from "./public-location";
 import { canSeeField, type VisibilityField } from "./entry-visibility";
+
+export interface IEntryImages {
+  logo: IPublicEntry["logo"];
+  cover: IPublicEntry["cover"];
+}
+
+const NO_IMAGES: IEntryImages = { logo: null, cover: null };
 
 export interface IEntryRow extends ILocationRow {
   id: string;
   slug: string;
   name: string;
   sourceLocale: string;
+  description: RichTextDoc | null;
   descriptionText: string;
   offeringText: string;
   seekingText: string;
@@ -26,6 +36,7 @@ export function redactEntry(
   row: IEntryRow,
   tags: ITagRef[],
   isMember: boolean,
+  images: IEntryImages = NO_IMAGES,
 ): IPublicEntry {
   function visible<T>(field: VisibilityField, value: T): T | null {
     return canSeeField(row.visibility, field, isMember) ? value : null;
@@ -40,6 +51,7 @@ export function redactEntry(
     kind: row.kind as IPublicEntry["kind"],
     name: row.name,
     sourceLocale: row.sourceLocale,
+    description: row.description as JsonRichTextDoc | null,
     descriptionText: row.descriptionText,
     offeringText: row.offeringText,
     seekingText: row.seekingText,
@@ -53,6 +65,7 @@ export function redactEntry(
     legalStatus: typeof legalStatus === "string" ? legalStatus : null,
     location: publicLocation(row, isMember),
     tags,
+    ...images,
     publishedAt: row.publishedAt?.toISOString() ?? null,
     updatedAt: row.updatedAt.toISOString(),
     lastConfirmedAt: row.lastConfirmedAt?.toISOString() ?? null,
