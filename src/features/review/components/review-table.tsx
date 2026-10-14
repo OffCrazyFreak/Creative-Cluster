@@ -19,6 +19,7 @@ interface IReviewTableProps {
   onToggleAll: (checked: boolean) => void;
   onApprove: (row: IReviewRow) => void;
   onReject: (row: IReviewRow) => void;
+  onMovePin: (row: IReviewRow) => void;
 }
 
 export default function ReviewTable({
@@ -28,6 +29,7 @@ export default function ReviewTable({
   onToggleAll,
   onApprove,
   onReject,
+  onMovePin,
 }: IReviewTableProps) {
   const decidable = rows.filter((row) => row.decidable && !removesPost(row));
   const allSelected =
@@ -58,6 +60,7 @@ export default function ReviewTable({
             onSelect={(checked) => onToggle(row.id, checked)}
             onApprove={() => onApprove(row)}
             onReject={() => onReject(row)}
+            onMovePin={() => onMovePin(row)}
           />
         ))}
       </TableBody>
