@@ -1,5 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 
+import { LINK_LIMITS } from "@/constants/links";
 import { db } from "@/db/client.server";
 import { entry, link } from "@/db/schema";
 import { loadEvidenceByLink } from "./link-evidence.server";
@@ -10,6 +11,7 @@ import type {
   IPublicPartner,
   IUnverifiedPartner,
 } from "./connections-schemas";
+import { buildGraph } from "./connection-graph.server";
 
 // A hub entry could have thousands of links; the page needs a readable list, not all of them.
 const MAX_PUBLIC_LINKS = 200;
@@ -94,10 +96,15 @@ export async function loadPublicConnections(
     .from(entry)
     .where(and(eq(entry.id, entryId), publicEntryCondition()))
     .limit(1);
-  if (!self) return { partners: [], unverified: [] };
+  if (!self) return { partners: [], unverified: [], graph: null };
   const [partners, unverified] = await Promise.all([
     loadPartners(entryId),
     loadUnverified(entryId),
   ]);
-  return { partners, unverified };
+  const graph = await buildGraph(
+    self,
+    partners.slice(0, LINK_LIMITS.graphPartners),
+    partners.length,
+  );
+  return { partners, unverified, graph };
 }
