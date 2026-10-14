@@ -28,7 +28,7 @@ You need Git, Docker and pnpm 12. pnpm downloads the right Node version itself (
 ### macOS
 
 1. Install Docker Desktop and start it.
-2. Install pnpm with `corepack enable` (corepack ships with Node) or with the standalone installer from pnpm.io, then check `pnpm --version` prints 12.x.
+2. Install pnpm with the standalone installer from pnpm.io (or `corepack enable` if you already have Node), then check `pnpm --version` prints 12.x.
 
 ### Windows
 
@@ -39,7 +39,7 @@ You need Git, Docker and pnpm 12. pnpm downloads the right Node version itself (
 ### Linux
 
 1. Install Docker Engine with the compose plugin and make sure your user can run `docker` without sudo.
-2. Install pnpm with `corepack enable` or the standalone installer.
+2. Install pnpm with the standalone installer from pnpm.io (or `corepack enable` if you already have Node).
 
 ### Then, on every system
 
@@ -60,7 +60,7 @@ pnpm seed:dev                      # optional: tags and fake demo entries (refus
 pnpm dev                           # http://localhost:3000
 ```
 
-For the registry, set `DATABASE_URL` in `.env.local` to the `cc_dnz` database (same line, `cc_rpcc` replaced by `cc_dnz`), run `pnpm db:migrate` once more, then `pnpm dev:dnz` (port 3001). Run one site at a time per checkout: both compile Paraglide into `src/paraglide/`.
+For the registry, set `DATABASE_URL` in `.env.local` to the `cc_dnz` database (same line, `cc_rpcc` replaced by `cc_dnz`), run `pnpm db:migrate` and `pnpm admin:create ...` again (each database has its own accounts), then `pnpm dev:dnz` (port 3001). Run one site at a time per checkout: both compile Paraglide into `src/paraglide/`.
 
 Without real accounts the app runs on stand-ins: no `RESEND_API_KEY` prints mail to the terminal (reset and invite links appear there), no Geoapify key skips geocoding, no Cloudflare keys skip machine translation, and the Turnstile test keys always pass. Mail only sends after you run `pnpm jobs:drain` (see Jobs).
 
@@ -106,7 +106,7 @@ GitHub Actions secrets and variables are listed in `docs/runbook.md`.
 - `pnpm generate`: compiles Paraglide messages and the route tree (run by lint, typecheck and test).
 - `pnpm db:up`: start the Docker database. `pnpm db:generate --name <what>`: write a migration from schema changes. `pnpm db:migrate`: apply migrations. `pnpm db:check`: verify the migration journal.
 - `pnpm admin:create`: create an admin account (the first one; later admins are invited in `/admin/users`).
-- `pnpm seed:tags`, `pnpm seed:fake`, `pnpm seed:dev`: starter tags and fake entries. They refuse to run against a non-local database.
+- `pnpm seed:tags`: starter tags for the site named by `VITE_SITE_ID` (safe to repeat; also used on a new production database). `pnpm seed:fake` and `pnpm seed:dev` (tags plus fake demo entries) refuse to run against a non-local database.
 - `pnpm jobs:drain`: process queued jobs (mail, translation, geocoding retries) once, locally.
 - `pnpm maintenance:run`: run the daily maintenance tasks once.
 - `pnpm terms:notify`: queue the "terms changed" email to all accounts; needs `--yes` to actually queue.
@@ -130,7 +130,7 @@ age -d -i backup-key.txt rpcc-YYYY-MM-DD.dump.age > rpcc.dump
 pg_restore --no-owner --dbname "$TARGET_DATABASE_URL" rpcc.dump
 ```
 
-Use a `pg_restore` whose major version is at least the dump's (the workflow uses `postgres:18`). Restore into an empty database, for example a new Neon branch, never straight over production.
+Use a `pg_restore` whose major version is at least the dump's (the workflow uses `postgres:18`). Restore into an empty database (a scratch Neon project or the local Docker database), never straight over production. A Neon branch is a copy of its parent, so it is not empty.
 
 ## Migrations
 
@@ -141,7 +141,7 @@ Change the schema in `src/db/schema/`, run `pnpm db:generate --name <what>`, com
 Side effects never run inside a request. They are written to the `job` table in the same transaction as the change, then processed by a drain: types are `email`, `translate` and `geocode_retry`; failures retry with backoff up to 5 attempts. Netlify Functions in `netlify/functions/`:
 
 - `drain-jobs-background`: started by the app after a save, protected by a token derived from `BETTER_AUTH_SECRET`; runs up to 5 minutes.
-- `drain-jobs-scheduled`: every 15 minutes; safety net and the only place deferred jobs get picked up. Slow jobs (translation) are handed to the background function.
+- `drain-jobs-scheduled`: every 15 minutes; the safety net for saves whose trigger failed and for deferred or retried jobs. Slow jobs (translation) are handed to the background function, which also claims any due job.
 - `daily-maintenance-scheduled`: 05:00 UTC; review digests, change-log personal-field stripping, deletion of accounts past their grace period, archiving unclaimed imports after 12 months, purging expired applications.
 - `expire-links-scheduled` and `purge-contact-scheduled`: 03:17 UTC; withdraw connection proposals unanswered for 60 days, and purge contact-form sender hashes.
 

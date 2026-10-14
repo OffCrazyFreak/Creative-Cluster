@@ -37,7 +37,7 @@ Repository settings, Secrets and variables, Actions. Names come from the workflo
 - `DATABASE_URL_UNPOOLED_RPCC`, `DATABASE_URL_UNPOOLED_DNZ`: the direct Neon strings. Used by Migrate, Backup and the DGU refresh.
 - `NETLIFY_BUILD_HOOK_RPCC`, `NETLIFY_BUILD_HOOK_DNZ`: the build hook URLs. Used by Deploy.
 - `BACKUP_AGE_RECIPIENT`: the public `age1...` key that encrypts backups. Create the pair with `age-keygen -o backup-key.txt`; it prints the public key and the file holds the private identity. Store the private file offline (password manager and one more place), never in GitHub. Docs: https://github.com/FiloSottile/age.
-- Variable `PRODUCTION_READY` = `true`, set once everything above exists. Until then the workflows skip a missing secret; after it is `true`, a missing secret fails the run, which is what you want.
+- Variable `PRODUCTION_READY` = `true`, set once everything above exists. Until then Migrate, Backup and Deploy skip a missing secret; after it is `true`, a missing secret fails the run, which is what you want. The DGU address refresh ignores this variable and always skips silently without its database secret, so after adding the secrets run it once by hand (Actions, DGU address refresh, Run workflow) and look at the log: the Croatian address search needs that data.
 
 ## Netlify settings
 
@@ -94,8 +94,11 @@ Per site. Sign-in with Google only works for existing accounts (sign-up is disab
 On a trusted machine with the repository set up, run the script against the production database once, passing the URL only for that command so it does not land in `.env.local`:
 
 ```sh
-DATABASE_URL="<pooled production URL>" DATABASE_DRIVER=neon pnpm admin:create --email <address> --name "<name>" --password "<long passphrase>"
+pnpm exec cross-env DATABASE_URL="<pooled production URL>" DATABASE_DRIVER=neon VITE_SITE_ID=<rpcc or dnz> pnpm admin:create --email <address> --name "<name>" --password "<long passphrase>"
+pnpm exec cross-env DATABASE_URL="<pooled production URL>" DATABASE_DRIVER=neon VITE_SITE_ID=<rpcc or dnz> pnpm seed:tags
 ```
+
+`cross-env` (already a dev dependency) sets the variables the same way in PowerShell, fish and bash; the second command loads the site's starter tags (safe to repeat).
 
 Run it only after the migrations were applied (the Migrate workflow). UNVERIFIED: this exact invocation against Neon was not run; try it on a scratch Neon project first. Further admins are invited from `/admin/users`.
 
@@ -122,9 +125,9 @@ Change the value in the place that holds it, deploy, then revoke the old one. A 
 
 ## Monthly credit check (Netlify)
 
-Netlify's Free plan at the time of reading gives 300 credits a month as a hard limit with no top-up: a production deploy costs 15 credits, 1 GB of web bandwidth 20 credits, 1 GB-hour of Functions compute 10 credits (https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans/). With two sites and a deploy each Saturday plus a few manual ones, deploys alone are roughly 120 to 150 credits a month. The scheduled functions (a drain every 15 minutes, two daily jobs) also use compute; their real monthly cost is UNVERIFIED until a month of production data exists.
+Netlify's Free plan at the time of reading gives 300 credits a month as a hard limit with no top-up: a production deploy costs 15 credits, 1 GB of web bandwidth 20 credits, 1 GB-hour of Functions compute 10 credits (https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans/). With two sites and a deploy each Saturday plus a few manual ones, deploys alone are roughly 120 to 150 credits a month. The scheduled functions (a drain every 15 minutes and three daily jobs per site) also use compute; their real monthly cost is UNVERIFIED until a month of production data exists.
 
-Once a month: open Usage and billing, read Credit balance and Credit usage breakdown (https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/monitor-usage-for-credit-based-plans/). Netlify also emails at 50, 75 and 100 percent. If more than half is gone before mid-month, run Deploy manually only for urgent fixes and let the Saturday run be skipped by disabling the workflow schedule for that week.
+Once a month: open Usage and billing, read Credit balance and Credit usage breakdown (https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/monitor-usage-for-credit-based-plans/). Netlify also emails at 50, 75 and 100 percent. If more than half is gone before mid-month, run Deploy manually only for urgent fixes and skip the Saturday run by disabling the Deploy workflow in the Actions tab. That also blocks manual runs until you enable it again, and the monthly keep-alive workflow re-enables it on the 1st, so check on that day.
 
 ## Restore drill (before launch and every quarter)
 
@@ -142,7 +145,7 @@ When credits run out, all projects on the team are paused until the next monthly
 
 ## Claim emails need the owner's go-ahead
 
-Imported listings can be claimed through a one-time link (`/claim/<token>`, tokens stored as hashes, valid 30 days). The email that carries the link must not be sent to imported contacts until the project owner says so: the plan is one email plus one reminder about 10 days later, business addresses only, with the Art. 14 notice and a one-click removal. As of this branch no code path enqueues the `claim` email template (checked with `grep -rn 'template: "claim"' src`); before launch, repeat that search and make sending a deliberate, manual step.
+Imported listings can be claimed through a one-time link (`/claim/<token>`, tokens stored as hashes, the spec plans 30 days; nothing in this branch creates invites yet, so confirm the expiry when the sender is written). The email that carries the link must not be sent to imported contacts until the project owner says so: the plan is one email plus one reminder about 10 days later, business addresses only, with the Art. 14 notice and a one-click removal. As of this branch no code path enqueues the `claim` email template (checked with `grep -rn 'template: "claim"' src`); before launch, repeat that search and make sending a deliberate, manual step.
 
 ## Everyday tasks
 

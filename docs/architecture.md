@@ -13,7 +13,7 @@ Each site has its own database. Nothing in the code connects the two.
 - `src/routes/`: file routes only. A route validates its URL, runs a loader and renders one feature component. `src/routeTree.gen.ts` is generated.
 - `src/features/<area>/`: one folder per area (account, admin-entries, admin-users, apply, auth, changes, connections, contact, directory, entry, images, legal, lifecycle, location, map, matching, opportunities, review, session, tags, translation). Inside: `<area>.functions.ts` (server functions), `*.server.ts` (server-only services and queries), `<area>-schemas.ts` (Zod schemas and types), `<area>-queries.ts` (TanStack Query options), `components/`, `hooks/`.
 - `src/db/`: Drizzle schema in `schema/`, client in `client.server.ts`, column helpers. Migrations are in `drizzle/`.
-- `src/lib/<adapter>/`: adapters behind small interfaces: auth, email, geocoding, translation, images, analytics, turnstile, limits, jobs, change-log, maintenance, monitoring, privacy, rich-text, seo.
+- `src/lib/<adapter>/`: adapters behind small interfaces: auth, email, geocoding, translation, images, analytics, turnstile, limits, jobs, change-log, maintenance, monitoring, privacy, rich-text, seo, csp.
 - `src/server/`: guards, error classes, request helpers, CSP and security headers.
 - `src/components/ui/`: shadcn components. `src/components/custom/`: shared components (layout, form, rich text, errors).
 - `src/constants/`, `src/utils/`, `src/hooks/`, `src/typings/`: shared code. Enum values (entry kinds, statuses, link kinds, job types) are `as const` arrays in `src/constants/`, used by the database CHECKs, Zod and the UI.
@@ -63,7 +63,7 @@ Netlify scheduled functions (`netlify/functions/*-scheduled.mts`) run only on pu
 - 03:17 UTC daily: withdraw stale connection proposals; purge contact-form sender hashes.
 - 05:00 UTC daily: daily maintenance (review digests, strip personal fields from old change-log rows, delete accounts past the erasure grace period, archive unclaimed imports after 12 months, purge expired applications).
 
-GitHub Actions run the rest: CI on every pull request and push, Migrate after CI passes on `main`, Deploy (manual and Saturday), Backup (Sundays), DGU address refresh (monthly), and a monthly keep-alive that re-enables the scheduled workflows.
+GitHub Actions run the rest: CI on every pull request and every push to `main`, Migrate after CI passes on `main`, Deploy (manual and Saturday), Backup (Sundays), DGU address refresh (monthly), and a monthly keep-alive that re-enables the scheduled workflows.
 
 ## Where to look
 
