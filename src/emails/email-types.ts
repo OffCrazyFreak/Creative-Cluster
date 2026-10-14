@@ -36,12 +36,22 @@ export interface IChangeEmailProps extends IBaseEmailProps {
   expiry: EmailExpiry;
 }
 
+export interface IContactEmailProps extends IBaseEmailProps {
+  entryName: string;
+  senderName: string;
+  senderEmail: string;
+  messageText: string;
+  // The "Report this message" link; named link like every other template's main link.
+  link: string;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
   verify: IVerifyEmailProps;
   reset: IResetEmailProps;
   change: IChangeEmailProps;
+  contact: IContactEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

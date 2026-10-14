@@ -19,7 +19,7 @@ beforeAll(async () => {
 });
 
 // Paraglide returns the message key itself when a translation is missing.
-const MISSING_MESSAGE = /\bemail_[a-z0-9_]+\b/;
+const MISSING_MESSAGE = /\b(?:email|contact)_[a-z0-9_]+\b/;
 
 describe("email templates", () => {
   for (const name of EMAIL_TEMPLATE_NAMES) {
@@ -30,7 +30,7 @@ describe("email templates", () => {
         expect(subject.length).toBeGreaterThan(0);
         expect(`${subject}\n${html}\n${text}`).not.toMatch(MISSING_MESSAGE);
         expect(html).toContain(`lang="${locale}"`);
-        expect(text).toContain(props.link);
+        if ("link" in props) expect(text).toContain(props.link);
       });
     }
   }
@@ -38,7 +38,7 @@ describe("email templates", () => {
 
 // Paraglide falls back to the base locale silently, so compare the files directly.
 describe("message files", () => {
-  for (const area of ["auth", "email", "admin"]) {
+  for (const area of ["auth", "email", "admin", "contact"]) {
     it(`${area} has the same keys in en and hr`, () => {
       function keys(locale: string) {
         const file = readFileSync(`messages/${area}/${locale}.json`, "utf8");
