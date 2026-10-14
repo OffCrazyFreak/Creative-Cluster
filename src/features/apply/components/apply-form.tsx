@@ -1,6 +1,7 @@
 import { useStore } from "@tanstack/react-form";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
+import { APPLY_MIN_FILL_SECONDS } from "@/constants/apply";
 import { useAppForm } from "@/components/custom/form/app-form";
 import TurnstileField from "@/components/custom/form/turnstile-field";
 import { Button } from "@/components/ui/button";
@@ -51,10 +52,6 @@ export default function ApplyForm({
   const [error, setError] = useState<string | null>(null);
   const [showRestored, setShowRestored] = useState(draftRestored);
 
-  useEffect(() => {
-    track("apply_started", { kind: initial?.kind ?? emptyApplication().kind });
-  }, [initial?.kind]);
-
   const form = useAppForm({
     defaultValues: initial ?? emptyApplication(),
     validators: { onChange: applicationSchema },
@@ -75,6 +72,9 @@ export default function ApplyForm({
         return;
       }
       try {
+        // A restored draft can be sent within seconds of page load; wait out the minimum instead of being dropped.
+        const wait = APPLY_MIN_FILL_SECONDS * 1000 - (Date.now() - startedAt);
+        if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
         const result = await submitApplicationFn({
           data: {
             application: value,
