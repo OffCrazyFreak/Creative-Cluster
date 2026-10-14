@@ -48,3 +48,7 @@ export const OPPORTUNITY_RULE_CODES = [
   "not_editable",
 ] as const;
 export type OpportunityRuleCode = (typeof OPPORTUNITY_RULE_CODES)[number];
+
+// "Closing soon" filter: posts that end within this many days.
+export const OPPORTUNITY_CLOSING_SOON_DAYS = 14;
+export const OPPORTUNITY_LIST_MAX = 100;

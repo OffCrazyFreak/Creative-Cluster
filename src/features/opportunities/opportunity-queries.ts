@@ -1,6 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getMyOpportunities } from "./opportunity.functions";
+import type { PublicOpportunitiesInput } from "./opportunity-list-schemas";
+import { getPublicOpportunities } from "./opportunity-public.functions";
 import type { IOwnOpportunities } from "./opportunity-types";
 
 export const opportunityKeys = {
@@ -13,5 +15,13 @@ export function myOpportunitiesQuery() {
     queryKey: opportunityKeys.mine(),
     queryFn: async () =>
       (await getMyOpportunities()) as unknown as IOwnOpportunities,
+  });
+}
+
+export function publicOpportunitiesQuery(input: PublicOpportunitiesInput) {
+  return queryOptions({
+    queryKey: [...opportunityKeys.all, "public", input] as const,
+    queryFn: () => getPublicOpportunities({ data: input }),
+    staleTime: 30_000,
   });
 }

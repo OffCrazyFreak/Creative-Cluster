@@ -86,5 +86,33 @@
       }
     }
   ],
-  "opportunities_expiring_link": "Renew or close them"
+  "opportunities_expiring_link": "Renew or close them",
+  "opportunities_board_title": "Opportunities",
+  "opportunities_board_intro": "Partners, skills, spaces, services and funding calls that listings offer or look for. To answer a post, open it and contact the listing.",
+  "opportunities_board_meta_description": "Open calls and offers from creative organizations on {site}: partners, skills, spaces, services and funding calls.",
+  "opportunities_board_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} opportunity",
+        "countPlural=other": "{count} opportunities"
+      }
+    }
+  ],
+  "opportunities_board_empty": "No opportunities match these filters.",
+  "opportunities_board_list_label": "Opportunities",
+  "opportunities_filters_label": "Filter opportunities",
+  "opportunities_filter_type": "Type",
+  "opportunities_filter_category": "Category",
+  "opportunities_filter_country": "Country",
+  "opportunities_filter_tag": "Tag",
+  "opportunities_filter_any": "Any",
+  "opportunities_filter_closing": "Closing soon (within 14 days)",
+  "opportunities_filter_clear": "Clear filters",
+  "opportunities_item_by": "Listing: {name}",
+  "opportunities_item_filled": "Filled",
+  "opportunities_item_remote": "Remote OK",
+  "opportunities_item_closes": "Closes {date}",
+  "opportunities_item_open_until": "Open until {date}"
 }
