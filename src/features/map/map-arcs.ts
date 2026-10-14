@@ -32,7 +32,11 @@ export function buildArcs(
     for (const partner of partners) {
       const to = pinOf(partner);
       if (!to || (to[0] === from[0] && to[1] === from[1])) continue;
-      features.push(greatCircle(from, to, { npoints: ARC_POINTS }));
+      try {
+        features.push(greatCircle(from, to, { npoints: ARC_POINTS }));
+      } catch {
+        // turf throws for exactly antipodal points; one bad pair must not take the map down.
+      }
     }
   }
   return { type: "FeatureCollection", features };

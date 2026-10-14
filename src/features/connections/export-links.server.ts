@@ -1,21 +1,40 @@
-import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
+import { and, asc, eq, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import Papa from "papaparse";
 
 import { db } from "@/db/client.server";
-import { entry, link, linkEvidence } from "@/db/schema";
+import { entry, link } from "@/db/schema";
+
+import { loadEvidenceByLink } from "./link-evidence.server";
 
 const fromEntry = alias(entry, "from_entry");
 const toEntry = alias(entry, "to_entry");
 
-// Same rule as publicEntryCondition, but on the two aliased ends, with the outside-partner stub
-// allowed on the end that is not the proposer's.
+// Same rule as publicEntryCondition, but on the two aliased ends; an outside-partner stub is
+// allowed on one end only.
 function published(side: typeof fromEntry | typeof toEntry) {
   return and(
     eq(side.status, "published"),
     sql`${side.kind} <> 'outside_partner'`,
   );
 }
+
+// Listed explicitly so an export with no rows still has its header line.
+const COLUMNS = [
+  "link_id",
+  "kind",
+  "from_slug",
+  "from_name",
+  "to_slug",
+  "to_name",
+  "symmetric",
+  "year",
+  "end_year",
+  "project",
+  "unverified",
+  "evidence_urls",
+  "confirmed_at",
+] as const;
 
 export async function exportConfirmedLinks(): Promise<string> {
   const rows = await db
@@ -41,37 +60,30 @@ export async function exportConfirmedLinks(): Promise<string> {
       ),
     )
     .orderBy(asc(link.createdAt), asc(link.id));
-  const evidence = rows.length
-    ? await db
-        .select({ linkId: linkEvidence.linkId, url: linkEvidence.url })
-        .from(linkEvidence)
-        .where(
-          inArray(
-            linkEvidence.linkId,
-            rows.map((row) => row.link.id),
-          ),
-        )
-    : [];
+  const evidence = await loadEvidenceByLink(
+    db,
+    rows.map((row) => row.link.id),
+  );
 
   return Papa.unparse(
-    rows.map((row) => ({
-      link_id: row.link.id,
-      kind: row.link.kind,
-      from_slug: row.fromSlug,
-      from_name: row.fromName,
-      to_slug: row.toSlug,
-      to_name: row.toName,
-      symmetric: row.link.symmetric,
-      year: row.link.year ?? "",
-      end_year: row.link.endYear ?? "",
-      project: row.link.project ?? "",
-      unverified: row.outside,
-      evidence_urls: evidence
-        .filter((e) => e.linkId === row.link.id)
-        .map((e) => e.url)
-        .join(" "),
-      confirmed_at: row.link.decidedAt?.toISOString() ?? "",
-    })),
+    {
+      fields: [...COLUMNS],
+      data: rows.map((row) => ({
+        link_id: row.link.id,
+        kind: row.link.kind,
+        from_slug: row.fromSlug,
+        from_name: row.fromName,
+        to_slug: row.toSlug,
+        to_name: row.toName,
+        symmetric: row.link.symmetric,
+        year: row.link.year ?? "",
+        end_year: row.link.endYear ?? "",
+        project: row.link.project ?? "",
+        unverified: row.outside,
+        evidence_urls: (evidence.get(row.link.id) ?? []).join(" "),
+        confirmed_at: row.link.decidedAt?.toISOString() ?? "",
+      })),
+    },
     // Cells starting with = + - @ would run as formulas in a spreadsheet; the library prefixes them.
     { escapeFormulae: true, newline: "\r\n" },
   );

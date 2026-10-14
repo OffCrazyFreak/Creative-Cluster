@@ -194,7 +194,6 @@ export default function MapView(props: IMapViewProps) {
           position={wide ? "bottom-right" : "top-left"}
           compact={false}
         />
-        {/* Before the pin source so the pins draw above the arcs. */}
         <MapConnectionArcs allEntries={allEntries} selectedSlug={focusSlug} />
         <Source
           id={SOURCE_ID}

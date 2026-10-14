@@ -6,7 +6,7 @@ import { partnerSlugsQuery } from "@/features/connections/connections-queries";
 import type { IDirectoryEntry } from "@/features/directory/directory-schemas";
 
 import { ARC_SOURCE_ID, buildArcs } from "../map-arcs";
-import { arcLayer } from "../map-layers";
+import { CLUSTER_LAYER_ID, arcLayer } from "../map-layers";
 
 interface IMapConnectionArcsProps {
   allEntries: IDirectoryEntry[];
@@ -35,7 +35,8 @@ export default function MapConnectionArcs({
   if (!arcs || arcs.features.length === 0) return null;
   return (
     <Source id={ARC_SOURCE_ID} type="geojson" data={arcs}>
-      <Layer {...arcLayer} />
+      {/* The pin source exists before the arcs do, so JSX order would put the arcs on top. */}
+      <Layer {...arcLayer} beforeId={CLUSTER_LAYER_ID} />
     </Source>
   );
 }

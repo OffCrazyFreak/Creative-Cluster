@@ -268,6 +268,14 @@ describe.skipIf(!client.temp)("connections flow", () => {
     expect(csv.split("\r\n")[0]).toContain("link_id,kind");
   });
 
+  it("exports outside partners as unverified with their evidence and always has a header", async () => {
+    const csv = await exportConfirmedLinks();
+    const rows = csv.split("\r\n");
+    expect(rows[0]).toContain("unverified,evidence_urls");
+    expect(csv).toContain("true");
+    expect(csv).toContain("https://elsewhere.example/members");
+  });
+
   describe("public connections", () => {
     const db = client.db as ITempDatabase["db"];
 
