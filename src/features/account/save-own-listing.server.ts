@@ -52,7 +52,7 @@ function pick(source: Record<string, unknown>, keys: string[]) {
   return Object.fromEntries(keys.map((key) => [key, source[key]]));
 }
 
-function translatedTextChanged(
+export function translatedTextChanged(
   keys: string[],
   current: Record<string, unknown>,
   patch: ListingPatch,
