@@ -4,6 +4,7 @@ import { useId } from "react";
 import { m } from "@/paraglide/messages";
 
 import { publicConnectionsQuery } from "../connections-queries";
+import ConnectionGraph from "./connection-graph";
 import PublicPartnerItem from "./public-partner-item";
 
 interface IEntryConnectionsProps {
@@ -26,6 +27,18 @@ export default function EntryConnections({ entryId }: IEntryConnectionsProps) {
           <h2 id={headingId} className="text-lg font-semibold">
             {m.connections_public_heading()}
           </h2>
+          {data.graph ? (
+            <>
+              <ConnectionGraph graph={data.graph} centerId={entryId} />
+              {data.graph.more > 0 ? (
+                <p>
+                  <a href={`#${listId}`} className="inline-block py-1">
+                    {m.connections_graph_more({ count: data.graph.more })}
+                  </a>
+                </p>
+              ) : null}
+            </>
+          ) : null}
           <ul id={listId} className="flex flex-col gap-2">
             {data.partners.map((partner) => (
               <PublicPartnerItem

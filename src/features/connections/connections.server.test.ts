@@ -281,6 +281,17 @@ describe.skipIf(!client.temp)("connections flow", () => {
       expect(result.partners.map((p) => p.name)).toEqual(["pub shown"]);
     });
 
+    it("draws one node per partner even when linked under two kinds", async () => {
+      const hub = (await addEntry(db, "graph hub")).id;
+      const partner = (await addEntry(db, "graph partner")).id;
+      await link2(hub, partner, "confirmed", "collaborated");
+      await link2(hub, partner, "confirmed", "eu_partner");
+      const result = await loadPublicConnections(hub);
+      expect(result.partners).toHaveLength(2);
+      expect(result.graph?.nodes).toHaveLength(2);
+      expect(result.graph?.more).toBe(0);
+    });
+
     it("shows an outside partner only on the proposer's page", async () => {
       const proposer = (await addEntry(db, "pub proposer")).id;
       const other = (await addEntry(db, "pub other")).id;
@@ -316,6 +327,7 @@ describe.skipIf(!client.temp)("connections flow", () => {
       expect(await loadPublicConnections(hidden)).toEqual({
         partners: [],
         unverified: [],
+        graph: null,
       });
     });
   });

@@ -157,7 +157,31 @@ export interface IUnverifiedPartner extends IPublicRelation {
   evidence: string[];
 }
 
+export interface IGraphNode {
+  id: string;
+  label: string;
+  slug: string | null;
+  x: number;
+  y: number;
+}
+
+export interface IGraphEdge {
+  id: string;
+  source: string;
+  target: string;
+}
+
+export interface IConnectionGraph {
+  nodes: IGraphNode[];
+  edges: IGraphEdge[];
+  width: number;
+  height: number;
+  // Partners that did not fit; the list shows every one.
+  more: number;
+}
+
 export interface IPublicConnections {
   partners: IPublicPartner[];
   unverified: IUnverifiedPartner[];
+  graph: IConnectionGraph | null;
 }
