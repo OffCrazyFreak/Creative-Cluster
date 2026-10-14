@@ -12,7 +12,7 @@ export const Route = createFileRoute("/admin/export")({
 function AdminExport() {
   return (
     <PageContainer size="wide">
-      <h1 className="text-2xl font-semibold">{m.connections_export_title()}</h1>
+      <h1 className="text-2xl font-semibold">{m.admin_export_title()}</h1>
       <EntriesExport />
       <LinksExport />
     </PageContainer>

@@ -301,4 +301,21 @@ describe.skipIf(!temp)("admin entry operations", () => {
     expect(csv).toContain("'=Formula Org");
     expect(csv).not.toContain("Erasing Org");
   });
+
+  it("escapes multi-line formula text but keeps phone numbers, and fills owner_email", async () => {
+    const owner = await addUser(db, "Export Owner");
+    const row = await addEntry(db, "Phone Org", {}, { ownerUserId: owner.id });
+    await db
+      .update(schema.entry)
+      .set({
+        contactPhone: "+385 91 234 5678",
+        descriptionText: '=HYPERLINK("http://x.test")\nmore text',
+      })
+      .where(eq(schema.entry.id, row.id));
+    const csv = await exportEntries();
+    const line = csv.split("\r\n").find((l) => l.includes(row.slug)) ?? "";
+    expect(line).toContain(owner.email);
+    expect(csv).toContain(",+385 91 234 5678,");
+    expect(csv).toContain("'=HYPERLINK");
+  });
 });
