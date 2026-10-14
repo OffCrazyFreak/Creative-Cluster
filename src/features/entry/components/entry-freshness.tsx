@@ -1,5 +1,5 @@
 import { m } from "@/paraglide/messages";
-import { getLocale } from "@/paraglide/runtime";
+import { formatDate } from "@/utils/format-date";
 
 interface IEntryFreshnessProps {
   updatedAt: string;
@@ -10,18 +10,13 @@ export default function EntryFreshness({
   updatedAt,
   lastConfirmedAt,
 }: IEntryFreshnessProps) {
-  function format(value: string) {
-    return new Intl.DateTimeFormat(getLocale(), {
-      dateStyle: "medium",
-      timeZone: "UTC",
-    }).format(new Date(value));
-  }
-
   return (
     <p className="flex flex-wrap gap-x-4 text-sm">
-      <span>{m.entry_last_updated({ date: format(updatedAt) })}</span>
+      <span>{m.entry_last_updated({ date: formatDate(updatedAt) })}</span>
       {lastConfirmedAt ? (
-        <span>{m.entry_last_confirmed({ date: format(lastConfirmedAt) })}</span>
+        <span>
+          {m.entry_last_confirmed({ date: formatDate(lastConfirmedAt) })}
+        </span>
       ) : null}
     </p>
   );

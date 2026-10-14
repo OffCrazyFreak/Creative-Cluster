@@ -31,6 +31,7 @@ function entry(
     city: null,
     country: "HR",
     legal: null,
+    logo: null,
     blurb: "",
     tags: [],
     ...patch,

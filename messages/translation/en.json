@@ -1,3 +1,20 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "translation_language_hr": "Croatian",
+  "translation_language_en": "English",
+  "translation_language_from_hr": "Croatian",
+  "translation_language_from_en": "English",
+  "translation_label_machine": "Machine translated from {language}",
+  "translation_label_human": "Translated by the owner from {language}",
+  "translation_show_original": "Show original",
+  "translation_hide_original": "Hide original",
+  "translation_original_heading": "Original text",
+  "translation_unavailable": "No translation is available yet. The original text is shown ({language}).",
+  "translation_edit_open": "Edit translation",
+  "translation_edit_close": "Close",
+  "translation_edit_title": "Your translation",
+  "translation_edit_hint": "Your version replaces the machine translation and is kept when the original changes. Leave a field empty to translate it by machine again.",
+  "translation_edit_save": "Save translation",
+  "translation_edit_saved": "Translation saved.",
+  "translation_edit_error": "The translation could not be saved. Check the length and try again."
 }
