@@ -80,7 +80,9 @@ export default function TargetSearch({
           placeholder={m.connections_search_placeholder()}
         />
         <ComboboxContent>
-          <ComboboxEmpty>{m.connections_search_none()}</ComboboxEmpty>
+          {search.isSuccess ? (
+            <ComboboxEmpty>{m.connections_search_none()}</ComboboxEmpty>
+          ) : null}
           <ComboboxList>
             {(target: ILinkTarget) => (
               <ComboboxItem key={target.id} value={target}>

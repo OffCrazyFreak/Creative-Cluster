@@ -54,7 +54,8 @@ const ProposeTargetFields = withForm({
                               : undefined
                           }
                           onClear={() => {
-                            field.handleChange("");
+                            // Not a user edit of the field itself: no "required" error while they type a new name.
+                            field.setValue("", { dontUpdateMeta: true });
                             form.setFieldValue("targetName", "");
                           }}
                           onPick={(target) => {
