@@ -3,10 +3,21 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 
+import { AUTH_LINK_EXPIRY, AUTH_LINK_TTL_SECONDS } from "@/constants/email";
 import { db } from "@/db/client.server";
 import * as schema from "@/db/schema";
 import { env } from "@/env.server";
 import { site } from "@/sites";
+
+import {
+  queueResetEmail,
+  queueVerificationEmail,
+  toRecipient,
+} from "./auth-email.server";
+import { runInBackground } from "./background-task.server";
+import { guardAdminUpdate, assertAdminsRemain } from "./min-admins.server";
+import { passwordPolicyHook } from "./password-hook.server";
+import { PASSWORD_BACKSTOP_LENGTH } from "./password-policy";
 
 export const auth = betterAuth({
   appName: site.name,
@@ -18,6 +29,7 @@ export const auth = betterAuth({
     cookiePrefix: `cc-${site.id}`,
     ipAddress: { ipAddressHeaders: [env.CLIENT_IP_HEADER, "x-forwarded-for"] },
     database: { generateId: "uuid" },
+    backgroundTasks: { handler: runInBackground },
   },
   user: {
     additionalFields: {
@@ -28,14 +40,50 @@ export const auth = betterAuth({
       },
       invitedBy: { type: "string", required: false, input: false },
     },
+    changeEmail: { enabled: true },
   },
   session: {
     cookieCache: { enabled: true, maxAge: 60 },
+  },
+  hooks: { before: passwordPolicyHook },
+  databaseHooks: {
+    user: {
+      update: {
+        before: async (data, ctx) => {
+          const body = ctx?.body as { userId?: unknown } | undefined;
+          await guardAdminUpdate(data, body?.userId);
+        },
+      },
+      delete: {
+        before: async (user) => {
+          await assertAdminsRemain(user.id);
+        },
+      },
+    },
   },
   emailAndPassword: {
     enabled: true,
     disableSignUp: true,
     revokeSessionsOnPasswordReset: true,
+    // The policy hook counts NFKC code points; these only guard against absurd input.
+    minPasswordLength: 1,
+    maxPasswordLength: PASSWORD_BACKSTOP_LENGTH,
+    resetPasswordTokenExpiresIn: AUTH_LINK_TTL_SECONDS,
+    sendResetPassword: async ({ user, token }) => {
+      await queueResetEmail(toRecipient(user), token);
+    },
+  },
+  emailVerification: {
+    expiresIn: AUTH_LINK_TTL_SECONDS,
+    sendVerificationEmail: async ({ user, url, token }) => {
+      await queueVerificationEmail({
+        user: toRecipient(user),
+        emailVerified: user.emailVerified,
+        link: url,
+        expiry: AUTH_LINK_EXPIRY,
+        idempotencyKey: `verify:${token}`,
+      });
+    },
   },
   socialProviders:
     env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
