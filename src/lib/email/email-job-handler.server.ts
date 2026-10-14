@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client.server";
 import { job as jobTable } from "@/db/schema";
 import type { IEmailJobPayload } from "@/emails/email-types";
+import { scrubContactJob } from "@/features/contact/scrub-contact-job.server";
 import {
   PermanentJobError,
   type JobHandler,
@@ -57,4 +58,5 @@ export async function handleEmailJob(
       .update(jobTable)
       .set({ payload: { template: payload.template, scrubbed: true } })
       .where(eq(jobTable.id, job.id));
+  if (payload.template === "contact") await scrubContactJob(job.id);
 }
