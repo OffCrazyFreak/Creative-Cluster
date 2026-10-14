@@ -61,7 +61,7 @@
   "moderation_email_application_digest_body": "od posljednjeg sažetka stiglo je prijava: {count}. Na pregled čekaju ukupno: {openTotal}. Prijave starije od {days} dana označene su u redu. Svaki redak prikazuje naziv, vrstu, državu i starost.",
   "moderation_email_report_digest_subject": "Nove prijave sadržaja: {count}",
   "moderation_email_report_digest_preheader": "Posjetitelji su prijavili unosa: {count}.",
-  "moderation_email_report_digest_body": "od posljednjeg sažetka posjetitelji su prijavili unosa: {count}. Nijedan se nije sam sakrio. Čekaju tvoju odluku. Svaki redak prikazuje unos i razlog koji je naveo posjetitelj.",
+  "moderation_email_report_digest_body": "od posljednjeg sažetka posjetitelji su prijavili unosa: {count}. Nijedan se nije automatski sakrio. Čekaju tvoju odluku. Svaki redak prikazuje unos i razlog koji je naveo posjetitelj.",
   "moderation_email_application_received_subject": "Primili smo tvoju prijavu",
   "moderation_email_application_received_preheader": "Pregledavamo je u roku od 7 dana.",
   "moderation_email_application_received_body_1": "hvala. Primili smo prijavu za unos {entryName} na {siteName}. Administratori je pregledavaju u roku od 7 dana. Odluku ćemo ti poslati na ovu adresu.",

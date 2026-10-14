@@ -13,7 +13,7 @@ Registar nije državna evidencija i upis ne daje nikakav pravni status. [[GAP: p
 
 ## Što je javno
 
-Za organizacije: naziv, opis, što nude i što traže, mrežna stranica i kontakt koji sami odaberu. Za osobe: ime, grad (ne točna adresa, a oznaka na karti je namjerno pomaknuta unutar grada), opis i ono što sami odluče objaviti. Svatko bira što je vidljivo svima, a što samo članovima. Osobe daju posebnu privolu i mogu je povući u svakom trenutku, nakon čega se upis odmah skriva. Podaci o osobama mogu se pojaviti u tražilicama. [[GAP: pravnik provjerava ovaj odlomak i politiku privatnosti.]]
+Za organizacije: naziv, opis, što nude i što traže, mrežna stranica i kontakt koji odaberu. Za osobe: ime, grad (ne točna adresa, a oznaka na karti je namjerno pomaknuta unutar grada), opis i ono što odluče objaviti. Svatko bira što je vidljivo svima, a što samo članovima. Osobe daju posebnu privolu i mogu je povući u svakom trenutku, nakon čega se upis odmah skriva. Podaci o osobama mogu se pojaviti u tražilicama. [[GAP: pravnik provjerava ovaj odlomak i politiku privatnosti.]]
 
 ## Kako se prijaviti
 

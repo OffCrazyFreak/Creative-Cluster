@@ -19,7 +19,7 @@ Ovu internetsku stranicu (Registar inovatora Dubrovačko-neretvanske županije, 
 
 **Zaštita podataka.** Voditelj obrade je udruga navedena gore. Pojedinosti su u [Pravilima privatnosti](/privacy). Pritužbu možeš podnijeti Agenciji za zaštitu osobnih podataka (AZOP), azop.hr.
 
-**Prijava sadržaja.** Ako nađeš sadržaj koji je netočan ili nezakonit, upotrijebiš poveznicu "Prijavi ovaj unos" na stranici unosa ili piši na adresu iznad.
+**Prijava sadržaja.** Ako nađeš sadržaj koji je netočan ili nezakonit, upotrijebi poveznicu "Prijavi ovaj unos" na stranici unosa ili piši na adresu iznad.
 
 **Autorska prava.** Ako smatraš da unos povređuje tvoja prava, piši na adresu iznad i navedi poveznicu na unos i što je sporno. Odgovorit ćemo bez odgode.
 
