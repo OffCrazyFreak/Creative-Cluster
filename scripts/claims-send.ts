@@ -24,12 +24,20 @@ if (blocker) {
   process.exit(1);
 }
 
-const { sendClaimBatch } =
+const { planClaimBatch, sendClaimBatch } =
   await import("../src/features/claims/send-claims.server");
-const result = await sendClaimBatch(
-  Number(values.batch),
-  values["import-source"] ?? "",
-);
+const batch = Number(values.batch);
+
+// A dry run wins over --confirm, so the safe reading is always taken.
+if (values["dry-run"]) {
+  const plan = await planClaimBatch(batch);
+  console.log(
+    `Dry run: would queue ${plan.reminders} reminders and ${plan.invites} claim emails. Nothing was written.`,
+  );
+  process.exit(0);
+}
+
+const result = await sendClaimBatch(batch, values["import-source"] ?? "");
 console.log(
   `Queued ${result.reminders} reminders and ${result.invites} claim emails. The job drain sends them (pnpm jobs:drain).`,
 );
