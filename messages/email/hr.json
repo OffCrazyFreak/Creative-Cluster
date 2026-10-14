@@ -45,5 +45,10 @@
   "email_change_preheader": "Nova adresa za tvoj račun na {siteName}.",
   "email_change_body_1": "zatražena je promjena e-adrese za račun na {siteName}. Ova adresa postaje nova adresa računa tek kad je potvrdiš. Poveznica vrijedi {expiry}.",
   "email_change_body_2": "Ako zahtjev nije tvoj, ignoriraj poruku. Račun ostaje na staroj adresi.",
-  "email_change_button": "Potvrdi novu e-adresu"
+  "email_change_button": "Potvrdi novu e-adresu",
+  "email_claim_reminder_subject": "Podsjetnik: tvoj unos {entryName} na {siteName}",
+  "email_claim_reminder_preheader": "Ovo je posljednja poruka o ovom unosu.",
+  "email_claim_reminder_intro": "Prije nekoliko dana poslali smo ti poruku o unosu {entryName} na {siteName}. Ovo je jedini podsjetnik i posljednja poruka o tome.",
+  "email_claim_reminder_body": "Unos je javan, a tvoju e-adresu i telefon ne prikazujemo posjetiteljima. Poveznice iz prve poruke vrijede do {expiryDate}.",
+  "email_claim_reminder_closing": "Cijela obavijest o obradi podataka nalazi se u prvoj poruci i na {privacyLink}. Ako ne želiš više poruka, pritisni \"Ukloni moj unos\" ili odgovori na ovu poruku. Pitanja: {contactEmail}. {controllerName}."
 }

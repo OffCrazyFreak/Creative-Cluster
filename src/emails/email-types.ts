@@ -21,6 +21,13 @@ export interface IClaimEmailProps extends IBaseEmailProps {
   archiveDate: string;
 }
 
+export interface IClaimReminderEmailProps extends IBaseEmailProps {
+  entryName: string;
+  link: string;
+  removeLink: string;
+  expiryDate: string;
+}
+
 export interface IVerifyEmailProps extends IBaseEmailProps {
   link: string;
   expiry: EmailExpiry;
@@ -125,6 +132,7 @@ export interface IBlockedEmailProps extends IBaseEmailProps {
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
+  claim_reminder: IClaimReminderEmailProps;
   verify: IVerifyEmailProps;
   reset: IResetEmailProps;
   change: IChangeEmailProps;

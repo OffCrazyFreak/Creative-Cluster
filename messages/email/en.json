@@ -45,5 +45,10 @@
   "email_change_preheader": "A new address for your account on {siteName}.",
   "email_change_body_1": "a change of email address was requested for an account on {siteName}. This address becomes the new account address only after you confirm it. The link works for {expiry}.",
   "email_change_body_2": "If it was not you, ignore this message. The account stays on the old address.",
-  "email_change_button": "Confirm new email address"
+  "email_change_button": "Confirm new email address",
+  "email_claim_reminder_subject": "Reminder: your listing {entryName} on {siteName}",
+  "email_claim_reminder_preheader": "This is the last message about this listing.",
+  "email_claim_reminder_intro": "A few days ago we sent you a message about the listing {entryName} on {siteName}. This is the only reminder and the last message about it.",
+  "email_claim_reminder_body": "The listing is public, and we do not show your email address and phone number to visitors. The links from the first message work until {expiryDate}.",
+  "email_claim_reminder_closing": "The full data notice is in the first message and at {privacyLink}. If you want no more messages, press \"Remove my listing\" or reply to this email. Questions: {contactEmail}. {controllerName}."
 }
