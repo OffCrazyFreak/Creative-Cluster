@@ -1,3 +1,6 @@
+export const HOUR_MS = 3_600_000;
+export const DAY_MS = 24 * HOUR_MS;
+
 export const CONTACT_MESSAGE_MAX = 1000;
 export const CONTACT_MAX_LINKS = 1;
 export const CONTACT_NAME_MAX = 120;

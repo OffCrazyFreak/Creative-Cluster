@@ -3,6 +3,7 @@ import {
   type EmailTemplateName,
 } from "@/constants/email";
 import type { IEmailJobPayload } from "@/emails/email-types";
+import { scrubContactJob } from "@/features/contact/scrub-contact-job.server";
 import {
   PermanentJobError,
   type JobHandler,
@@ -47,4 +48,5 @@ export async function handleEmailJob(
     replyTo: payload.replyTo,
     idempotencyKey: job.idempotencyKey ?? `job:${job.id}`,
   });
+  if (payload.template === "contact") await scrubContactJob(job.id);
 }

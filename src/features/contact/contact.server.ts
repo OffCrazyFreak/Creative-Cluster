@@ -1,6 +1,10 @@
 import { and, count, eq, gte, sql, type SQL } from "drizzle-orm";
 
-import { CONTACT_LIMITS, CONTACT_MIN_FILL_MS } from "@/constants/contact";
+import {
+  CONTACT_LIMITS,
+  CONTACT_MIN_FILL_MS,
+  HOUR_MS,
+} from "@/constants/contact";
 import { db, type DbOrTx } from "@/db/client.server";
 import { contactMessage, entry } from "@/db/schema";
 import { startOfUtcDay } from "@/lib/email/email-budget.server";
@@ -12,20 +16,18 @@ import {
   verifyTurnstile,
 } from "@/lib/turnstile/verify-turnstile.server";
 import { LimitError, NotFoundError } from "@/server/errors";
-import { clientIp } from "@/server/request.server";
+import { UNKNOWN_IP, clientIp } from "@/server/request.server";
 import { site } from "@/sites";
 
 import { publicEntryCondition } from "../entry/public-entry-filter.server";
 import type { ContactInput, ContactResult } from "./contact-schemas";
 import { senderHash } from "./sender-hash.server";
 
-const HOUR_MS = 3_600_000;
 // One lock for the whole table: the three limits read overlapping rows, and volume is tiny.
 const LOCK_KEY = 7_340_001;
 
-function looksAutomated(input: ContactInput, now: Date): boolean {
-  const filled = now.getTime() - input.startedAt;
-  return input.fax !== "" || filled < CONTACT_MIN_FILL_MS;
+function looksAutomated(input: ContactInput): boolean {
+  return input.fax !== "" || input.filledMs < CONTACT_MIN_FILL_MS;
 }
 
 async function countSince(tx: DbOrTx, since: Date, extra?: SQL) {
@@ -36,8 +38,8 @@ async function countSince(tx: DbOrTx, since: Date, extra?: SQL) {
   return row?.total ?? 0;
 }
 
-async function findRecipient(entryId: string) {
-  const [row] = await db
+async function findRecipient(tx: DbOrTx, entryId: string) {
+  const [row] = await tx
     .select({
       id: entry.id,
       name: entry.name,
@@ -65,23 +67,21 @@ function reportLink(entryName: string): string {
 // The limit reads, the hash row and the queued mail share one transaction, so a refused or
 // failed attempt leaves nothing behind and parallel requests cannot all pass the check.
 async function relay(input: ContactInput, now: Date) {
-  const recipient = await findRecipient(input.entryId);
   const hash = senderHash(input.email);
-  await db.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${LOCK_KEY})`);
-    const [bySender, byEntry, bySite] = await Promise.all([
-      countSince(
-        tx,
-        new Date(now.getTime() - HOUR_MS),
-        eq(contactMessage.senderHash, hash),
-      ),
-      countSince(
-        tx,
-        startOfUtcDay(now),
-        eq(contactMessage.entryId, recipient.id),
-      ),
-      countSince(tx, startOfUtcDay(now)),
-    ]);
+    const recipient = await findRecipient(tx, input.entryId);
+    const bySender = await countSince(
+      tx,
+      new Date(now.getTime() - HOUR_MS),
+      eq(contactMessage.senderHash, hash),
+    );
+    const byEntry = await countSince(
+      tx,
+      startOfUtcDay(now),
+      eq(contactMessage.entryId, recipient.id),
+    );
+    const bySite = await countSince(tx, startOfUtcDay(now));
     if (
       bySender >= CONTACT_LIMITS.perSenderPerHour ||
       byEntry >= CONTACT_LIMITS.perEntryPerDay ||
@@ -107,8 +107,8 @@ async function relay(input: ContactInput, now: Date) {
         link: reportLink(recipient.name),
       },
     });
+    return recipient.kind;
   });
-  return recipient.kind;
 }
 
 export async function sendContactMessage(
@@ -116,16 +116,20 @@ export async function sendContactMessage(
 ): Promise<ContactResult> {
   const now = new Date();
   // Bots get the success answer and nothing is sent, so they learn nothing about the checks.
-  if (looksAutomated(input, now)) return { status: "sent", kind: null };
+  if (looksAutomated(input)) return { status: "sent", kind: null };
   try {
     await verifyTurnstile(input.turnstileToken);
-    await enforceLimits([
-      {
-        key: `contact-ip:${clientIp()}`,
-        max: CONTACT_LIMITS.perIpPerHour,
-        windowSeconds: 3600,
-      },
-    ]);
+    // Without a trusted address everyone would share one bucket, so only the other limits apply.
+    const ip = clientIp();
+    if (ip !== UNKNOWN_IP) {
+      await enforceLimits([
+        {
+          key: `contact-ip:${ip}`,
+          max: CONTACT_LIMITS.perIpPerHour,
+          windowSeconds: 3600,
+        },
+      ]);
+    }
     const kind = await relay(input, now);
     await triggerDrain();
     return { status: "sent", kind };

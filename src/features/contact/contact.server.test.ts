@@ -34,6 +34,7 @@ vi.mock("@/lib/turnstile/verify-turnstile.server", () => {
 
 const { sendContactMessage } = await import("./contact.server");
 const { purgeContactData } = await import("./purge-contact.server");
+const { scrubContactJob } = await import("./scrub-contact-job.server");
 
 const db = temp!.db;
 
@@ -55,7 +56,7 @@ function input(entryId: string, extra: Partial<ContactInput> = {}) {
     message: "Hello there",
     turnstileToken: "token",
     fax: "",
-    startedAt: Date.now() - 10_000,
+    filledMs: 10_000,
     ...extra,
   } satisfies ContactInput;
 }
@@ -112,9 +113,7 @@ describe("sendContactMessage", () => {
   it("drops honeypot and too-fast submissions without queuing", async () => {
     const row = await recipient();
     const trap = await sendContactMessage(input(row.id, { fax: "x" }));
-    const fast = await sendContactMessage(
-      input(row.id, { startedAt: Date.now() - 500 }),
-    );
+    const fast = await sendContactMessage(input(row.id, { filledMs: 500 }));
     expect(trap).toEqual({ status: "sent", kind: null });
     expect(fast).toEqual({ status: "sent", kind: null });
     expect(await db.select().from(schema.job)).toHaveLength(0);
@@ -163,5 +162,23 @@ describe("purgeContactData", () => {
       .set({ updatedAt: new Date(Date.now() - 2 * 86_400_000) });
     expect(await purgeContactData()).toEqual({ hashes: 1, jobs: 1 });
     expect(await db.select().from(schema.contactMessage)).toHaveLength(1);
+  });
+});
+
+describe("scrubContactJob", () => {
+  it("drops the message text from a sent job", async () => {
+    const [row] = await db
+      .insert(schema.job)
+      .values({
+        type: "email",
+        payload: { template: "contact", props: { messageText: "secret" } },
+      })
+      .returning();
+    await scrubContactJob(row.id);
+    const [after] = await db
+      .select()
+      .from(schema.job)
+      .where(eq(schema.job.id, row.id));
+    expect(after?.payload).toEqual({ template: "contact" });
   });
 });

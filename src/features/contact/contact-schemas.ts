@@ -22,7 +22,14 @@ export const contactMessageSchema = z
 
 // The form schema without the bot checks, so the browser validates the same rules the server enforces.
 export const contactFieldsSchema = z.object({
-  name: z.string().trim().min(1).max(CONTACT_NAME_MAX),
+  // One line without links: the name sits outside the escaped message block in the mail.
+  name: z
+    .string()
+    .trim()
+    .min(1)
+    .max(CONTACT_NAME_MAX)
+    .refine((text) => countLinks(text) === 0)
+    .transform((text) => text.replace(/\s+/g, " ")),
   email: z.email().max(254),
   message: contactMessageSchema,
 });
@@ -33,8 +40,8 @@ export const contactSchema = contactFieldsSchema.extend({
   turnstileToken: z.string().min(1).max(4096),
   // Honeypot: real visitors never see or fill this field.
   fax: z.string().max(200),
-  // Epoch ms when the form opened, for the minimum fill time.
-  startedAt: z.number().int(),
+  // Milliseconds the form was open, measured in the browser so a wrong clock cannot skew it.
+  filledMs: z.number().int().min(0),
 });
 
 export type ContactInput = z.infer<typeof contactSchema>;

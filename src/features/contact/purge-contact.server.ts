@@ -3,15 +3,15 @@ import { and, inArray, lt, sql } from "drizzle-orm";
 import {
   CONTACT_HASH_RETENTION_DAYS,
   CONTACT_JOB_RETENTION_HOURS,
+  DAY_MS,
+  HOUR_MS,
 } from "@/constants/contact";
 import { db } from "@/db/client.server";
 import { contactMessage, job } from "@/db/schema";
 
-const DAY_MS = 86_400_000;
-
-// Sender hashes live 30 days; the queued mail carries the message text, so finished mails go within a day.
+// Sender hashes live 30 days. Sent contact mails are scrubbed at once; this removes finished rows and failed ones that still hold text.
 export async function purgeContactData(now = new Date()) {
-  const hashes = await db
+  const hashes = db
     .delete(contactMessage)
     .where(
       lt(
@@ -20,7 +20,7 @@ export async function purgeContactData(now = new Date()) {
       ),
     )
     .returning({ id: contactMessage.id });
-  const jobs = await db
+  const jobs = db
     .delete(job)
     .where(
       and(
@@ -28,10 +28,14 @@ export async function purgeContactData(now = new Date()) {
         sql`${job.payload}->>'template' = 'contact'`,
         lt(
           job.updatedAt,
-          new Date(now.getTime() - CONTACT_JOB_RETENTION_HOURS * 3_600_000),
+          new Date(now.getTime() - CONTACT_JOB_RETENTION_HOURS * HOUR_MS),
         ),
       ),
     )
     .returning({ id: job.id });
-  return { hashes: hashes.length, jobs: jobs.length };
+  // Independent deletes: one failing must not leave the other undone. The first error is rethrown.
+  const [hashRows, jobRows] = await Promise.allSettled([hashes, jobs]);
+  if (hashRows.status === "rejected") throw hashRows.reason;
+  if (jobRows.status === "rejected") throw jobRows.reason;
+  return { hashes: hashRows.value.length, jobs: jobRows.value.length };
 }
