@@ -15,7 +15,6 @@ interface IPageContainerProps {
   children: ReactNode;
 }
 
-// One centred column with the same page padding everywhere, so pages line up at every width.
 export default function PageContainer({
   size = "default",
   as: Tag = "section",

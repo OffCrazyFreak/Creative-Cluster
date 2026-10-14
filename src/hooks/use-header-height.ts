@@ -6,11 +6,12 @@ export function useHeaderHeight(ref: RefObject<HTMLElement | null>) {
     const header = ref.current;
     if (!header) return;
     const root = document.documentElement;
-    const observer = new ResizeObserver(() => {
-      root.style.setProperty(
-        "--site-header-height",
-        `${header.getBoundingClientRect().height}px`,
-      );
+    let last = 0;
+    const observer = new ResizeObserver(([entry]) => {
+      const height = entry.borderBoxSize[0].blockSize;
+      if (height === last) return;
+      last = height;
+      root.style.setProperty("--site-header-height", `${height}px`);
     });
     observer.observe(header);
     return () => {
