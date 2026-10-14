@@ -319,7 +319,7 @@ describe.skipIf(!temp)("managing a post", () => {
     expect(results.filter((r) => r.status === "saved")).toHaveLength(1);
   });
 
-  it("detects the language of an edited post unless the owner changed it in this save", async () => {
+  it("detects the language when the text changes and keeps a manual correction after", async () => {
     const { owner, post } = await setup();
     const croatian = {
       body: richTextFromPlain(
@@ -336,7 +336,11 @@ describe.skipIf(!temp)("managing a post", () => {
     await updateOpportunity({
       id: post.id,
       userId: owner.id,
-      values: values("Tražimo partnera", { ...croatian, sourceLocale: "en" }),
+      values: values("Tražimo partnera", {
+        ...croatian,
+        sourceLocale: "en",
+        remoteOk: true,
+      }),
     });
     expect((await reload(post.id)).sourceLocale).toBe("en");
   });

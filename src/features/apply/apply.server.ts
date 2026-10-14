@@ -34,6 +34,7 @@ const LOGGED_FIELDS = [
   "kind",
   "name",
   "descriptionText",
+  "sourceLocale",
   "website",
   "contactName",
   "contactEmail",
@@ -123,6 +124,8 @@ export async function createApplication(
   locale: AppLocale,
 ): Promise<SubmitApplicationResult> {
   const id = uuidv7();
+  // The emails follow the language the applicant wrote in, like the later approval and rejection mails.
+  const sourceLocale = detectSourceLocale(input.description.text, locale);
   await db.transaction(async (tx) => {
     // The real slug is allocated at confirmation, so an unconfirmed draft never blocks a name.
     const fields = await applicationEntryFields(id, input);
@@ -130,7 +133,7 @@ export async function createApplication(
       id,
       slug: `${DRAFT_SLUG_PREFIX}${id}`,
       status: "draft",
-      sourceLocale: detectSourceLocale(fields.descriptionText, locale),
+      sourceLocale,
       ...fields,
     });
     await writeChange(tx, {
@@ -141,7 +144,13 @@ export async function createApplication(
       action: "create",
       after: { status: "draft", kind: input.kind, name: input.name },
     });
-    await queueVerification(tx, id, fields.contactEmail, input.name, locale);
+    await queueVerification(
+      tx,
+      id,
+      fields.contactEmail,
+      input.name,
+      sourceLocale,
+    );
   });
   return { status: "verify" };
 }
@@ -170,17 +179,20 @@ export async function resubmitApplication(
       row.name === input.name || row.slug.startsWith(DRAFT_SLUG_PREFIX)
         ? row.slug
         : await allocateSlug(tx, input.name);
-    const locale = row.sourceLocale as AppLocale;
+    const locale = detectSourceLocale(
+      fields.descriptionText,
+      row.sourceLocale as AppLocale,
+    );
     await tx
       .update(entry)
       .set({
         ...fields,
-        sourceLocale: detectSourceLocale(fields.descriptionText, locale),
+        sourceLocale: locale,
         slug,
         status: emailChanged ? "draft" : "pending",
       })
       .where(eq(entry.id, entryId));
-    const changed = changedFields(row, fields);
+    const changed = changedFields(row, { ...fields, sourceLocale: locale });
     if (changed.length > 0)
       await writeChange(tx, {
         entityType: "entry",
@@ -189,7 +201,7 @@ export async function resubmitApplication(
         source: "owner",
         action: "update",
         before: pickFields(row, changed),
-        after: pickFields(fields, changed),
+        after: pickFields({ ...fields, sourceLocale: locale }, changed),
       });
     await writeChange(tx, {
       entityType: "entry",

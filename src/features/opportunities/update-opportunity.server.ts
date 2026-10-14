@@ -5,7 +5,6 @@ import {
   OPPORTUNITY_LIMITS as L,
   type OpportunityStatus,
 } from "@/constants/opportunities";
-import type { AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
 import { opportunity, reviewItem } from "@/db/schema";
 import { writeChange } from "@/lib/change-log/write-change.server";
@@ -89,7 +88,7 @@ export async function updateOpportunity({
         sourceLocale: sourceLocaleOnSave(
           `${title}\n${values.body.text}`,
           values.sourceLocale,
-          row.sourceLocale as AppLocale,
+          `${row.title}\n${row.bodyText}`,
         ),
         remoteOk: values.remoteOk,
         deadline,
