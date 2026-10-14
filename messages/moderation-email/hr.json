@@ -1,5 +1,11 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
+  "moderation_email_suspended_subject": "Tvoj unos {entryName} je privremeno uklonjen",
+  "moderation_email_suspended_preheader": "Unos nije javan dok se razlog ne riješi.",
+  "moderation_email_suspended_body_1": "administrator je suspendirao unos {entryName} na {siteName}. Dok je suspendiran, unos, njegove prilike i veze nisu vidljivi posjetiteljima.",
+  "moderation_email_suspended_reason": "Razlog: {reason}",
+  "moderation_email_suspended_body_2": "Razlog vidiš i u svom računu. Ako ga možeš riješiti ili misliš da je suspenzija pogrešna, odgovori na ovu poruku. Kad se suspenzija ukine, sve se vraća kako je bilo.",
+  "moderation_email_suspended_button": "Otvori moj račun",
   "moderation_email_edit_reverted_subject": "Administrator je vratio izmjenu unosa {entryName}",
   "moderation_email_edit_reverted_preheader": "Pogledaj što je vraćeno i zašto.",
   "moderation_email_edit_reverted_body_1": "administrator stranice {siteName} vratio je jednu od izmjena na tvom unosu {entryName}.",

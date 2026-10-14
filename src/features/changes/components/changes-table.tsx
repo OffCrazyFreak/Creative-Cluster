@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,7 +44,17 @@ export default function ChangesTable({ rows, onView }: IChangesTableProps) {
           <TableRow key={row.id}>
             <TableCell>{format.format(new Date(row.createdAt))}</TableCell>
             <TableCell className="whitespace-normal">
-              <span className="block">{row.label}</span>
+              {row.entityType === "entry" ? (
+                <Link
+                  to="/admin/entry/$id"
+                  params={{ id: row.entityId }}
+                  className="block"
+                >
+                  {row.label}
+                </Link>
+              ) : (
+                <span className="block">{row.label}</span>
+              )}
               <span className="block text-xs">
                 {entityLabel(row.entityType)}
               </span>

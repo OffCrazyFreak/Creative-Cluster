@@ -38,7 +38,15 @@ describe("email templates", () => {
 
 // Paraglide falls back to the base locale silently, so compare the files directly.
 describe("message files", () => {
-  for (const area of ["auth", "email", "admin", "moderation-email"]) {
+  for (const area of [
+    "auth",
+    "email",
+    "admin",
+    "moderation-email",
+    "lifecycle",
+    "apply",
+    "review",
+  ]) {
     it(`${area} has the same keys in en and hr`, () => {
       function keys(locale: string) {
         const file = readFileSync(`messages/${area}/${locale}.json`, "utf8");
