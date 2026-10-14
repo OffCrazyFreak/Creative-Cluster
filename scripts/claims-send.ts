@@ -6,6 +6,7 @@ const { values } = parseArgs({
   options: {
     batch: { type: "string" },
     confirm: { type: "boolean", default: false },
+    "dry-run": { type: "boolean", default: false },
     "import-source": { type: "string" },
   },
 });
@@ -15,6 +16,7 @@ const { sendBlocker } = await import("../src/features/claims/send-guard");
 const blocker = sendBlocker(process.env, {
   batch: values.batch ? Number(values.batch) : null,
   confirm: values.confirm,
+  dryRun: values["dry-run"],
   importSource: values["import-source"] ?? null,
 });
 if (blocker) {

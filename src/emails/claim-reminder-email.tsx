@@ -14,7 +14,7 @@ export function subject({ locale, entryName }: IClaimReminderEmailProps) {
   );
 }
 
-// Prepared only: claims:send queues it once, about ten days after the first claim email.
+// The reminder says it is the last message, so it must never be queued twice for one invite.
 export default function ClaimReminderEmail(props: IClaimReminderEmailProps) {
   const { locale, entryName, link, removeLink, expiryDate } = props;
   return (

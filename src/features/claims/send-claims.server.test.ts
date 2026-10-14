@@ -15,7 +15,7 @@ vi.mock("@/env.server", () => ({
   env: { PSEUDONYM_SECRET: "test-secret", NODE_ENV: "test" },
 }));
 const { prepareClaimInvites } = await import("./prepare-claims.server");
-const { sendClaimBatch } = await import("./send-claims.server");
+const { planClaimBatch, sendClaimBatch } = await import("./send-claims.server");
 const { suppressEmail } = await import("./email-suppression.server");
 
 describe.skipIf(!temp)("claim sending", () => {
@@ -24,11 +24,18 @@ describe.skipIf(!temp)("claim sending", () => {
     await temp?.drop();
   });
 
-  async function imported(name: string) {
+  async function imported(
+    name: string,
+    patch: Partial<typeof schema.entry.$inferInsert> = {},
+  ) {
     const listing = await addEntry(db, name);
     await db
       .update(schema.entry)
-      .set({ importedAt: new Date(), contactEmail: `${name}@example.com` })
+      .set({
+        importedAt: new Date(),
+        contactEmail: `${name}@example.com`,
+        ...patch,
+      })
       .where(eq(schema.entry.id, listing.id));
     return listing;
   }
@@ -38,17 +45,24 @@ describe.skipIf(!temp)("claim sending", () => {
     );
   }
 
+  async function reset() {
+    await db.delete(schema.job);
+    await db.delete(schema.claimInvite);
+    await db.delete(schema.emailSuppression);
+    await db.delete(schema.entry);
+  }
+
   it("queues one claim email per invite up to the batch and restarts the 30 days", async () => {
+    await reset();
     await imported("one");
     await imported("two");
-    await imported("three");
-    await suppressEmail(db, "three@example.com", "claim_removal");
     await prepareClaimInvites();
     // Prepared a month ago: the links must still be fresh after the send.
     await db
       .update(schema.claimInvite)
       .set({ expiresAt: new Date(Date.now() + 86_400_000) });
 
+    expect(await planClaimBatch(5)).toEqual({ invites: 2, reminders: 0 });
     expect(await sendClaimBatch(1, "A test source")).toEqual({
       invites: 1,
       reminders: 0,
@@ -62,7 +76,6 @@ describe.skipIf(!temp)("claim sending", () => {
     expect(sent[0].expiresAt.getTime()).toBeGreaterThan(
       Date.now() + 29 * 86_400_000,
     );
-
     expect(await sendClaimBatch(5, "A test source")).toMatchObject({
       invites: 1,
     });
@@ -72,21 +85,64 @@ describe.skipIf(!temp)("claim sending", () => {
     });
   });
 
-  it("sends the single reminder after ten days, only to open invites", async () => {
-    expect(await sendClaimBatch(5, "x")).toMatchObject({ reminders: 0 });
+  it("skips addresses that opted out or bounced after preparing without using batch slots", async () => {
+    await reset();
+    await imported("out-a");
+    await imported("out-b");
+    await imported("bounced");
+    await imported("fine");
+    await prepareClaimInvites();
+    await suppressEmail(db, "out-a@example.com", "manual");
+    await suppressEmail(db, "out-b@example.com", "claim_removal");
     await db
-      .update(schema.claimInvite)
-      .set({ sentAt: new Date(Date.now() - 11 * 86_400_000) });
-    const [first] = await db.select().from(schema.claimInvite).limit(1);
+      .update(schema.entry)
+      .set({ contactEmailInvalid: true })
+      .where(eq(schema.entry.contactEmail, "bounced@example.com"));
+
+    expect(await sendClaimBatch(1, "A test source")).toEqual({
+      invites: 1,
+      reminders: 0,
+    });
+    const [row] = await db.select().from(schema.job);
+    expect(row.payload).toMatchObject({ to: "fine@example.com" });
+  });
+
+  it("mails an address that belongs to several listings only once", async () => {
+    await reset();
+    await imported("twin-a", { contactEmail: "shared@example.com" });
+    await imported("twin-b", { contactEmail: "shared@example.com" });
+    await prepareClaimInvites();
+    expect(await sendClaimBatch(5, "A test source")).toMatchObject({
+      invites: 1,
+    });
+    expect(await sendClaimBatch(5, "A test source")).toMatchObject({
+      invites: 0,
+    });
+  });
+
+  it("sends the single reminder after ten days, once the first mail was delivered, to open invites only", async () => {
+    await reset();
+    await imported("r-open");
+    await imported("r-used");
+    await imported("r-quiet");
+    await prepareClaimInvites();
+    await sendClaimBatch(5, "x");
+    const longAgo = new Date(Date.now() - 11 * 86_400_000);
+    await db.update(schema.claimInvite).set({ sentAt: longAgo });
+    // Queued but not delivered yet: no reminder.
+    expect(await sendClaimBatch(5, "x")).toMatchObject({ reminders: 0 });
+    await db.update(schema.job).set({ status: "done" });
+
     await db
       .update(schema.claimInvite)
       .set({ usedAt: new Date() })
-      .where(eq(schema.claimInvite.id, first.id));
+      .where(eq(schema.claimInvite.email, "r-used@example.com"));
+    await suppressEmail(db, "r-quiet@example.com", "claim_removal");
 
+    expect(await planClaimBatch(5)).toEqual({ invites: 0, reminders: 1 });
     expect(await sendClaimBatch(5, "x")).toEqual({ invites: 0, reminders: 1 });
-    expect(
-      (await templates()).filter((t) => t === "claim_reminder"),
-    ).toHaveLength(1);
+    const reminders = (await templates()).filter((t) => t === "claim_reminder");
+    expect(reminders).toHaveLength(1);
     expect(await sendClaimBatch(5, "x")).toEqual({ invites: 0, reminders: 0 });
   });
 });

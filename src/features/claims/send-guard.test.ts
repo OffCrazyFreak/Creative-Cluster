@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { sendBlocker } from "./send-guard";
 
-const ok = { batch: 5, confirm: true, importSource: "A real source, 2026" };
+const ok = {
+  batch: 5,
+  confirm: true,
+  dryRun: false,
+  importSource: "A real source, 2026",
+};
 
 describe("sendBlocker", () => {
   it("refuses without the approval env, even with every flag", () => {
