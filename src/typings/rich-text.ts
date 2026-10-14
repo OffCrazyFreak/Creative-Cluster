@@ -32,3 +32,10 @@ export interface IJsonRichTextNode {
 export interface JsonRichTextDoc extends IJsonRichTextNode {
   type: "doc";
 }
+
+// TanStack Form's key walker overflows on the recursive RichTextDoc type, so forms hold this flat shape;
+// the server still validates the real structure with richTextInput.
+export interface IFormRichText {
+  type: "doc";
+  content?: readonly unknown[];
+}

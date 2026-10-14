@@ -1,34 +1,37 @@
-import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 
-import { eq, sql } from "drizzle-orm";
-
-import { LOCALES } from "@/constants/locales";
 import { db, type Tx } from "@/db/client.server";
 import { entry, user } from "@/db/schema";
 import { invalidateMapDirectory } from "@/features/directory/map-directory.server";
-import { pageLink } from "@/lib/auth/auth-email.server";
+import { pageLink, recipientLocale } from "@/lib/auth/auth-email.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
 import { NotFoundError } from "@/server/errors";
-import { site } from "@/sites";
 
 import { transitionEntry, type IActor } from "./entry-transitions.server";
 
 // A listing queued for deletion stays hidden until the owner cancels, and a person who withdrew consent stays
 // unpublished until they give it again.
-async function assertCanPublish(tx: Tx, entryId: string) {
+async function assertCanPublish(
+  tx: Tx,
+  entryId: string,
+  requireConsent = true,
+) {
   const [row] = await tx
     .select({
       erasure: entry.erasureRequestedAt,
       kind: entry.kind,
       consentAt: entry.consentAt,
+      importedAt: entry.importedAt,
     })
     .from(entry)
     .where(eq(entry.id, entryId))
     .limit(1)
     .for("update");
   if (!row || row.erasure) throw new NotFoundError();
-  if (row.kind === "person" && !row.consentAt) throw new NotFoundError();
+  if (requireConsent && row.kind === "person" && !row.consentAt)
+    throw new NotFoundError();
+  return row;
 }
 
 function admin(adminId: string): IActor {
@@ -47,7 +50,7 @@ async function mailSuspension(
     .where(eq(user.id, row.ownerUserId))
     .limit(1);
   if (!owner) return;
-  const locale = LOCALES.find((l) => l === owner.locale) ?? site.baseLocale;
+  const locale = recipientLocale(owner);
   await enqueueEmail(tx, {
     template: "suspended",
     to: owner.email,
@@ -57,7 +60,7 @@ async function mailSuspension(
       reason,
       link: pageLink("/account", locale),
     },
-    idempotencyKey: `suspended:${row.id}:${randomUUID()}`,
+    idempotencyKey: `suspended:${row.id}:${row.updatedAt.getTime()}`,
   });
 }
 
@@ -82,11 +85,14 @@ export async function suspendEntry(
 
 export async function reinstateEntry(entryId: string, adminId: string) {
   await db.transaction(async (tx) => {
-    await assertCanPublish(tx, entryId);
+    const current = await assertCanPublish(tx, entryId, false);
+    // A person who withdrew consent while suspended cannot go public again; the listing lands in the archive,
+    // where the owner can show it again with fresh consent.
+    const needsConsent = current.kind === "person" && !current.consentAt;
     await transitionEntry(tx, {
       entryId,
       from: ["suspended"],
-      to: "published",
+      to: needsConsent ? "archived" : "published",
       patch: { suspendedReason: null },
       actor: admin(adminId),
     });
@@ -110,20 +116,15 @@ export async function archiveEntryAsAdmin(entryId: string, adminId: string) {
 // Restores an archived listing (for example an unclaimed import the 12 month check archived).
 export async function restoreEntryAsAdmin(entryId: string, adminId: string) {
   await db.transaction(async (tx) => {
-    await assertCanPublish(tx, entryId);
+    const current = await assertCanPublish(tx, entryId);
     await transitionEntry(tx, {
       entryId,
       from: ["archived"],
       to: "published",
+      // Restarts the 12 month clock, so the next daily check does not archive a restored import again.
+      patch: { importedAt: current.importedAt ? new Date() : null },
       actor: admin(adminId),
     });
-    // Restarts the 12 month clock, so the next daily check does not archive a restored import again.
-    await tx
-      .update(entry)
-      .set({
-        importedAt: sql`case when ${entry.importedAt} is null then null else now() end`,
-      })
-      .where(eq(entry.id, entryId));
   });
   invalidateMapDirectory();
 }

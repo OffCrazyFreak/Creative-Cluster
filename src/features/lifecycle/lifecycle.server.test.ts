@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it, vi } from "vitest";
 
 import * as schema from "@/db/schema";
@@ -303,5 +303,47 @@ describe.skipIf(!temp)("listing lifecycle", () => {
         .from(schema.entry)
         .where(eq(schema.entry.id, recent.id)),
     ).toHaveLength(1);
+  });
+
+  it("leaves a draft alone that was verified after the purge query picked it", async () => {
+    const draft = await addEntry(db, "Verified Late", {}, { status: "draft" });
+    const { purgeEntry } = await import("./purge-entry.server");
+    await db
+      .update(schema.entry)
+      .set({ status: "pending" })
+      .where(eq(schema.entry.id, draft.id));
+    const done = await db.transaction((tx) =>
+      purgeEntry(tx, draft.id, sql`${schema.entry.status} = 'draft'`),
+    );
+    expect(done).toBe(false);
+    expect((await statusOf(draft.id)).status).toBe("pending");
+  });
+
+  it("archives instead of publishing when a suspended person withdrew consent", async () => {
+    const boss = await addUser(db, "Boss5", "admin");
+    const { user, listing } = await ownedListing("Suspended Person", {
+      kind: "person",
+      consentAt: new Date(),
+      consentVersion: "v1",
+    });
+    await admin.suspendEntry(listing.id, "spam", boss.id);
+    await owner.withdrawOwnConsent(user.id);
+    await admin.reinstateEntry(listing.id, boss.id);
+    expect((await statusOf(listing.id)).status).toBe("archived");
+  });
+
+  it("logs the consent a returning person gave", async () => {
+    const { user, listing } = await ownedListing("Consent Logged", {
+      kind: "person",
+      status: "archived",
+    });
+    await owner.unarchiveOwnListing(user.id, true);
+    const logs = await db
+      .select()
+      .from(schema.changeLog)
+      .where(eq(schema.changeLog.entityId, listing.id));
+    expect(logs.some((l) => l.changedFields?.includes("consentVersion"))).toBe(
+      true,
+    );
   });
 });

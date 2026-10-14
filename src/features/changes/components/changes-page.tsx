@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -17,7 +17,11 @@ interface IChangesPageProps {
 
 export default function ChangesPage({ search }: IChangesPageProps) {
   const navigate = useNavigate({ from: "/admin/changes" });
-  const { data } = useQuery(changesQueryOptions(search));
+  const { data } = useQuery({
+    ...changesQueryOptions(search),
+    // Keep the current rows on screen while the next filter or page loads.
+    placeholderData: keepPreviousData,
+  });
   const [viewing, setViewing] = useState<string | null>(null);
   const rows = data?.rows ?? [];
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
@@ -32,7 +36,12 @@ export default function ChangesPage({ search }: IChangesPageProps) {
         <h1 className="text-2xl font-semibold">{m.review_changes_title()}</h1>
         <p>{m.review_changes_intro()}</p>
       </header>
-      <ChangesFilters value={search} onChange={update} />
+      <ChangesFilters
+        // Remounts when the URL changes (back button, shared link) so the id box never shows a stale filter.
+        key={search.entityId ?? ""}
+        value={search}
+        onChange={update}
+      />
       {rows.length === 0 ? (
         <p>{m.review_changes_none()}</p>
       ) : (

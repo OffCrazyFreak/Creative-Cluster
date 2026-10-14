@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { REVIEW_STALE_DAYS } from "@/constants/moderation";
@@ -19,7 +19,10 @@ interface IReviewQueuePageProps {
 
 export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
   const navigate = useNavigate({ from: "/admin/" });
-  const { data } = useQuery(reviewQueueQueryOptions(search));
+  const { data } = useQuery({
+    ...reviewQueueQueryOptions(search),
+    placeholderData: keepPreviousData,
+  });
   const decide = useReviewDecisions();
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [rejecting, setRejecting] = useState<string[] | null>(null);
@@ -27,6 +30,12 @@ export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
 
   const rows = data?.rows ?? [];
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
+
+  // Deciding the last item of the last page leaves that page empty; step back instead of saying nothing is waiting.
+  useEffect(() => {
+    if (data && data.total > 0 && search.page > pages)
+      void navigate({ search: (prev) => ({ ...prev, page: pages }) });
+  }, [data, pages, search.page, navigate]);
 
   function update(patch: Partial<ReviewListInput>) {
     setSelected(new Set());

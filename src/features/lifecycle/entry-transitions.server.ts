@@ -48,19 +48,30 @@ export async function transitionEntry(
     .update(entry)
     .set({ status: input.to, ...patch })
     .where(eq(entry.id, row.id));
+  const before: Record<string, unknown> = {
+    status: row.status,
+    suspendedReason: row.suspendedReason,
+  };
+  const after: Record<string, unknown> = {
+    status: input.to,
+    suspendedReason:
+      "suspendedReason" in patch
+        ? (patch.suspendedReason ?? null)
+        : row.suspendedReason,
+  };
+  // Patched columns (consent, import date) are audited too.
+  for (const key of Object.keys(patch)) {
+    if (key in after) continue;
+    before[key] = row[key as keyof EntryRow] ?? null;
+    after[key] = patch[key as keyof typeof patch] ?? null;
+  }
   await writeChange(tx, {
     entityType: "entry",
     entityId: row.id,
     ...input.actor,
     action: "status_change",
-    before: { status: row.status, suspendedReason: row.suspendedReason },
-    after: {
-      status: input.to,
-      suspendedReason:
-        "suspendedReason" in patch
-          ? (patch.suspendedReason ?? null)
-          : row.suspendedReason,
-    },
+    before,
+    after,
   });
   return { ...row, status: input.to, ...patch };
 }

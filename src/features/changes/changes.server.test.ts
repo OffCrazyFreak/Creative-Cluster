@@ -162,6 +162,10 @@ describe.skipIf(!temp)("change log services", () => {
 
   it("restores a field group whole or not at all", async () => {
     const { admin, listing } = await setup();
+    await db
+      .update(schema.entry)
+      .set({ name: "New name", city: "New Town", lat: 1 })
+      .where(eq(schema.entry.id, listing.id));
     const log = await writeChange(db, {
       entityType: "entry",
       entityId: listing.id,
@@ -213,5 +217,36 @@ describe.skipIf(!temp)("change log services", () => {
     });
     expect(page.rows.length).toBeGreaterThan(0);
     expect(page.rows.every((r) => r.entityId === listing.id)).toBe(true);
+  });
+
+  it("leaves a field alone that was edited again since the change", async () => {
+    const { admin, listing, log } = await setup();
+    await db
+      .update(schema.entry)
+      .set({ name: "Edited Again" })
+      .where(eq(schema.entry.id, listing.id));
+    const detail = await getChangeDetail(log.id);
+    expect(detail.diffs.find((d) => d.field === "name")?.restorable).toBe(
+      false,
+    );
+    expect(await revertChange(log.id, "x", admin.id)).toEqual({ status: "ok" });
+    const [after] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, listing.id));
+    expect(after.name).toBe("Edited Again");
+    expect(after.contactEmail).toBe("old@example.test");
+  });
+
+  it("does not revert on a listing that is queued for deletion", async () => {
+    const { admin, listing, log } = await setup();
+    await db
+      .update(schema.entry)
+      .set({ erasureRequestedAt: new Date() })
+      .where(eq(schema.entry.id, listing.id));
+    expect((await getChangeDetail(log.id)).revertible).toBe(false);
+    expect(await revertChange(log.id, "x", admin.id)).toEqual({
+      status: "not_revertible",
+    });
   });
 });

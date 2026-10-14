@@ -187,7 +187,12 @@ describe.skipIf(!temp)("review services", () => {
 
   it("applies an approved sensitive edit, queues translation and ignores fields that are not editable", async () => {
     const boss = await admin();
-    const listing = await addEntry(db, "Trusted Not");
+    const listing = await addEntry(
+      db,
+      "Trusted Not",
+      {},
+      { ownerUserId: boss.id },
+    );
     const [item] = await db
       .insert(schema.reviewItem)
       .values({
@@ -218,7 +223,7 @@ describe.skipIf(!temp)("review services", () => {
     expect(after.name).toBe("Renamed");
     expect(after.descriptionText).toBe("New words");
     expect(after.status).toBe("published");
-    expect(after.ownerUserId).toBeNull();
+    expect(after.ownerUserId).toBe(boss.id);
     const jobs = (await db.select().from(schema.job)).filter(
       (j) => j.type === "translate",
     );
@@ -319,5 +324,97 @@ describe.skipIf(!temp)("review services", () => {
       (j) => (j.payload as { template?: string }).template === "report_digest",
     );
     expect(digests).toHaveLength(1);
+  });
+
+  it("applies and logs only the fields that differ from the live listing", async () => {
+    const boss = await admin();
+    const listing = await addEntry(db, "Snapshot Same Name");
+    const [item] = await db
+      .insert(schema.reviewItem)
+      .values({
+        type: "untrusted_edit",
+        entityType: "entry",
+        entityId: listing.id,
+        payload: {
+          patch: {
+            name: "Snapshot Same Name",
+            website: "https://new.example.test",
+          },
+          submittedBy: boss.id,
+        },
+      })
+      .returning();
+    const page = await listReviewItems({
+      age: "all",
+      page: 1,
+      type: "untrusted_edit",
+    });
+    expect(page.rows.find((row) => row.id === item.id)?.summary).toBe(
+      "website",
+    );
+    await decideReviewItems({ ids: [item.id], decision: "approve" }, boss.id);
+    const logs = await db
+      .select()
+      .from(schema.changeLog)
+      .where(eq(schema.changeLog.entityId, listing.id));
+    expect(logs.map((row) => row.changedFields)).toEqual([["website"]]);
+    // A tags-only or website-only edit does not retranslate the unchanged name.
+    const jobs = (await db.select().from(schema.job)).filter(
+      (j) =>
+        j.type === "translate" &&
+        (j.payload as { entityId?: string }).entityId === listing.id,
+    );
+    expect(jobs).toHaveLength(0);
+  });
+
+  it("closes a decision whose listing is no longer pending instead of leaving it open", async () => {
+    const boss = await admin();
+    const stale = await verifiedApplication(
+      "Gone Meanwhile",
+      "gone@example.test",
+    );
+    await db
+      .update(schema.entry)
+      .set({ status: "archived" })
+      .where(eq(schema.entry.id, stale.entry.id));
+    const [result] = await decideReviewItems(
+      { ids: [stale.review_item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("gone");
+    const [item] = await db
+      .select()
+      .from(schema.reviewItem)
+      .where(eq(schema.reviewItem.id, stale.review_item.id));
+    expect(item.status).toBe("dismissed");
+  });
+
+  it("tells an existing account without a password to set one, not that it was created", async () => {
+    const boss = await admin();
+    await db
+      .insert(schema.user)
+      .values({ name: "Old", email: "nopass@example.test", locale: "en" });
+    const item = await verifiedApplication(
+      "No Password",
+      "nopass@example.test",
+    );
+    await decideReviewItems(
+      { ids: [item.review_item.id], decision: "approve" },
+      boss.id,
+    );
+    const mail = (await db.select().from(schema.job))
+      .map(
+        (j) =>
+          j.payload as {
+            template: string;
+            to: string;
+            props: { newAccount?: boolean; needsPassword?: boolean };
+          },
+      )
+      .find((p) => p.template === "approved" && p.to === "nopass@example.test");
+    expect(mail?.props).toMatchObject({
+      newAccount: false,
+      needsPassword: true,
+    });
   });
 });

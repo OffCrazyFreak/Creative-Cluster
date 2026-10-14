@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { getRejectedApplication } from "@/features/apply/apply.functions";
+import {
+  getApplyFormTokenFn,
+  getRejectedApplication,
+} from "@/features/apply/apply.functions";
 import { toFormValues } from "@/features/apply/apply-defaults";
 import ApplyPage from "@/features/apply/components/apply-page";
 import { pageHead } from "@/lib/seo/page-head";
@@ -18,6 +21,7 @@ export const Route = createFileRoute("/apply/")({
     initial: deps.resubmit
       ? await getRejectedApplication({ data: { token: deps.resubmit } })
       : undefined,
+    formToken: await getApplyFormTokenFn(),
   }),
   head: ({ match }) =>
     pageHead({
@@ -32,10 +36,11 @@ export const Route = createFileRoute("/apply/")({
 
 function ApplyRoute() {
   const { resubmit } = Route.useSearch();
-  const { initial } = Route.useLoaderData();
+  const { initial, formToken } = Route.useLoaderData();
   return (
     <ApplyPage
       resubmitToken={resubmit}
+      formToken={formToken}
       initial={initial ? toFormValues(initial) : initial}
     />
   );

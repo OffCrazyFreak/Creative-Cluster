@@ -8,7 +8,7 @@ import EmailLayout from "./components/email-layout";
 import type { IErasureScheduledEmailProps } from "./email-types";
 
 export function subject({ locale }: IErasureScheduledEmailProps) {
-  return m.email_erasure_scheduled_subject({}, { locale });
+  return m.moderation_email_erasure_scheduled_subject({}, { locale });
 }
 
 export default function ErasureScheduledEmail(
@@ -23,26 +23,26 @@ export default function ErasureScheduledEmail(
     <EmailLayout
       locale={locale}
       footer="account"
-      preview={m.email_erasure_scheduled_preheader({}, { locale })}
+      preview={m.moderation_email_erasure_scheduled_preheader({}, { locale })}
     >
       <Text>{m.email_greeting({}, { locale })}</Text>
       <Text>
         {entryName
-          ? m.email_erasure_scheduled_body_entry(
+          ? m.moderation_email_erasure_scheduled_body_entry(
               { entryName, siteName: site.name, deleteDate: date },
               { locale },
             )
-          : m.email_erasure_scheduled_body_account(
+          : m.moderation_email_erasure_scheduled_body_account(
               { siteName: site.name, deleteDate: date },
               { locale },
             )}
       </Text>
-      <Text>{m.email_erasure_scheduled_what({}, { locale })}</Text>
-      <Text>{m.email_erasure_scheduled_cancel({}, { locale })}</Text>
+      <Text>{m.moderation_email_erasure_scheduled_what({}, { locale })}</Text>
+      <Text>{m.moderation_email_erasure_scheduled_cancel({}, { locale })}</Text>
       <ActionButton
         href={link}
         locale={locale}
-        label={m.email_erasure_scheduled_button({}, { locale })}
+        label={m.moderation_email_erasure_scheduled_button({}, { locale })}
       />
     </EmailLayout>
   );

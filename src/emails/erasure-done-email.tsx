@@ -7,7 +7,7 @@ import EmailLayout from "./components/email-layout";
 import type { IErasureDoneEmailProps } from "./email-types";
 
 export function subject({ locale }: IErasureDoneEmailProps) {
-  return m.email_erasure_done_subject({}, { locale });
+  return m.moderation_email_erasure_done_subject({}, { locale });
 }
 
 // The last mail an account gets. Its own footer says the address is not kept.
@@ -17,25 +17,25 @@ export default function ErasureDoneEmail(props: IErasureDoneEmailProps) {
     <EmailLayout
       locale={locale}
       footer="none"
-      preview={m.email_erasure_done_preheader({}, { locale })}
+      preview={m.moderation_email_erasure_done_preheader({}, { locale })}
     >
       <Text>{m.email_greeting({}, { locale })}</Text>
       <Text>
         {entryName
-          ? m.email_erasure_done_body_entry(
+          ? m.moderation_email_erasure_done_body_entry(
               { entryName, siteName: site.name },
               { locale },
             )
-          : m.email_erasure_done_body_account(
+          : m.moderation_email_erasure_done_body_account(
               { siteName: site.name },
               { locale },
             )}
       </Text>
-      <Text>{m.email_erasure_done_backups({}, { locale })}</Text>
-      <Text>{m.email_erasure_done_last({}, { locale })}</Text>
+      <Text>{m.moderation_email_erasure_done_backups({}, { locale })}</Text>
+      <Text>{m.moderation_email_erasure_done_last({}, { locale })}</Text>
       <Hr />
       <Text style={{ fontSize: 12 }}>
-        {m.email_erasure_done_footer(
+        {m.moderation_email_erasure_done_footer(
           {
             siteName: site.name,
             contactEmail: site.contactEmail,

@@ -8,6 +8,7 @@ import { richTextFromPlain } from "@/lib/rich-text/empty-rich-text";
 
 import { addEntry } from "../../../tests/helpers/fixture-data";
 import type { ITempDatabase } from "../../../tests/helpers/temp-database";
+import { InvalidTownError } from "./apply-entry-fields";
 import type { ApplicationInput } from "./apply-schemas";
 
 const { temp } = await vi.hoisted(async () => {
@@ -96,25 +97,135 @@ describe.skipIf(!temp)("apply services", () => {
     expect(await verifyApplication("nope")).toEqual({ status: "invalid" });
   });
 
-  it("stores people at town level with the consent version", async () => {
-    await createApplication(
-      application({
-        kind: "person",
-        name: "Ana Person",
-        consent: true,
-        ageConfirmed: true,
-        contactEmail: "ana@example.test",
-      }),
-      "hr",
-    );
+  const dubrovnik = {
+    ...emptyLocation("HR"),
+    city: "Dubrovnik",
+    lat: 42.6413,
+    lng: 18.1091,
+    precision: "town" as const,
+    source: "town_list" as const,
+    display: "town" as const,
+    townPopulation: 26922,
+  };
+
+  function person(location: ApplicationInput["location"], name = "Ana Person") {
+    return application({
+      kind: "person",
+      name,
+      consent: true,
+      ageConfirmed: true,
+      contactEmail: `${name.replaceAll(" ", "").toLowerCase()}@example.test`,
+      location,
+    });
+  }
+
+  it("stores people at an offset town pin with the consent version", async () => {
+    await createApplication(person(dubrovnik), "hr");
     const [row] = await db
       .select()
       .from(schema.entry)
       .where(eq(schema.entry.name, "Ana Person"));
     expect(row.consentVersion).toBeTruthy();
     expect(row.consentAt).toBeInstanceOf(Date);
-    // A pin that did not come from the town list is dropped, never stored exactly.
-    expect(row.lat).toBeNull();
+    expect(row.locationDisplay).toBe("town");
+    expect(row.precision).toBe("town");
+    // The pin is near the town centre but never on it.
+    expect(row.lat).not.toBe(42.6413);
+    expect(Math.abs((row.lat ?? 0) - 42.6413)).toBeLessThan(0.1);
+  });
+
+  it("ignores everything the browser says about a person's place except the town", async () => {
+    await createApplication(
+      person(
+        {
+          ...dubrovnik,
+          addressText: "Stradun 1",
+          display: "exact",
+          precision: "house",
+          pinMovedByHand: true,
+        },
+        "Forged Pin",
+      ),
+      "hr",
+    );
+    const [row] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.name, "Forged Pin"));
+    expect(row.addressText).toBeNull();
+    expect(row.locationDisplay).toBe("town");
+    expect(row.precision).toBe("town");
+    expect(row.pinMovedByHand).toBe(false);
+  });
+
+  it("refuses a person whose coordinates are not a known town", async () => {
+    await expect(
+      createApplication(
+        person({ ...dubrovnik, lat: 42.640123, lng: 18.110987 }, "Exact Home"),
+        "hr",
+      ),
+    ).rejects.toBeInstanceOf(InvalidTownError);
+    await expect(
+      createApplication(
+        person({ ...emptyLocation("HR"), city: "Dubrovnik" }, "No Pin"),
+        "hr",
+      ),
+    ).rejects.toBeInstanceOf(InvalidTownError);
+    expect(
+      await db
+        .select()
+        .from(schema.entry)
+        .where(eq(schema.entry.name, "Exact Home")),
+    ).toHaveLength(0);
+  });
+
+  it("reserves the real slug only after the address is confirmed", async () => {
+    await createApplication(
+      application({ name: "Slug Later", contactEmail: "slug@example.test" }),
+      "en",
+    );
+    const [draft] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.name, "Slug Later"));
+    expect(draft.slug.startsWith("draft-")).toBe(true);
+    await verifyApplication(await verifyLinkToken("slug@example.test"));
+    const [pending] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, draft.id));
+    expect(pending.slug).toBe("slug-later");
+  });
+
+  it("logs which fields a resubmission changed", async () => {
+    await createApplication(
+      application({ name: "Log Me", contactEmail: "logme@example.test" }),
+      "en",
+    );
+    const [row] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.name, "Log Me"));
+    await db
+      .update(schema.entry)
+      .set({ status: "rejected" })
+      .where(eq(schema.entry.id, row.id));
+    const edit = await issueApplicationToken(db, "apply-edit", row.id, 3600);
+    await resubmitApplication(
+      application({
+        name: "Log Me",
+        contactEmail: "logme@example.test",
+        website: "https://logme.example.test",
+      }),
+      edit,
+    );
+    const rows = await db
+      .select()
+      .from(schema.changeLog)
+      .where(eq(schema.changeLog.entityId, row.id));
+    const update = rows.find((r) => r.action === "update");
+    expect(update?.changedFields).toEqual(["website"]);
+    expect(update?.after).toEqual({ website: "https://logme.example.test" });
   });
 
   it("lets a rejected application be edited and queued again", async () => {

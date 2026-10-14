@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -31,7 +32,7 @@ export default function ChangesFilters({
 }: IChangesFiltersProps) {
   const [entityId, setEntityId] = useState(value.entityId ?? "");
   const all = { value: ALL, label: m.review_filter_all() };
-  const idValid = /^[0-9a-f-]{36}$/i.test(entityId);
+  const idValid = z.uuid().safeParse(entityId).success;
 
   return (
     <form
@@ -97,6 +98,7 @@ export default function ChangesFilters({
           id="changes-id"
           value={entityId}
           autoComplete="off"
+          aria-invalid={entityId !== "" && !idValid}
           onChange={(event) => setEntityId(event.target.value.trim())}
         />
       </Field>

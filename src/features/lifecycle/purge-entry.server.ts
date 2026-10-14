@@ -1,4 +1,4 @@
-import { and, eq, inArray, notExists, or, sql } from "drizzle-orm";
+import { and, eq, inArray, notExists, or, sql, type SQL } from "drizzle-orm";
 
 import type { Tx } from "@/db/client.server";
 import {
@@ -13,7 +13,8 @@ import { stripEntityChangeLog } from "@/features/changes/strip-change-log.server
 
 // Deletes a listing for good: its text, translations, posts, connections, queue items and images that
 // nothing else uses. Change log rows stay for the audit trail but lose their identifiers.
-export async function purgeEntry(tx: Tx, entryId: string) {
+// `onlyIf` is re-checked under the row lock, so a listing that changed since it was picked is left alone.
+export async function purgeEntry(tx: Tx, entryId: string, onlyIf?: SQL) {
   const [row] = await tx
     .select({
       logo: entry.logoImageId,
@@ -21,10 +22,10 @@ export async function purgeEntry(tx: Tx, entryId: string) {
       contactEmail: entry.contactEmail,
     })
     .from(entry)
-    .where(eq(entry.id, entryId))
+    .where(and(eq(entry.id, entryId), onlyIf))
     .limit(1)
     .for("update");
-  if (!row) return;
+  if (!row) return false;
 
   const posts = (
     await tx
@@ -90,4 +91,5 @@ export async function purgeEntry(tx: Tx, entryId: string) {
         ),
       ),
     );
+  return true;
 }

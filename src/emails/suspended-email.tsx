@@ -8,7 +8,7 @@ import EmailLayout from "./components/email-layout";
 import type { ISuspendedEmailProps } from "./email-types";
 
 export function subject({ locale, entryName }: ISuspendedEmailProps) {
-  return m.email_suspended_subject({ entryName }, { locale });
+  return m.moderation_email_suspended_subject({ entryName }, { locale });
 }
 
 export default function SuspendedEmail(props: ISuspendedEmailProps) {
@@ -17,21 +17,21 @@ export default function SuspendedEmail(props: ISuspendedEmailProps) {
     <EmailLayout
       locale={locale}
       footer="account"
-      preview={m.email_suspended_preheader({}, { locale })}
+      preview={m.moderation_email_suspended_preheader({}, { locale })}
     >
       <Text>{m.email_greeting({}, { locale })}</Text>
       <Text>
-        {m.email_suspended_body_1(
+        {m.moderation_email_suspended_body_1(
           { entryName, siteName: site.name },
           { locale },
         )}
       </Text>
-      <Text>{m.email_suspended_reason({ reason }, { locale })}</Text>
-      <Text>{m.email_suspended_body_2({}, { locale })}</Text>
+      <Text>{m.moderation_email_suspended_reason({ reason }, { locale })}</Text>
+      <Text>{m.moderation_email_suspended_body_2({}, { locale })}</Text>
       <ActionButton
         href={link}
         locale={locale}
-        label={m.email_suspended_button({}, { locale })}
+        label={m.moderation_email_suspended_button({}, { locale })}
       />
     </EmailLayout>
   );

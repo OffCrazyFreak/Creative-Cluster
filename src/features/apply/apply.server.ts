@@ -1,3 +1,4 @@
+import { dequal } from "dequal";
 import { and, eq } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
 
@@ -25,6 +26,33 @@ import {
   revokeApplicationTokens,
   tokenDigest,
 } from "./application-tokens.server";
+
+export const DRAFT_SLUG_PREFIX = "draft-";
+
+const LOGGED_FIELDS = [
+  "kind",
+  "name",
+  "descriptionText",
+  "website",
+  "contactName",
+  "contactEmail",
+  "contactPhone",
+  "city",
+  "countryCode",
+  "addressText",
+  "onlineOnly",
+] as const;
+
+function changedFields(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+): string[] {
+  return LOGGED_FIELDS.filter((key) => !dequal(before[key], after[key]));
+}
+
+function pickFields(source: Record<string, unknown>, keys: string[]) {
+  return Object.fromEntries(keys.map((key) => [key, source[key] ?? null]));
+}
 
 async function queueVerification(
   tx: Tx,
@@ -95,11 +123,15 @@ export async function createApplication(
 ): Promise<SubmitApplicationResult> {
   const id = uuidv7();
   await db.transaction(async (tx) => {
-    const slug = await allocateSlug(tx, input.name);
-    const fields = applicationEntryFields(id, input);
-    await tx
-      .insert(entry)
-      .values({ id, slug, status: "draft", sourceLocale: locale, ...fields });
+    // The real slug is allocated at confirmation, so an unconfirmed draft never blocks a name.
+    const fields = await applicationEntryFields(id, input);
+    await tx.insert(entry).values({
+      id,
+      slug: `${DRAFT_SLUG_PREFIX}${id}`,
+      status: "draft",
+      sourceLocale: locale,
+      ...fields,
+    });
     await writeChange(tx, {
       entityType: "entry",
       entityId: id,
@@ -130,10 +162,13 @@ export async function resubmitApplication(
       .for("update");
     if (!row) throw new NotFoundError();
 
-    const fields = applicationEntryFields(entryId, input);
+    const fields = await applicationEntryFields(entryId, input);
     const emailChanged = fields.contactEmail !== row.contactEmail;
+    // A placeholder slug stays one until confirmation; a real slug is renewed only when the name changed.
     const slug =
-      row.name === input.name ? row.slug : await allocateSlug(tx, input.name);
+      row.name === input.name || row.slug.startsWith(DRAFT_SLUG_PREFIX)
+        ? row.slug
+        : await allocateSlug(tx, input.name);
     const locale = row.sourceLocale as AppLocale;
     await tx
       .update(entry)
@@ -143,6 +178,17 @@ export async function resubmitApplication(
         status: emailChanged ? "draft" : "pending",
       })
       .where(eq(entry.id, entryId));
+    const changed = changedFields(row, fields);
+    if (changed.length > 0)
+      await writeChange(tx, {
+        entityType: "entry",
+        entityId: entryId,
+        userId: null,
+        source: "owner",
+        action: "update",
+        before: pickFields(row, changed),
+        after: pickFields(fields, changed),
+      });
     await writeChange(tx, {
       entityType: "entry",
       entityId: entryId,

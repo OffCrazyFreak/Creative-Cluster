@@ -10,7 +10,7 @@ import EmailLayout from "./components/email-layout";
 import type { IRejectedEmailProps } from "./email-types";
 
 export function subject({ locale }: IRejectedEmailProps) {
-  return m.email_rejected_subject({}, { locale });
+  return m.moderation_email_rejected_subject({}, { locale });
 }
 
 function reasonText(
@@ -26,14 +26,14 @@ function reasonText(
   };
   const options = { locale };
   if (code === "duplicate")
-    return m.email_rejected_reason_duplicate(values, options);
+    return m.moderation_email_rejected_reason_duplicate(values, options);
   if (code === "out_of_scope")
-    return m.email_rejected_reason_out_of_scope(values, options);
+    return m.moderation_email_rejected_reason_out_of_scope(values, options);
   if (code === "incomplete")
-    return m.email_rejected_reason_incomplete(values, options);
+    return m.moderation_email_rejected_reason_incomplete(values, options);
   if (code === "unverifiable")
-    return m.email_rejected_reason_unverifiable(values, options);
-  return m.email_rejected_reason_other(values, options);
+    return m.moderation_email_rejected_reason_unverifiable(values, options);
+  return m.moderation_email_rejected_reason_other(values, options);
 }
 
 export default function RejectedEmail(props: IRejectedEmailProps) {
@@ -44,23 +44,25 @@ export default function RejectedEmail(props: IRejectedEmailProps) {
     <EmailLayout
       locale={locale}
       footer="account"
-      preview={m.email_rejected_preheader({ entryName }, { locale })}
+      preview={m.moderation_email_rejected_preheader({ entryName }, { locale })}
     >
       <Text>{m.email_greeting({}, { locale })}</Text>
       <Text>
-        {m.email_rejected_body_1(
+        {m.moderation_email_rejected_body_1(
           { entryName, siteName: site.name },
           { locale },
         )}
       </Text>
-      <Heading as="h2">{m.email_rejected_reason_title({}, { locale })}</Heading>
+      <Heading as="h2">
+        {m.moderation_email_rejected_reason_title({}, { locale })}
+      </Heading>
       <Text>{reasonText(reasonCode, note, locale)}</Text>
       {extraNote && <Text>{extraNote}</Text>}
-      <Text>{m.email_rejected_body_2({}, { locale })}</Text>
+      <Text>{m.moderation_email_rejected_body_2({}, { locale })}</Text>
       <ActionButton
         href={link}
         locale={locale}
-        label={m.email_rejected_button({}, { locale })}
+        label={m.moderation_email_rejected_button({}, { locale })}
       />
     </EmailLayout>
   );
