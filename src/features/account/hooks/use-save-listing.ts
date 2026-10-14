@@ -23,9 +23,14 @@ function sameIds(a: readonly string[], b: readonly string[]) {
 export function useSaveListing(listing: IOwnListing) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (
-      values: ListingFormValues,
-    ): Promise<SaveListingResult> => {
+    // The baseline is the last saved state; the listing prop is only what the page first loaded.
+    mutationFn: async ({
+      values,
+      baseline,
+    }: {
+      values: ListingFormValues;
+      baseline: ListingFormValues;
+    }): Promise<SaveListingResult> => {
       const result = await saveMyListing({
         data: { entryId: listing.id, values },
       });
@@ -33,7 +38,7 @@ export function useSaveListing(listing: IOwnListing) {
       let tagsSaved = false;
       try {
         for (const field of TAG_FIELDS) {
-          if (sameIds(values.tags[field], listing.values.tags[field])) continue;
+          if (sameIds(values.tags[field], baseline.tags[field])) continue;
           await saveTagsOfEntry({
             data: { entryId: listing.id, field, tagIds: values.tags[field] },
           });

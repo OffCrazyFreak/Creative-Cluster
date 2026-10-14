@@ -61,7 +61,10 @@ export default function ListingForm({ listing }: IListingFormProps) {
     onSubmit: async ({ value, formApi }) => {
       setNotice(null);
       try {
-        const result = await save.mutateAsync(value);
+        const result = await save.mutateAsync({
+          values: value,
+          baseline: initial,
+        });
         // The server may have replaced the language with the one it detected.
         const saved = { ...value, sourceLocale: result.sourceLocale };
         // The form re-applies its default values on every render, so they must follow the save.
