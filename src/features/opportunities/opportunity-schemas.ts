@@ -29,7 +29,7 @@ const title = z
   .max(L.titleLength, { error: () => m.opportunities_error_title() });
 
 // Empty means "no deadline"; the date input yields YYYY-MM-DD.
-const deadline = z
+export const deadlineField = z
   .string()
   .refine((value) => value === "" || isRealDate(value), {
     error: () => m.opportunities_error_deadline(),
@@ -44,7 +44,7 @@ export const opportunityValuesSchema = z.object({
   }),
   sourceLocale: z.enum(LOCALES),
   remoteOk: z.boolean(),
-  deadline,
+  deadline: deadlineField,
   tagIds: z.array(z.uuid()).max(OPPORTUNITY_TAG_MAX),
 });
 
@@ -55,6 +55,19 @@ export const createOpportunityInput = z.object({
   values: opportunityValuesSchema,
 });
 
+export const updateOpportunityInput = z.object({
+  id: z.uuid(),
+  values: opportunityValuesSchema,
+});
+
+export const opportunityIdInput = z.object({ id: z.uuid() });
+
+export const renewOpportunityInput = z.object({
+  id: z.uuid(),
+  // Only needed when the post has a deadline: the new one must reach past the old end.
+  deadline: deadlineField.optional(),
+});
+
 export type OpportunityResult =
-  | { status: "published" | "pending_review" }
+  | { status: "published" | "pending_review" | "saved" | "unchanged" }
   | { status: "refused"; code: OpportunityRuleCode };

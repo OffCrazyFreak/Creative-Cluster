@@ -47,8 +47,14 @@ export async function checkValues(
   userId: string,
   values: OpportunityInput,
   now: Date,
+  // The deadline already stored on the post: leaving it unchanged is always fine.
+  currentDeadline: string | null = null,
 ): Promise<IValueCheck> {
-  if (values.deadline && !isDeadlineAllowed(values.deadline, now))
+  if (
+    values.deadline &&
+    values.deadline !== currentDeadline &&
+    !isDeadlineAllowed(values.deadline, now)
+  )
     return { code: "bad_deadline", tagSlugs: [] };
   const tagSlugs = await usableTagSlugs(tx, userId, values.tagIds);
   return tagSlugs

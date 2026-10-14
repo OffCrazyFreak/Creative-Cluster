@@ -69,3 +69,8 @@ export function canRenew(post: IRenewable, now: Date): boolean {
     (isExpired(post.expiresAt, now) || isExpiringSoon(post.expiresAt, now))
   );
 }
+
+// A renewal starts when the old period ends, so renewing early loses no days.
+export function renewalStart(expiresAt: Date, now: Date): Date {
+  return expiresAt > now ? expiresAt : now;
+}
