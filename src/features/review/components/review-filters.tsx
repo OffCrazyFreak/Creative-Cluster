@@ -1,8 +1,7 @@
 import { LOCATION_COUNTRIES } from "@/constants/countries";
-import { REVIEW_TYPES } from "@/constants/moderation";
 import { REVIEW_AGE_FILTERS } from "@/constants/review";
 import { countryName } from "@/features/directory/country-name";
-import { REVIEW_STALE_DAYS } from "@/constants/moderation";
+import { REVIEW_STALE_DAYS, REVIEW_TYPES } from "@/constants/moderation";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 

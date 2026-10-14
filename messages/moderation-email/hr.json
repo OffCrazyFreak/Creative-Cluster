@@ -30,5 +30,6 @@
   "moderation_email_application_received_subject": "Primili smo tvoju prijavu",
   "moderation_email_application_received_preheader": "Pregledavamo je u roku od 7 dana.",
   "moderation_email_application_received_body_1": "hvala. Primili smo prijavu za unos {entryName} na {siteName}. Administratori je pregledavaju u roku od 7 dana. Odluku ćemo ti poslati na ovu adresu.",
-  "moderation_email_application_received_body_2": "Dok čekaš, unos nije javan. Ako želiš nešto ispraviti, odgovori na ovu poruku."
+  "moderation_email_application_received_body_2": "Dok čekaš, unos nije javan. Ako želiš nešto ispraviti, odgovori na ovu poruku.",
+  "moderation_email_approved_body_existing_setpassword": "Već imaš račun s ovom adresom, ali još nema lozinku. Postavi je pa ćeš moći uređivati unos, objavljivati prilike i povezivati se s drugim unosima. Poveznica vrijedi {expiry}."
 }

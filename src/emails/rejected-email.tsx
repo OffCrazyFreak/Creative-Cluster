@@ -53,7 +53,9 @@ export default function RejectedEmail(props: IRejectedEmailProps) {
           { locale },
         )}
       </Text>
-      <Heading as="h2">{m.moderation_email_rejected_reason_title({}, { locale })}</Heading>
+      <Heading as="h2">
+        {m.moderation_email_rejected_reason_title({}, { locale })}
+      </Heading>
       <Text>{reasonText(reasonCode, note, locale)}</Text>
       {extraNote && <Text>{extraNote}</Text>}
       <Text>{m.moderation_email_rejected_body_2({}, { locale })}</Text>

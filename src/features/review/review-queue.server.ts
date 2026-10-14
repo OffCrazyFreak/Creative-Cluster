@@ -1,10 +1,12 @@
-import { and, asc, count, eq, gte, lt, type SQL } from "drizzle-orm";
+import { dequal } from "dequal";
+import { and, asc, count, eq, gte, inArray, lt, type SQL } from "drizzle-orm";
 
 import { REVIEW_STALE_DAYS } from "@/constants/moderation";
 import { REVIEW_PAGE_SIZE } from "@/constants/review";
 import { db } from "@/db/client.server";
 import { entry, opportunity, reviewItem, tag } from "@/db/schema";
 
+import { pickRevertible } from "./entry-fields";
 import type {
   IReviewPage,
   IReviewRow,
@@ -35,10 +37,24 @@ function filters(input: ReviewListInput): SQL {
   return and(...conditions) as SQL;
 }
 
+// The queued patch is a full snapshot of the form, so the useful summary is what differs from the live listing.
+function changedFieldsOf(
+  payload: Record<string, unknown>,
+  current: Record<string, unknown> | undefined,
+): string {
+  const patch = payload.patch;
+  if (typeof patch !== "object" || patch === null || !current) return "";
+  return Object.entries(pickRevertible(patch as Record<string, unknown>))
+    .filter(([key, value]) => !dequal(current[key], value))
+    .map(([key]) => key)
+    .join(", ");
+}
+
 function summaryOf(row: {
   type: string;
   payload: Record<string, unknown>;
   descriptionText: string | null;
+  current?: Record<string, unknown>;
 }): string {
   if (row.type === "application")
     return (row.descriptionText ?? "").slice(0, SUMMARY_MAX);
@@ -48,12 +64,8 @@ function summaryOf(row: {
       .filter((v) => typeof v === "string" && v)
       .join(": ");
   }
-  if (row.type === "untrusted_edit") {
-    const changes = row.payload.changes;
-    return typeof changes === "object" && changes !== null
-      ? Object.keys(changes).join(", ")
-      : "";
-  }
+  if (row.type === "untrusted_edit")
+    return changedFieldsOf(row.payload, row.current);
   return "";
 }
 
@@ -117,6 +129,16 @@ export async function listReviewItems(
       .where(where),
   ]);
 
+  const editedIds = rows
+    .filter((row) => row.type === "untrusted_edit")
+    .map((row) => row.entityId);
+  const current = new Map(
+    editedIds.length
+      ? (await db.select().from(entry).where(inArray(entry.id, editedIds))).map(
+          (row) => [row.id, row as Record<string, unknown>],
+        )
+      : [],
+  );
   const limit = staleBefore().getTime();
   return {
     total: total?.total ?? 0,
@@ -129,7 +151,7 @@ export async function listReviewItems(
       kind: row.kind,
       countryCode: row.countryCode,
       city: row.city,
-      summary: summaryOf(row),
+      summary: summaryOf({ ...row, current: current.get(row.entityId) }),
       contactEmail: row.type === "application" ? row.contactEmail : null,
       createdAt: row.createdAt.toISOString(),
       ageDays: Math.floor((Date.now() - row.createdAt.getTime()) / 86_400_000),

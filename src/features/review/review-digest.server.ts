@@ -1,4 +1,4 @@
-import { and, asc, count, eq, gte } from "drizzle-orm";
+import { and, asc, count, eq, gte, lt } from "drizzle-orm";
 
 import { LOCALES, type AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
@@ -14,7 +14,11 @@ function ageDays(createdAt: Date, now: Date): number {
   return Math.floor((now.getTime() - createdAt.getTime()) / DAY_MS);
 }
 
-async function recentItems(type: "application" | "report", since: Date) {
+async function recentItems(
+  type: "application" | "report",
+  since: Date,
+  until: Date,
+) {
   return db
     .select({
       id: reviewItem.id,
@@ -31,6 +35,8 @@ async function recentItems(type: "application" | "report", since: Date) {
         eq(reviewItem.type, type),
         eq(reviewItem.status, "open"),
         gte(reviewItem.createdAt, since),
+        // Items after this run's start belong to the next window, not to both.
+        lt(reviewItem.createdAt, until),
       ),
     )
     .orderBy(asc(reviewItem.createdAt));
@@ -87,8 +93,8 @@ function adminLocale(value: string): AppLocale {
 // One mail per admin per day, and none when nothing is new. Names and short details only.
 export async function queueReviewDigests(now = new Date()) {
   const since = await lastDigestTime(now);
-  const applications = await recentItems("application", since);
-  const reports = await recentItems("report", since);
+  const applications = await recentItems("application", since, now);
+  const reports = await recentItems("report", since, now);
   if (applications.length === 0 && reports.length === 0) {
     await markDigestRun(now);
     return;

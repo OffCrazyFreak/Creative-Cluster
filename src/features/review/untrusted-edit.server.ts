@@ -1,3 +1,4 @@
+import { dequal } from "dequal";
 import { and, eq, inArray } from "drizzle-orm";
 
 import { TAG_FIELDS } from "@/constants/tags";
@@ -6,7 +7,7 @@ import { entry, image, reviewItem } from "@/db/schema";
 import { translatedTextChanged } from "@/features/account/save-own-listing.server";
 import { saveEntryTags } from "@/features/tags/save-entry-tags.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
-import { enqueueJob } from "@/lib/jobs/enqueue-job.server";
+import { enqueueTranslation } from "@/lib/translation/enqueue-translation.server";
 import { NotFoundError } from "@/server/errors";
 
 import { pickRevertible } from "./entry-fields";
@@ -61,9 +62,16 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
     .for("update");
   if (!row) throw new NotFoundError();
 
-  const changes = await withoutMissingImages(
+  // The queued patch is a full snapshot; only what still differs from the live row is a change, so edits made
+  // since (an admin fix, a revert) are not overwritten with stale values.
+  const proposed = await withoutMissingImages(
     tx,
     pickRevertible(recordOf(input.payload.patch)),
+  );
+  const changes = Object.fromEntries(
+    Object.entries(proposed).filter(
+      ([key, value]) => !dequal(row[key as keyof typeof row], value),
+    ),
   );
   const keys = Object.keys(changes);
   if (keys.length > 0) {
@@ -77,7 +85,7 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
       })
       .where(eq(entry.id, row.id));
     const submittedBy = input.payload.submittedBy;
-    const log = await writeChange(tx, {
+    await writeChange(tx, {
       entityType: "entry",
       entityId: row.id,
       userId: typeof submittedBy === "string" ? submittedBy : null,
@@ -88,13 +96,9 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
       ),
       after: changes,
     });
-    if (translatedTextChanged(keys, row, changes)) {
-      await enqueueJob(tx, {
-        type: "translate",
-        payload: { entityType: "entry", entityId: row.id },
-        idempotencyKey: `translate:entry:${row.id}:${log.id}`,
-      });
-    }
+    // A patch without an extra field must not be read as one that empties it.
+    if (translatedTextChanged(keys, row, { extra: row.extra, ...changes }))
+      await enqueueTranslation(tx, { entityType: "entry", entityId: row.id });
   }
   await tx
     .update(reviewItem)
@@ -106,8 +110,8 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
     .where(eq(reviewItem.id, input.itemId));
 }
 
-// Tags have their own service and transaction, so they are applied after the entry fields commit.
-// A tag removed since the edit was queued only skips that field.
+// Tags have their own service and transaction, so they are applied first: if one fails the decision fails with
+// the item still open, and approving again is safe because saving the same tags twice changes nothing.
 export async function applyUntrustedEditTags(
   entryId: string,
   payload: Record<string, unknown>,
@@ -118,15 +122,11 @@ export async function applyUntrustedEditTags(
   for (const field of TAG_FIELDS) {
     const ids = tags[field];
     if (!Array.isArray(ids)) continue;
-    try {
-      await saveEntryTags({
-        entryId,
-        field,
-        tagIds: ids.filter((id): id is string => typeof id === "string"),
-        actor: { userId: submittedBy, isAdmin: false },
-      });
-    } catch (error) {
-      console.error("approved edit: tags not applied", entryId, field, error);
-    }
+    await saveEntryTags({
+      entryId,
+      field,
+      tagIds: ids.filter((id): id is string => typeof id === "string"),
+      actor: { userId: submittedBy, isAdmin: false },
+    });
   }
 }

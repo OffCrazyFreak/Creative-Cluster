@@ -30,5 +30,6 @@
   "moderation_email_application_received_subject": "We received your application",
   "moderation_email_application_received_preheader": "We review it within 7 days.",
   "moderation_email_application_received_body_1": "thank you. We received your application for the listing {entryName} on {siteName}. Administrators review it within 7 days. We will send you the decision at this address.",
-  "moderation_email_application_received_body_2": "Until then, the listing is not public. If you want to correct something, reply to this message."
+  "moderation_email_application_received_body_2": "Until then, the listing is not public. If you want to correct something, reply to this message.",
+  "moderation_email_approved_body_existing_setpassword": "You already have an account with this address, but it has no password yet. Set one to edit the listing, post opportunities and connect with other listings. The link works for {expiry}."
 }

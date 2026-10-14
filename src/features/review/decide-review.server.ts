@@ -126,6 +126,8 @@ async function decideOne(
     });
     return "ok";
   }
+  if (peek.type === "untrusted_edit" && decision.decision === "approve")
+    await applyUntrustedEditTags(peek.entityId, peek.payload);
   const outcome = await db.transaction(async (tx) => {
     const [item] = await tx
       .select()
@@ -135,13 +137,14 @@ async function decideOne(
       .for("update");
     return item ? decideInTx(tx, item, decision) : "gone";
   });
-  if (
-    outcome === "ok" &&
-    peek.type === "untrusted_edit" &&
-    decision.decision === "approve"
-  )
-    await applyUntrustedEditTags(peek.entityId, peek.payload);
   return outcome;
+}
+
+async function dismissStale(id: string, adminId: string) {
+  await db
+    .update(reviewItem)
+    .set({ status: "dismissed", decidedBy: adminId, decidedAt: new Date() })
+    .where(and(eq(reviewItem.id, id), eq(reviewItem.status, "open")));
 }
 
 // Each item is its own transaction: one failure in a bulk run never blocks the others.
@@ -161,8 +164,11 @@ export async function decideReviewItems(
     try {
       outcome = await decideOne(id, decision);
     } catch (error) {
-      if (error instanceof NotFoundError) outcome = "gone";
-      else {
+      if (error instanceof NotFoundError) {
+        // The listing is no longer in a state this decision applies to; close the item so it stops coming back.
+        outcome = "gone";
+        await dismissStale(id, adminId);
+      } else {
         console.error("review decision failed", id, error);
         outcome = "failed";
       }

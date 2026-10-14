@@ -13,13 +13,13 @@ export function subject({ locale, entryName }: IApprovedEmailProps) {
 }
 
 export default function ApprovedEmail(props: IApprovedEmailProps) {
-  const { locale, entryName, link, expiry, newAccount } = props;
+  const { locale, entryName, link, expiry, newAccount, needsPassword } = props;
   return (
     <EmailLayout
       locale={locale}
       footer="account"
       preview={
-        newAccount
+        needsPassword
           ? m.moderation_email_approved_preheader_new({}, { locale })
           : m.moderation_email_approved_preheader_existing({}, { locale })
       }
@@ -37,14 +37,19 @@ export default function ApprovedEmail(props: IApprovedEmailProps) {
               { expiry: expiryText(expiry, locale) },
               { locale },
             )
-          : m.moderation_email_approved_body_existing({}, { locale })}
+          : needsPassword
+            ? m.moderation_email_approved_body_existing_setpassword(
+                { expiry: expiryText(expiry, locale) },
+                { locale },
+              )
+            : m.moderation_email_approved_body_existing({}, { locale })}
       </Text>
       <Text>{m.moderation_email_approved_body_2({}, { locale })}</Text>
       <ActionButton
         href={link}
         locale={locale}
         label={
-          newAccount
+          needsPassword
             ? m.moderation_email_approved_button_new({}, { locale })
             : m.moderation_email_approved_button_existing({}, { locale })
         }
@@ -59,4 +64,5 @@ ApprovedEmail.PreviewProps = {
   link: `${site.origin}/set-password?token=preview-token`,
   expiry: "days7",
   newAccount: true,
+  needsPassword: true,
 } satisfies IApprovedEmailProps;
