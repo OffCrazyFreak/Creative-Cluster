@@ -33,5 +33,8 @@
   "import_col_address": "Address text",
   "import_col_pin": "Pin",
   "import_pin_town": "Town only",
-  "import_pin_none": "No pin"
+  "import_pin_none": "No pin",
+  "import_duplicates_confirm": "Import the possible duplicates too",
+  "import_blocked_tags": "Some topic tags do not exist yet. Run the tag seed first, then preview again.",
+  "import_pins_error": "The pin check could not be loaded."
 }

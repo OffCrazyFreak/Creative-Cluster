@@ -14,7 +14,8 @@ import { m } from "@/paraglide/messages";
 import { unpinnedImportsQueryOptions } from "../import-queries";
 
 export default function UnpinnedTable() {
-  const { data } = useQuery(unpinnedImportsQueryOptions());
+  const { data, isError } = useQuery(unpinnedImportsQueryOptions());
+  if (isError) return <p role="alert">{m.import_pins_error()}</p>;
   if (!data) return null;
   return (
     <section className="flex flex-col gap-2">

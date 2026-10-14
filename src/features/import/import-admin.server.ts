@@ -2,16 +2,10 @@ import type { ZodError } from "zod";
 
 import { site } from "@/sites";
 
-import { planImport, type IImportPlan } from "./import-plan.server";
-import {
-  listImportedWithoutPrecisePin,
-  runImport,
-  type IImportResult,
-  type IUnpinnedImport,
-} from "./import-run.server";
+import type { IImportPlan, ImportFileError } from "./import-plan-codes";
+import { planImport } from "./import-plan.server";
+import { runImport, type IImportResult } from "./import-run.server";
 import { stagingFileSchema, type StagingFile } from "./import-schemas";
-
-export type ImportFileError = "invalid_json" | "invalid_file" | "wrong_site";
 
 type Parsed =
   | { ok: true; file: StagingFile }
@@ -52,14 +46,11 @@ export async function previewStagingFile(json: string): Promise<PreviewResult> {
 }
 
 export type RunResult =
-  | { ok: true; result: IImportResult; unpinned: IUnpinnedImport[] }
+  | { ok: true; result: IImportResult }
   | { ok: false; error: ImportFileError; issues: string[] };
 
 export async function runStagingFile(json: string): Promise<RunResult> {
   const parsed = parseStagingJson(json);
   if (!parsed.ok) return parsed;
-  const result = await runImport(parsed.file);
-  return { ok: true, result, unpinned: await listImportedWithoutPrecisePin() };
+  return { ok: true, result: await runImport(parsed.file) };
 }
-
-export { listImportedWithoutPrecisePin };

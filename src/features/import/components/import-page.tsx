@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useState, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 
 import PageContainer from "@/components/custom/layout/page-container";
@@ -9,17 +9,16 @@ import { Label } from "@/components/ui/label";
 import { m } from "@/paraglide/messages";
 
 import { IMPORT_FILE_MAX_CHARS } from "../import-admin-schemas";
-import type { ImportFileError } from "../import-admin.server";
-import type { IImportPlan } from "../import-plan.server";
+import type { IImportPlan, ImportFileError } from "../import-plan-codes";
 import { previewImportFile, runImportFile } from "../import.functions";
 import { UNPINNED_IMPORTS_QUERY_KEY } from "../import-queries";
 import ImportPlanView from "./import-plan-view";
 import UnpinnedTable from "./unpinned-table";
 
-function errorText(error: ImportFileError): string {
+function failureText(error: ImportFileError, issues: string[]): string {
   if (error === "invalid_json") return m.import_error_json();
   if (error === "wrong_site") return m.import_error_site();
-  return m.import_error_file();
+  return `${m.import_error_file()} ${issues.filter(Boolean).join(", ")}`.trim();
 }
 
 export default function ImportPage() {
@@ -27,8 +26,12 @@ export default function ImportPage() {
   const [json, setJson] = useState("");
   const [plan, setPlan] = useState<IImportPlan | null>(null);
   const [busy, setBusy] = useState(false);
+  // A new key empties the file input, so the same file can be chosen again after an import.
+  const [inputKey, setInputKey] = useState(0);
+  const latestRead = useRef(0);
 
   async function onFile(event: ChangeEvent<HTMLInputElement>) {
+    const read = ++latestRead.current;
     setPlan(null);
     setJson("");
     const file = event.target.files?.[0];
@@ -37,7 +40,13 @@ export default function ImportPage() {
       toast.error(m.import_error_size());
       return;
     }
-    setJson(await file.text());
+    try {
+      const text = await file.text();
+      // A slower read of an earlier choice must not overwrite a later one.
+      if (read === latestRead.current) setJson(text);
+    } catch {
+      toast.error(m.import_failed());
+    }
   }
 
   async function preview() {
@@ -45,7 +54,7 @@ export default function ImportPage() {
     try {
       const result = await previewImportFile({ data: { json } });
       if (!result.ok) {
-        toast.error(`${errorText(result.error)} ${result.issues.join(", ")}`);
+        toast.error(failureText(result.error, result.issues));
         setPlan(null);
         return;
       }
@@ -62,7 +71,7 @@ export default function ImportPage() {
     try {
       const result = await runImportFile({ data: { json } });
       if (!result.ok) {
-        toast.error(errorText(result.error));
+        toast.error(failureText(result.error, result.issues));
         return;
       }
       toast.success(
@@ -73,6 +82,7 @@ export default function ImportPage() {
       );
       setPlan(null);
       setJson("");
+      setInputKey((key) => key + 1);
       await queryClient.invalidateQueries({
         queryKey: UNPINNED_IMPORTS_QUERY_KEY,
       });
@@ -90,9 +100,11 @@ export default function ImportPage() {
       <div className="flex flex-col gap-2">
         <Label htmlFor="import-file">{m.import_file_label()}</Label>
         <Input
+          key={inputKey}
           id="import-file"
           type="file"
           accept="application/json,.json"
+          disabled={busy}
           onChange={(event) => void onFile(event)}
         />
         <div>
@@ -106,7 +118,13 @@ export default function ImportPage() {
         </div>
       </div>
       {plan ? (
-        <ImportPlanView plan={plan} busy={busy} onRun={() => void run()} />
+        <ImportPlanView
+          // A new preview starts with the duplicate confirmation unticked.
+          key={`${plan.total}-${plan.toCreate.length}-${plan.duplicates.length}`}
+          plan={plan}
+          busy={busy}
+          onRun={() => void run()}
+        />
       ) : null}
       <UnpinnedTable />
     </PageContainer>

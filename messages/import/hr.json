@@ -33,5 +33,8 @@
   "import_col_address": "Tekst adrese",
   "import_col_pin": "Oznaka",
   "import_pin_town": "Samo mjesto",
-  "import_pin_none": "Nema oznake"
+  "import_pin_none": "Nema oznake",
+  "import_duplicates_confirm": "Uvezi i moguće duplikate",
+  "import_blocked_tags": "Neke oznake tema još ne postoje. Prvo pokreni sjeme oznaka, pa ponovno otvori pregled.",
+  "import_pins_error": "Provjera oznaka nije se mogla učitati."
 }

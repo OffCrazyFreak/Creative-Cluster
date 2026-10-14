@@ -1,8 +1,12 @@
+import { useState } from "react";
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { m } from "@/paraglide/messages";
 
-import type { IImportPlan } from "../import-plan.server";
+import type { IImportPlan } from "../import-plan-codes";
 import { duplicateText, warningText } from "../import-plan-text";
 
 interface IImportPlanViewProps {
@@ -16,6 +20,10 @@ export default function ImportPlanView({
   busy,
   onRun,
 }: IImportPlanViewProps) {
+  const [allowDuplicates, setAllowDuplicates] = useState(false);
+  // A skipped organization is never revisited, so a missing tag must be fixed before importing.
+  const missingTags = plan.warnings.some((item) => item.code === "unknown_tag");
+  const needsConfirm = plan.duplicates.length > 0 && !allowDuplicates;
   return (
     <section className="flex flex-col gap-4" aria-live="polite">
       <h2 className="text-lg font-semibold">{m.import_plan_title()}</h2>
@@ -54,10 +62,25 @@ export default function ImportPlanView({
           </AlertDescription>
         </Alert>
       ) : null}
+      {plan.duplicates.length > 0 ? (
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="import-allow-duplicates"
+            checked={allowDuplicates}
+            onCheckedChange={(checked) => setAllowDuplicates(checked === true)}
+          />
+          <Label htmlFor="import-allow-duplicates">
+            {m.import_duplicates_confirm()}
+          </Label>
+        </div>
+      ) : null}
+      {missingTags ? <p role="alert">{m.import_blocked_tags()}</p> : null}
       <div>
         <Button
           type="button"
-          disabled={busy || plan.toCreate.length === 0}
+          disabled={
+            busy || plan.toCreate.length === 0 || needsConfirm || missingTags
+          }
           onClick={onRun}
         >
           {plan.toCreate.length === 0

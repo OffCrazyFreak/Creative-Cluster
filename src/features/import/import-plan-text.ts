@@ -1,6 +1,6 @@
 import { m } from "@/paraglide/messages";
 
-import type { IImportDuplicate, IImportWarning } from "./import-plan.server";
+import type { IImportDuplicate, IImportWarning } from "./import-plan-codes";
 
 export function warningText(item: IImportWarning): string {
   switch (item.code) {
