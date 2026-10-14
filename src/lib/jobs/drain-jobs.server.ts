@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, lt, or, lte, sql } from "drizzle-orm";
 
-import { JOB_MAX_ATTEMPTS } from "@/constants/jobs";
+import { JOB_MAX_ATTEMPTS, type JobType } from "@/constants/jobs";
 import { db } from "@/db/client.server";
 import { job } from "@/db/schema";
 
@@ -72,13 +72,14 @@ async function releaseJobs(rows: ClaimedJob[]) {
     );
 }
 
-async function runJob(row: ClaimedJob, result: IDrainResult) {
+async function runJob(row: ClaimedJob, result: IDrainResult, deadline: number) {
   const handler = jobHandlerFor(row.type);
   const context: IJobContext = {
     id: row.id,
     idempotencyKey: row.idempotencyKey,
     priority: row.priority,
     attempts: row.attempts,
+    deadline,
   };
   try {
     const outcome = await handler!(row.payload, context);
@@ -123,9 +124,32 @@ async function runJob(row: ClaimedJob, result: IDrainResult) {
   }
 }
 
-export async function drainJobs(maxMs = 20_000): Promise<IDrainResult> {
+// True when a job of one of these types is waiting to run now.
+export async function hasDueJobs(types: readonly JobType[]) {
+  const [row] = await db
+    .select({ id: job.id })
+    .from(job)
+    .where(
+      and(
+        inArray(job.type, [...types]),
+        eq(job.status, "queued"),
+        lte(job.runAt, new Date()),
+      ),
+    )
+    .limit(1);
+  return Boolean(row);
+}
+
+export interface IDrainOptions {
+  skipTypes?: readonly JobType[];
+}
+
+export async function drainJobs(
+  maxMs = 20_000,
+  { skipTypes = [] }: IDrainOptions = {},
+): Promise<IDrainResult> {
   const result: IDrainResult = { done: 0, retried: 0, failed: 0, deferred: 0 };
-  const types = registeredJobTypes();
+  const types = registeredJobTypes().filter((t) => !skipTypes.includes(t));
   const deadline = Date.now() + maxMs;
   while (Date.now() < deadline) {
     const batch = await claimBatch(new Date(), types);
@@ -135,7 +159,7 @@ export async function drainJobs(maxMs = 20_000): Promise<IDrainResult> {
         await releaseJobs(batch.slice(index));
         break;
       }
-      await runJob(row, result);
+      await runJob(row, result, deadline);
     }
   }
   return result;
