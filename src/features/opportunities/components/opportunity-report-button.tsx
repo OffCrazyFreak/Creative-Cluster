@@ -21,7 +21,7 @@ export default function OpportunityReportButton({
         const { status } = await reportOpportunityFn({
           data: { id, message, turnstileToken, fax },
         });
-        return status === "ok" ? "sent" : status;
+        return status;
       }}
     />
   );

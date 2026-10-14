@@ -17,14 +17,16 @@ import ContactSent from "./contact-sent";
 interface IContactDialogProps {
   entryId: string;
   name: string;
-  // Defaults to the plain "Contact" label.
   triggerLabel?: string;
+  // Starting text for the message, for example a reference to the post being answered.
+  defaultMessage?: string;
 }
 
 export default function ContactDialog({
   entryId,
   name,
   triggerLabel,
+  defaultMessage,
 }: IContactDialogProps) {
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
@@ -49,7 +51,11 @@ export default function ContactDialog({
         {sent ? (
           <ContactSent />
         ) : (
-          <ContactForm entryId={entryId} onSent={() => setSent(true)} />
+          <ContactForm
+            entryId={entryId}
+            defaultMessage={defaultMessage}
+            onSent={() => setSent(true)}
+          />
         )}
       </DialogContent>
     </Dialog>

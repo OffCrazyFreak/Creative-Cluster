@@ -57,7 +57,9 @@ describe.skipIf(!temp)("reportOpportunity", () => {
 
   it("queues a report item for the admin and hides nothing", async () => {
     const found = await post();
-    expect(await reportOpportunity(input(found.id))).toEqual({ status: "ok" });
+    expect(await reportOpportunity(input(found.id))).toEqual({
+      status: "sent",
+    });
     const [item] = await reports(found.id);
     expect(item).toMatchObject({ entityType: "opportunity", status: "open" });
     expect(item.payload).toEqual({ message: "Looks like spam" });
@@ -71,7 +73,7 @@ describe.skipIf(!temp)("reportOpportunity", () => {
   it("drops bot submissions quietly and rejects a failed check", async () => {
     const found = await post();
     expect(await reportOpportunity(input(found.id, { fax: "x" }))).toEqual({
-      status: "ok",
+      status: "sent",
     });
     expect(
       await reportOpportunity(input(found.id, { turnstileToken: "bad" })),

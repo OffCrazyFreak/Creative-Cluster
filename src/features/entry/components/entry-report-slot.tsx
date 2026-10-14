@@ -21,7 +21,15 @@ export default function EntryReportSlot({
       description={m.review_report_body()}
       messageMax={REPORT_MESSAGE_MAX}
       send={async (submission) =>
-        (await reportEntryFn({ data: { entryId, ...submission } })).status
+        (
+          await reportEntryFn({
+            data: {
+              entryId,
+              ...submission,
+              reason: submission.reason ?? "other",
+            },
+          })
+        ).status
       }
     />
   );

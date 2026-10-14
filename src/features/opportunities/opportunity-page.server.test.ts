@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { afterAll, describe, expect, it, vi } from "vitest";
 
 import * as schema from "@/db/schema";
@@ -121,5 +122,29 @@ describe.skipIf(!temp)("opportunity page", () => {
         translation: { title: "Translated title", origin: "machine" },
       },
     });
+  });
+
+  it("offers the contact relay only for a working address", async () => {
+    async function channel(email: string | null, invalid = false) {
+      const owner = await addEntry(db, "Contact");
+      await db
+        .update(schema.entry)
+        .set({ contactEmail: email, contactEmailInvalid: invalid })
+        .where(eq(schema.entry.id, owner.id));
+      const post = await addOpportunity(db, owner.id, {
+        status: "published",
+        publishedAt: new Date(),
+      });
+      const result = await findOpportunityForPage(post.id, "en");
+      if (result.status !== "found") throw new Error("expected a page");
+      return result.opportunity.entry;
+    }
+    expect((await channel("hello@example.test")).hasContactChannel).toBe(true);
+    expect((await channel(null)).hasContactChannel).toBe(false);
+    expect((await channel("")).hasContactChannel).toBe(false);
+    expect((await channel("old@example.test", true)).hasContactChannel).toBe(
+      false,
+    );
+    expect(typeof (await channel("hello@example.test")).id).toBe("string");
   });
 });

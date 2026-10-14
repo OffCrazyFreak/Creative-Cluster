@@ -134,5 +134,6 @@
   "opportunities_review_note_none": "Tvoja sljedeća prilika objavljuje se odmah.",
   "opportunities_filter_tags_several": "Oznaka: {count}",
   "opportunities_board_truncated": "Prikazano je prvih {shown}. Filtrima sužavaš popis.",
-  "opportunities_detail_view_listing": "Pogledaj unos"
+  "opportunities_detail_view_listing": "Pogledaj unos",
+  "opportunities_detail_contact_prefill": "U vezi s tvojom objavom \"{title}\": "
 }

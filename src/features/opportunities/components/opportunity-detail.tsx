@@ -149,17 +149,22 @@ export default function OpportunityDetail({
         </div>
         {opportunity.state === "active" ? (
           <>
-            <p className="text-sm">
-              {m.opportunities_detail_can_help_hint({ name: entry.name })}
-            </p>
             {entry.hasContactChannel ? (
-              <div className="flex self-start">
-                <ContactDialog
-                  entryId={entry.id}
-                  name={entry.name}
-                  triggerLabel={m.opportunities_detail_can_help()}
-                />
-              </div>
+              <>
+                <p className="text-sm">
+                  {m.opportunities_detail_can_help_hint({ name: entry.name })}
+                </p>
+                <div className="flex self-start">
+                  <ContactDialog
+                    entryId={entry.id}
+                    name={entry.name}
+                    triggerLabel={m.opportunities_detail_can_help()}
+                    defaultMessage={m.opportunities_detail_contact_prefill({
+                      title,
+                    })}
+                  />
+                </div>
+              </>
             ) : (
               <Link
                 to="/e/$slug"

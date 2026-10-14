@@ -132,5 +132,6 @@
   "opportunities_review_note_none": "Your next opportunity is published at once.",
   "opportunities_filter_tags_several": "{count} tags",
   "opportunities_board_truncated": "Showing the first {shown}. Use the filters to narrow the list.",
-  "opportunities_detail_view_listing": "View the listing"
+  "opportunities_detail_view_listing": "View the listing",
+  "opportunities_detail_contact_prefill": "About your post \"{title}\": "
 }

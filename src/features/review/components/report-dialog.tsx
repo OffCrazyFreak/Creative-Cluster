@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import TurnstileField from "@/components/custom/form/turnstile-field";
@@ -30,7 +30,8 @@ import {
 import { m } from "@/paraglide/messages";
 
 export interface IReportSubmission {
-  reason: ReportReason;
+  // Only set when the dialog asks for a reason.
+  reason?: ReportReason;
   message: string;
   turnstileToken: string;
   fax: string;
@@ -72,6 +73,7 @@ export default function ReportDialog({
   const [widgetKey, setWidgetKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const openRef = useRef(false);
 
   function resetCheck(text: string | null) {
     setError(text);
@@ -89,21 +91,24 @@ export default function ReportDialog({
     setBusy(true);
     try {
       const result = await send({
-        reason,
+        reason: withReason ? reason : undefined,
         message,
         turnstileToken: token,
         fax: honeypot,
       });
+      // The dialog may have closed while the request ran; its error text would show up on reopening.
+      if (!openRef.current && result !== "sent") return;
       if (result === "captcha") resetCheck(m.review_report_error_captcha());
       else if (result === "limited") resetCheck(m.review_report_error_limit());
       else {
         toast.success(m.review_report_sent());
         setOpen(false);
+        openRef.current = false;
         setMessage("");
         resetCheck(null);
       }
     } catch {
-      resetCheck(m.review_report_error());
+      if (openRef.current) resetCheck(m.review_report_error());
     } finally {
       setBusy(false);
     }
@@ -114,6 +119,8 @@ export default function ReportDialog({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
+        openRef.current = next;
+        if (!next) setBusy(false);
         // The widget unmounts with the dialog, so a token kept from before would be stale on reopening.
         if (!next) resetCheck(null);
       }}
