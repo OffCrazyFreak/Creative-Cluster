@@ -31,9 +31,9 @@ export default function EntriesPager({
         disabled={!canPrevious}
         onClick={onPrevious}
       >
-        {m.review_prev()}
+        {m.admin_entries_prev()}
       </Button>
-      <span aria-live="polite">{m.review_page({ page, pages })}</span>
+      <span aria-live="polite">{m.admin_entries_page({ page, pages })}</span>
       <Button
         type="button"
         variant="outline"
@@ -42,7 +42,7 @@ export default function EntriesPager({
         disabled={!canNext}
         onClick={onNext}
       >
-        {m.review_next()}
+        {m.admin_entries_next()}
       </Button>
     </nav>
   );

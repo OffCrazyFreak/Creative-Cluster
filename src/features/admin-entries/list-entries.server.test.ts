@@ -71,4 +71,24 @@ describe.skipIf(!temp)("admin entry list", () => {
     const page = await listAdminEntries(none);
     expect(page.total).toBe(4);
   });
+
+  it("pages in a stable name order without gaps or repeats", async () => {
+    const created = await Promise.all(
+      Array.from({ length: 27 }, (_, n) =>
+        addEntry(db, `Paged ${String(n).padStart(2, "0")}`),
+      ),
+    );
+    const only = { q: "Paged " } as const;
+    const first = await listAdminEntries({ ...only, page: 1 });
+    const second = await listAdminEntries({ ...only, page: 2 });
+    const beyond = await listAdminEntries({ ...only, page: 3 });
+    expect(first.total).toBe(27);
+    expect(first.rows).toHaveLength(25);
+    expect(second.rows).toHaveLength(2);
+    expect(beyond.rows).toEqual([]);
+    expect(new Set([...first.rows, ...second.rows].map((r) => r.id)).size).toBe(
+      created.length,
+    );
+    expect(second.rows.map((r) => r.name)).toEqual(["Paged 25", "Paged 26"]);
+  });
 });
