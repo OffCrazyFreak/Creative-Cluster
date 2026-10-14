@@ -40,6 +40,8 @@ export default function ReportDigestEmail(props: IReportDigestEmailProps) {
 ReportDigestEmail.PreviewProps = {
   locale: "en",
   count: 1,
-  items: [{ name: "Example Studio", detail: "spam", ageDays: 0 }],
+  items: [
+    { name: "Example Studio", detail: "Spam or advertising", ageDays: 0 },
+  ],
   link: `${site.origin}/admin`,
 } satisfies IReportDigestEmailProps;

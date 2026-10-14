@@ -1,4 +1,6 @@
+import type { AppLocale } from "@/constants/locales";
 import type { ReasonCode, ReviewType } from "@/constants/moderation";
+import type { ReportReason } from "@/constants/review";
 import { m } from "@/paraglide/messages";
 
 const TYPE_LABELS: Record<ReviewType, () => string> = {
@@ -19,10 +21,25 @@ const REASON_LABELS: Record<ReasonCode, () => string> = {
   other: () => m.review_reason_other(),
 };
 
+const REPORT_REASON_LABELS = {
+  inaccurate: m.review_report_reason_inaccurate,
+  spam: m.review_report_reason_spam,
+  offensive: m.review_report_reason_offensive,
+  illegal: m.review_report_reason_illegal,
+  other: m.review_report_reason_other,
+} satisfies Record<ReportReason, typeof m.review_report_reason_other>;
+
 export function reviewTypeLabel(type: ReviewType): string {
   return TYPE_LABELS[type]();
 }
 
 export function reasonLabel(code: ReasonCode): string {
   return REASON_LABELS[code]();
+}
+
+export function reportReasonLabel(
+  reason: ReportReason,
+  locale?: AppLocale,
+): string {
+  return REPORT_REASON_LABELS[reason]({}, locale ? { locale } : undefined);
 }

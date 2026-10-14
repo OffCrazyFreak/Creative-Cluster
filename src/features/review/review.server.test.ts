@@ -326,6 +326,40 @@ describe.skipIf(!temp)("review services", () => {
     expect(digests).toHaveLength(1);
   });
 
+  it("writes digest lines in each admin's language", async () => {
+    await admin();
+    await db.insert(schema.user).values({
+      name: "Admin HR",
+      email: "admin-hr@example.test",
+      role: "admin",
+      locale: "hr",
+    });
+    const listing = await addEntry(db, "Digest Language Place");
+    await createReport({ entryId: listing.id, reason: "spam", message: "" });
+    await queueReviewDigests();
+    const details = (await db.select().from(schema.job))
+      .map(
+        (j) =>
+          j.payload as {
+            template?: string;
+            to?: string;
+            props?: { items?: { name: string; detail: string }[] };
+          },
+      )
+      .filter((p) => p.template === "report_digest")
+      .flatMap((p) =>
+        (p.props?.items ?? [])
+          .filter((item) => item.name === "Digest Language Place")
+          .map((item) => [p.to, item.detail]),
+      );
+    expect(details).toEqual(
+      expect.arrayContaining([
+        ["admin@example.test", "Spam or advertising"],
+        ["admin-hr@example.test", "Neželjeni sadržaj ili reklama"],
+      ]),
+    );
+  });
+
   it("applies and logs only the fields that differ from the live listing", async () => {
     const boss = await admin();
     const listing = await addEntry(db, "Snapshot Same Name");

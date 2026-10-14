@@ -1,17 +1,32 @@
 import { and, asc, count, eq, gte, lt } from "drizzle-orm";
 
 import { LOCALES, type AppLocale } from "@/constants/locales";
+import { REPORT_REASONS, type ReportReason } from "@/constants/review";
 import { db } from "@/db/client.server";
 import { entry, reviewItem, usageCounter, user } from "@/db/schema";
 import type { IDigestItem } from "@/emails/email-types";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
+import { kindLabel } from "@/features/admin-entries/entry-kind-label";
+import { m } from "@/paraglide/messages";
 import { site } from "@/sites";
+
+import { reportReasonLabel } from "./review-labels";
 
 const DAY_MS = 86_400_000;
 
 function ageDays(createdAt: Date, now: Date): number {
   return Math.floor((now.getTime() - createdAt.getTime()) / DAY_MS);
+}
+
+function isReportReason(value: unknown): value is ReportReason {
+  return REPORT_REASONS.includes(value as ReportReason);
+}
+
+function ageText(days: number, locale: AppLocale): string {
+  return days <= 0
+    ? m.review_age_today({}, { locale })
+    : m.review_age_days({ count: days }, { locale });
 }
 
 async function recentItems(
@@ -40,6 +55,44 @@ async function recentItems(
       ),
     )
     .orderBy(asc(reviewItem.createdAt));
+}
+
+type DigestRow = Awaited<ReturnType<typeof recentItems>>[number];
+
+// Each admin reads the lines in their own language.
+function applicationLines(
+  rows: DigestRow[],
+  now: Date,
+  locale: AppLocale,
+): IDigestItem[] {
+  return rows.map((row) => {
+    const days = ageDays(row.createdAt, now);
+    return {
+      name: row.name,
+      detail: [
+        kindLabel(row.kind, locale),
+        row.countryCode,
+        ageText(days, locale),
+      ]
+        .filter(Boolean)
+        .join(", "),
+      ageDays: days,
+    };
+  });
+}
+
+function reportLines(
+  rows: DigestRow[],
+  now: Date,
+  locale: AppLocale,
+): IDigestItem[] {
+  return rows.map((row) => ({
+    name: row.name,
+    detail: isReportReason(row.payload.reason)
+      ? reportReasonLabel(row.payload.reason, locale)
+      : "",
+    ageDays: ageDays(row.createdAt, now),
+  }));
 }
 
 async function openApplicationTotal() {
@@ -109,45 +162,32 @@ export async function queueReviewDigests(now = new Date()) {
   const openTotal = await openApplicationTotal();
   const oldestAgeDays = await oldestOpenApplication(now);
 
-  const applicationItems: IDigestItem[] = applications.map((row) => ({
-    name: row.name,
-    detail: [row.kind, row.countryCode, `${ageDays(row.createdAt, now)} d`]
-      .filter(Boolean)
-      .join(", "),
-    ageDays: ageDays(row.createdAt, now),
-  }));
-  const reportItems: IDigestItem[] = reports.map((row) => ({
-    name: row.name,
-    detail: typeof row.payload.reason === "string" ? row.payload.reason : "",
-    ageDays: ageDays(row.createdAt, now),
-  }));
-
   await db.transaction(async (tx) => {
     for (const admin of admins) {
       const locale = adminLocale(admin.locale);
       const link = pageLink("/admin", locale);
-      if (applicationItems.length > 0)
+      if (applications.length > 0)
         await enqueueEmail(tx, {
           template: "application_digest",
           to: admin.email,
           props: {
             locale,
-            count: applicationItems.length,
+            count: applications.length,
             openTotal,
             oldestAgeDays,
-            items: applicationItems,
+            items: applicationLines(applications, now, locale),
             link,
           },
           idempotencyKey: `digest:application:${window}:${admin.id}`,
         });
-      if (reportItems.length > 0)
+      if (reports.length > 0)
         await enqueueEmail(tx, {
           template: "report_digest",
           to: admin.email,
           props: {
             locale,
-            count: reportItems.length,
-            items: reportItems,
+            count: reports.length,
+            items: reportLines(reports, now, locale),
             link,
           },
           idempotencyKey: `digest:report:${window}:${admin.id}`,
