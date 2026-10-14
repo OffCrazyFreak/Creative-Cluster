@@ -37,17 +37,27 @@ export default function ListingSummary({ listing }: IListingSummaryProps) {
         <CardTitle>{listing.name}</CardTitle>
       </CardHeader>
       <CardContent>
-        <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
-          <dt>{m.account_home_status()}</dt>
-          <dd>{statusLabels[listing.status]()}</dd>
-          <dt>{m.account_home_updated()}</dt>
-          <dd>{dateLabel(listing.updatedAt)}</dd>
-          <dt>{m.account_home_confirmed()}</dt>
-          <dd>{dateLabel(listing.lastConfirmedAt)}</dd>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 sm:gap-x-6">
+          <dt className="min-w-0 break-words">{m.account_home_status()}</dt>
+          <dd className="min-w-0 break-words">
+            {statusLabels[listing.status]()}
+          </dd>
+          <dt className="min-w-0 break-words">{m.account_home_updated()}</dt>
+          <dd className="min-w-0 break-words">
+            {dateLabel(listing.updatedAt)}
+          </dd>
+          <dt className="min-w-0 break-words">{m.account_home_confirmed()}</dt>
+          <dd className="min-w-0 break-words">
+            {dateLabel(listing.lastConfirmedAt)}
+          </dd>
           {listing.hasPendingEdit && (
             <>
-              <dt>{m.account_home_pending()}</dt>
-              <dd>{m.account_home_pending_value()}</dd>
+              <dt className="min-w-0 break-words">
+                {m.account_home_pending()}
+              </dt>
+              <dd className="min-w-0 break-words">
+                {m.account_home_pending_value()}
+              </dd>
             </>
           )}
         </dl>

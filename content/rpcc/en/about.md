@@ -36,3 +36,9 @@ Add your organization on the Apply page. It takes a few minutes. We review each 
 Creative Cluster is part of Restorative Practices, a project co-funded by the European Union under the Creative Europe programme. Grant agreement number: [[GAP: grant agreement number, from the grant agreement or the Funding and Tenders Portal]].
 
 Funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Education and Culture Executive Agency (EACEA). Neither the European Union nor EACEA can be held responsible for them.
+
+## Data and credits
+
+- Croatian addresses: Državna geodetska uprava (State Geodetic Administration), Open Licence of the Republic of Croatia. The address list is refreshed monthly.
+- Other address search: [Geoapify](https://www.geoapify.com/) and data from OpenStreetMap contributors.
+- Map: OpenFreeMap, OpenMapTiles, data from OpenStreetMap.

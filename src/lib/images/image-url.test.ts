@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cloudinaryImageUrl, ownImageUrl } from "./image-url";
+import { cloudinaryImageUrl, ownImageUrl, socialImageUrl } from "./image-url";
 import { sniffImageType } from "./sniff-image-type";
 
 const image = {
@@ -24,6 +24,18 @@ describe("image urls", () => {
     ).toBe(
       `https://res.cloudinary.com/demo/image/fetch/f_auto,q_auto,c_limit,w_256/https://example.org/img/${image.id}/${image.hash}.webp`,
     );
+  });
+});
+
+describe("socialImageUrl", () => {
+  it("crops to 1200x630 through Cloudinary when configured", () => {
+    expect(socialImageUrl(image, "demo")).toMatch(
+      /^https:\/\/res\.cloudinary\.com\/demo\/image\/fetch\/f_jpg,q_auto,c_fill,w_1200,h_630\/https?:\/\/.+\/img\//,
+    );
+  });
+
+  it("falls back to our absolute URL", () => {
+    expect(socialImageUrl(image, undefined)).toMatch(/^https?:\/\/.+\/img\//);
   });
 });
 

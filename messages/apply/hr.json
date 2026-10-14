@@ -22,7 +22,7 @@
   "apply_section_place": "Mjesto",
   "apply_tags_note": "Oznake možeš dodati kad se unos odobri.",
   "apply_section_consent": "Suglasnost",
-  "apply_consent_text": "Slažem se da se moje puno ime, opis, mjesto i ostali podaci koje ovdje upišem objave u javnom registru i da ih mogu pronaći tražilice poput Googlea. Moje puno ime dio je adrese stranice. Nakon odobrenja suglasnost mogu povući u svom računu ili e-poštom registru, a moj se unos tada odmah prestaje objavljivati.",
+  "apply_consent_text": "Slažem se da se moje puno ime, opis, mjesto i ostali podaci koje ovdje upišem objave u javnom registru i da ih mogu pronaći tražilice poput Googlea. Moje puno ime dio je adrese stranice. Nakon odobrenja suglasnost mogu povući u svom računu ili e-poštom registru, a moj se unos tada odmah prestaje objavljivati. Fotografija nije obvezna; ako je dodam, isporučuje se putem Cloudinaryja, koji slike pohranjuje u SAD-u (okvir EU-SAD za privatnost podataka i standardne ugovorne klauzule).",
   "apply_age_text": "Imam 16 ili više godina.",
   "apply_duplicate_title": "Jesi li to ti? Preuzmi unos",
   "apply_duplicate_unclaimed": "već je u imeniku{place}. Otvori unos i preuzmi ga umjesto nove prijave.",

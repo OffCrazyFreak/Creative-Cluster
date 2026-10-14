@@ -41,7 +41,7 @@
   "lifecycle_archive_done": "Tvoj je unos skriven.",
   "lifecycle_unarchive_button": "Ponovno prikaži moj unos",
   "lifecycle_unarchive_done": "Tvoj je unos opet javan.",
-  "lifecycle_unarchive_consent": "Slažem se da se moje puno ime, opis, mjesto i ostali podaci objave u javnom registru i da ih mogu pronaći tražilice. Imam 16 ili više godina.",
+  "lifecycle_unarchive_consent": "Slažem se da se moje puno ime, opis, mjesto i ostali podaci objave u javnom registru i da ih mogu pronaći tražilice. Imam 16 ili više godina. Fotografija, ako je dodam, isporučuje se putem Cloudinaryja, koji slike pohranjuje u SAD-u (okvir EU-SAD za privatnost podataka i standardne ugovorne klauzule).",
   "lifecycle_unarchive_unavailable": "Tvoj unos trenutno nije moguće prikazati. Ako je brisanje zakazano, prvo ga otkaži.",
   "lifecycle_withdraw_button": "Povuci suglasnost",
   "lifecycle_withdraw_hint": "Tvoj se unos odmah skriva. Kopije koje su tražilice već spremile mogu ostati dok se ne osvježe.",

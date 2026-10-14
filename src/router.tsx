@@ -4,6 +4,7 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 
 import { startClientMonitoring } from "@/lib/monitoring/start-client-monitoring";
 import { getRequestNonce } from "@/lib/csp/request-nonce";
+import "@/lib/zod/zod-locale";
 import { deLocalizeUrl, localizeUrl } from "@/paraglide/runtime";
 
 import { routeTree } from "./routeTree.gen";

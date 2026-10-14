@@ -1,6 +1,5 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "location_section_label": "Location",
   "location_online_only": "Online only (no physical location)",
   "location_address_label": "Address",
   "location_address_placeholder": "Start typing a street and number",

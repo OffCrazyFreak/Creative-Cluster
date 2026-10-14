@@ -1,3 +1,4 @@
+import { safeParseRichText } from "@/lib/rich-text/parse-rich-text";
 import type { JsonRichTextDoc, RichTextDoc } from "@/typings/rich-text";
 
 import type { IPublicEntry, ITagRef } from "./entry-schemas";
@@ -40,6 +41,13 @@ export function hasContactChannel(row: {
   return Boolean(row.contactEmail) && !row.contactEmailInvalid;
 }
 
+function referencesOf(extra: Record<string, unknown>): JsonRichTextDoc | null {
+  // Skip the parse for the common empty case; the text column is written together with the document.
+  if (!extra.references_text) return null;
+  const parsed = safeParseRichText(extra.references);
+  return parsed && parsed.text.trim() ? (parsed.doc as JsonRichTextDoc) : null;
+}
+
 export function redactEntry(
   row: IEntryRow,
   tags: ITagRef[],
@@ -61,6 +69,7 @@ export function redactEntry(
     sourceLocale: row.sourceLocale,
     description: row.description as JsonRichTextDoc | null,
     descriptionText: row.descriptionText,
+    references: referencesOf(row.extra),
     offeringText: row.offeringText,
     seekingText: row.seekingText,
     website: visible("website", row.website),

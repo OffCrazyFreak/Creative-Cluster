@@ -23,6 +23,14 @@ export const Route = createRootRouteWithContext<IRouterContext>()({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: site.name },
+      ...(site.searchConsoleToken
+        ? [
+            {
+              name: "google-site-verification",
+              content: site.searchConsoleToken,
+            },
+          ]
+        : []),
     ],
     links: [
       { rel: "stylesheet", href: appCss },

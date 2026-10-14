@@ -40,7 +40,6 @@
   "admin_users_self": "You",
   "admin_users_failed": "The change failed. Please try again.",
   "admin_users_empty": "No users yet.",
-  "admin_home_title": "Admin",
   "admin_users_self_blocked": "You cannot change your own role. Ask another admin.",
   "admin_entries_title": "Entries",
   "admin_entries_intro": "Every listing on this site, with the filters admins need for upkeep.",

@@ -24,13 +24,8 @@
   "common_error_title": "Nešto je pošlo po zlu",
   "common_error_body": "Pokušaj ponovno za trenutak. Ako se ponavlja, javi nam.",
   "common_try_again": "Pokušaj ponovno",
-  "common_loading": "Učitavanje",
-  "common_save": "Spremi",
   "common_cancel": "Odustani",
   "common_close": "Zatvori",
-  "common_delete": "Obriši",
-  "common_edit": "Uredi",
-  "common_search": "Traži",
   "common_entry_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

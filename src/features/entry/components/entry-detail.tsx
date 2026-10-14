@@ -14,6 +14,7 @@ import EntryCover from "./entry-cover";
 import EntryFreshness from "./entry-freshness";
 import EntryLogo from "./entry-logo";
 import EntryLocation, { placeLine } from "./entry-location";
+import EntryReferences from "./entry-references";
 import EntryReportSlot from "./entry-report-slot";
 import EntryTags from "./entry-tags";
 
@@ -72,6 +73,7 @@ export default function EntryDetail({ entry, translation }: IEntryDetailProps) {
         view={translation}
         showOriginal={showOriginal}
       />
+      <EntryReferences doc={entry.references} />
       <TranslatedSection
         id="entry-offering"
         title={m.entry_section_offering()}

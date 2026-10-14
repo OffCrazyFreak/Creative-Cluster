@@ -1,5 +1,6 @@
 import { createCsrfMiddleware, createStart } from "@tanstack/react-start";
 
+import "@/lib/zod/zod-locale";
 import {
   sentryFunctionMiddleware,
   sentryRequestMiddleware,

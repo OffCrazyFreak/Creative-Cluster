@@ -46,6 +46,8 @@ export const auth = betterAuth({
   session: {
     cookieCache: { enabled: true, maxAge: 60 },
   },
+  // The spec rules out impersonation in v1; the admin plugin would otherwise still serve it.
+  disabledPaths: ["/admin/impersonate-user", "/admin/stop-impersonating"],
   hooks: { before: passwordPolicyHook },
   databaseHooks: {
     user: {

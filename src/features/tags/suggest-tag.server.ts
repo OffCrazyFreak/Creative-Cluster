@@ -3,6 +3,7 @@ import { and, count, eq, sql } from "drizzle-orm";
 import type { AppLocale } from "@/constants/locales";
 import { db, type Tx } from "@/db/client.server";
 import { reviewItem, tag } from "@/db/schema";
+import { enforceLimits } from "@/lib/limits/check-limit.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { LimitError } from "@/server/errors";
 import { slugify } from "@/utils/slugify";
@@ -14,6 +15,8 @@ import { tagOptionColumns, usableTagCondition } from "./tag-visibility.server";
 
 // Caps what one account can leave in the review queue at a time.
 export const MAX_OPEN_SUGGESTIONS = 10;
+// Above the open-suggestion cap so repeat clicks on an existing label do not lock a user out.
+const SUGGESTIONS_PER_HOUR = 30;
 
 type SuggestionValues = Pick<
   typeof tag.$inferInsert,
@@ -70,6 +73,13 @@ export async function suggestTag({
   label,
   locale,
 }: ISuggestTag): Promise<{ tag: ITagOption; created: boolean }> {
+  await enforceLimits([
+    {
+      key: `tag-suggest:${userId}`,
+      max: SUGGESTIONS_PER_HOUR,
+      windowSeconds: 3600,
+    },
+  ]);
   return db.transaction(async (tx) => {
     // Serialises one account's suggestions so the duplicate check and the cap cannot race.
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}))`);
