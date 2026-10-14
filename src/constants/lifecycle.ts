@@ -4,3 +4,4 @@ export const ERASURE_MARKER_TTL_DAYS = 60;
 export const ERASURE_MARKER_PREFIX = "erasure:";
 
 export const IMPORT_ARCHIVE_MONTHS = 12;
+export const STALE_CONFIRM_MONTHS = 12;
