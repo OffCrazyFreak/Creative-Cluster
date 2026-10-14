@@ -49,8 +49,8 @@ ApplicationDigestEmail.PreviewProps = {
   openTotal: 5,
   oldestAgeDays: 4,
   items: [
-    { name: "Example Studio", detail: "organization, HR, 1 day", ageDays: 1 },
-    { name: "Example Person", detail: "person, HR, 4 days", ageDays: 4 },
+    { name: "Example Studio", detail: "Organization, HR, 1 day", ageDays: 1 },
+    { name: "Example Person", detail: "Person, HR, 4 days", ageDays: 4 },
   ],
   link: `${site.origin}/admin`,
 } satisfies IApplicationDigestEmailProps;
