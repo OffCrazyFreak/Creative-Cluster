@@ -39,6 +39,7 @@ export default function EntryTags({ tags }: IEntryTagsProps) {
               <li key={item.id}>
                 <Badge
                   variant="secondary"
+                  className="h-6"
                   render={
                     <Link
                       to="/directory/tag/$tag"

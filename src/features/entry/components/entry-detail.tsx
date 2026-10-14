@@ -1,5 +1,9 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 
+import TranslatedSection from "@/features/translation/components/translated-section";
+import TranslationNotice from "@/features/translation/components/translation-notice";
+import type { ITranslationView } from "@/features/translation/translation-schemas";
 import { m } from "@/paraglide/messages";
 
 import type { IPublicEntry } from "../entry-schemas";
@@ -12,10 +16,10 @@ import EntryLogo from "./entry-logo";
 import EntryLocation, { placeLine } from "./entry-location";
 import EntryReportSlot from "./entry-report-slot";
 import EntryTags from "./entry-tags";
-import EntryTextSection from "./entry-text-section";
 
 interface IEntryDetailProps {
   entry: IPublicEntry;
+  translation: ITranslationView | null;
 }
 
 const kindLabels = {
@@ -24,13 +28,14 @@ const kindLabels = {
   outside_partner: () => m.entry_kind_outside_partner(),
 };
 
-export default function EntryDetail({ entry }: IEntryDetailProps) {
+export default function EntryDetail({ entry, translation }: IEntryDetailProps) {
+  const [showOriginal, setShowOriginal] = useState(false);
   const slot = { entryId: entry.id, slug: entry.slug, name: entry.name };
   const place = placeLine(entry.location);
 
   return (
     <article className="flex flex-col gap-5">
-      <Link to="/" className="text-sm">
+      <Link to="/" className="inline-block self-start py-1 text-sm">
         {m.entry_back_to_results()}
       </Link>
       <EntryCover entry={entry} />
@@ -50,22 +55,40 @@ export default function EntryDetail({ entry }: IEntryDetailProps) {
           <EntryContactSlot {...slot} />
         </div>
       ) : null}
-      <EntryTextSection
+      {translation ? (
+        <TranslationNotice
+          view={translation}
+          showOriginal={showOriginal}
+          onToggleOriginal={() => setShowOriginal((shown) => !shown)}
+        />
+      ) : null}
+      <TranslatedSection
         id="entry-about"
         title={m.entry_section_about()}
+        field="description"
         text={entry.descriptionText}
         doc={entry.description}
-        lang={entry.sourceLocale}
+        sourceLocale={entry.sourceLocale}
+        view={translation}
+        showOriginal={showOriginal}
       />
-      <EntryTextSection
+      <TranslatedSection
         id="entry-offering"
         title={m.entry_section_offering()}
+        field="offering"
         text={entry.offeringText}
+        sourceLocale={entry.sourceLocale}
+        view={translation}
+        showOriginal={showOriginal}
       />
-      <EntryTextSection
+      <TranslatedSection
         id="entry-seeking"
         title={m.entry_section_seeking()}
+        field="seeking"
         text={entry.seekingText}
+        sourceLocale={entry.sourceLocale}
+        view={translation}
+        showOriginal={showOriginal}
       />
       <EntryTags tags={entry.tags} />
       <EntryLocation location={entry.location} />
