@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
@@ -19,7 +19,10 @@ interface IReviewQueuePageProps {
 
 export default function ReviewQueuePage({ search }: IReviewQueuePageProps) {
   const navigate = useNavigate({ from: "/admin/" });
-  const { data } = useQuery(reviewQueueQueryOptions(search));
+  const { data } = useQuery({
+    ...reviewQueueQueryOptions(search),
+    placeholderData: keepPreviousData,
+  });
   const decide = useReviewDecisions();
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [rejecting, setRejecting] = useState<string[] | null>(null);

@@ -3,7 +3,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { runInBackground } from "@/lib/auth/background-task.server";
 import { triggerDrain } from "@/lib/jobs/trigger-drain.server";
 import { adminGuard } from "@/server/guards";
-import { NotFoundError } from "@/server/errors";
 
 import {
   changeIdSchema,
@@ -28,12 +27,8 @@ export const revertChangeFn = createServerFn({ method: "POST" })
   .middleware([adminGuard])
   .inputValidator(revertChangeSchema)
   .handler(async ({ data, context }): Promise<RevertResult> => {
-    try {
-      const result = await revertChange(data.id, data.reason, context.user.id);
-      runInBackground(triggerDrain());
-      return result;
-    } catch (error) {
-      if (error instanceof NotFoundError) return { status: "not_revertible" };
-      throw error;
-    }
+    const result = await revertChange(data.id, data.reason, context.user.id);
+    // Only a real revert queued mail.
+    if (result.status === "ok") runInBackground(triggerDrain());
+    return result;
   });

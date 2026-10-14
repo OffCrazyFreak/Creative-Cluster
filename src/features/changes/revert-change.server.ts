@@ -1,3 +1,4 @@
+import { dequal } from "dequal";
 import { and, eq } from "drizzle-orm";
 
 import { LOCALES } from "@/constants/locales";
@@ -9,7 +10,7 @@ import { isRevertibleField } from "@/features/review/entry-fields";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { translatedTextChanged } from "@/features/account/save-own-listing.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
-import { enqueueJob } from "@/lib/jobs/enqueue-job.server";
+import { enqueueTranslation } from "@/lib/translation/enqueue-translation.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
 import { NotFoundError } from "@/server/errors";
 import { site } from "@/sites";
@@ -31,29 +32,42 @@ function text(value: unknown): string {
 
 // Only fields that still have a stored "before" can be restored: old rows lose personal fields.
 // A group (for example the location) is restored whole or not at all, so a half-stripped row
-// never leaves a city without its coordinates.
-function restorableFields(log: LogRow): string[] {
+// never leaves a city without its coordinates. A field that was edited again since is left alone,
+// so reverting an old change never discards a newer one.
+function restorableFields(log: LogRow, current?: EntryRow): string[] {
   const before = log.before ?? {};
+  const after = log.after ?? {};
   const changed = log.changedFields.filter(isRevertibleField);
-  const incomplete = new Set(
-    changed.filter((field) => !(field in before)).map(revertFieldGroup),
+  const blocked = new Set(
+    changed
+      .filter(
+        (field) =>
+          !(field in before) ||
+          (current !== undefined &&
+            field in after &&
+            !dequal(current[field as keyof EntryRow], after[field])),
+      )
+      .map(revertFieldGroup),
   );
   return changed.filter(
-    (field) => field in before && !incomplete.has(revertFieldGroup(field)),
+    (field) => field in before && !blocked.has(revertFieldGroup(field)),
   );
 }
 
-function isRevertibleLog(log: LogRow): boolean {
+function isRevertibleLog(log: LogRow, current?: EntryRow): boolean {
   return (
     log.entityType === "entry" &&
+    current !== undefined &&
+    // A listing queued for deletion is frozen; restoring old personal data would undo that.
+    current.erasureRequestedAt === null &&
     log.action === "update" &&
     log.revertedByLogId === null &&
-    restorableFields(log).length > 0
+    restorableFields(log, current).length > 0
   );
 }
 
 function diffsOf(log: LogRow, current: EntryRow | undefined): IFieldDiff[] {
-  const restorable = new Set(restorableFields(log));
+  const restorable = new Set(restorableFields(log, current));
   return log.changedFields.map((field) => ({
     field,
     before: text((log.before ?? {})[field]),
@@ -63,14 +77,8 @@ function diffsOf(log: LogRow, current: EntryRow | undefined): IFieldDiff[] {
 }
 
 export async function getChangeDetail(id: string): Promise<IChangeDetail> {
-  const [log] = await db
-    .select()
-    .from(changeLog)
-    .where(eq(changeLog.id, id))
-    .limit(1);
-  if (!log) throw new NotFoundError();
-  const [row] = await db
-    .select(changeSelect)
+  const [found] = await db
+    .select({ log: changeLog, current: entry, ...changeSelect })
     .from(changeLog)
     .leftJoin(
       entry,
@@ -79,14 +87,12 @@ export async function getChangeDetail(id: string): Promise<IChangeDetail> {
     .leftJoin(user, eq(user.id, changeLog.userId))
     .where(eq(changeLog.id, id))
     .limit(1);
-  const [current] =
-    log.entityType === "entry"
-      ? await db.select().from(entry).where(eq(entry.id, log.entityId)).limit(1)
-      : [];
+  if (!found) throw new NotFoundError();
+  const current = found.current ?? undefined;
   return {
-    row: toChangeRow(row),
-    revertible: isRevertibleLog(log),
-    diffs: diffsOf(log, current),
+    row: toChangeRow(found),
+    revertible: isRevertibleLog(found.log, current),
+    diffs: diffsOf(found.log, current),
   };
 }
 
@@ -132,16 +138,17 @@ export async function revertChange(
       .where(eq(changeLog.id, id))
       .limit(1)
       .for("update");
-    if (!log || !isRevertibleLog(log)) return "not_revertible" as const;
+    if (!log || log.entityType !== "entry") return "not_revertible" as const;
     const [listing] = await tx
       .select()
       .from(entry)
       .where(eq(entry.id, log.entityId))
       .limit(1)
       .for("update");
-    if (!listing) return "not_revertible" as const;
+    if (!listing || !isRevertibleLog(log, listing))
+      return "not_revertible" as const;
 
-    const fields = restorableFields(log);
+    const fields = restorableFields(log, listing);
     const restored = Object.fromEntries(
       fields.map((field) => [field, (log.before ?? {})[field]]),
     );
@@ -168,10 +175,9 @@ export async function revertChange(
         ...restored,
       })
     )
-      await enqueueJob(tx, {
-        type: "translate",
-        payload: { entityType: "entry", entityId: listing.id },
-        idempotencyKey: `translate:entry:${listing.id}:${row.id}`,
+      await enqueueTranslation(tx, {
+        entityType: "entry",
+        entityId: listing.id,
       });
     await mailOwner(tx, listing, fields, reason, row.id);
     return "ok" as const;
