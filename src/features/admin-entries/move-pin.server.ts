@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db/client.server";
-import { entry } from "@/db/schema";
+import { entry, reviewItem } from "@/db/schema";
 import { invalidateMapDirectory } from "@/features/directory/map-directory.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
 
@@ -32,6 +32,29 @@ export async function movePin(
         geocodedAt: new Date(),
       };
       await tx.update(entry).set(patch).where(eq(entry.id, entryId));
+      // A queued owner edit holds a full snapshot; approving it later would write the old coordinates back over this move.
+      await tx
+        .update(reviewItem)
+        .set({
+          payload: sql`jsonb_set(${reviewItem.payload}, '{patch}', (${reviewItem.payload}->'patch') || ${JSON.stringify(
+            {
+              lat: point.lat,
+              lng: point.lng,
+              onlineOnly: false,
+              pinMovedByHand: true,
+              locationSource: "manual",
+              precision: "house",
+            },
+          )}::jsonb)`,
+        })
+        .where(
+          and(
+            eq(reviewItem.type, "untrusted_edit"),
+            eq(reviewItem.status, "open"),
+            eq(reviewItem.entityId, entryId),
+            sql`${reviewItem.payload}->'patch' ? 'lat'`,
+          ),
+        );
       await writeChange(tx, {
         entityType: "entry",
         entityId: entryId,
