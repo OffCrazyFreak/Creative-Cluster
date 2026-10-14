@@ -36,12 +36,17 @@ export interface IChangeEmailProps extends IBaseEmailProps {
   expiry: EmailExpiry;
 }
 
+export interface IApplicationReceivedEmailProps extends IBaseEmailProps {
+  entryName: string;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
   verify: IVerifyEmailProps;
   reset: IResetEmailProps;
   change: IChangeEmailProps;
+  application_received: IApplicationReceivedEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

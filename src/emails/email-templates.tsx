@@ -2,6 +2,9 @@ import type { ReactElement } from "react";
 
 import type { EmailTemplateName } from "@/constants/email";
 
+import ApplicationReceivedEmail, {
+  subject as applicationReceivedSubject,
+} from "./application-received-email";
 import ChangeEmail, { subject as changeSubject } from "./change-email";
 import ClaimEmail, { subject as claimSubject } from "./claim-email";
 import type { EmailPropsOf } from "./email-types";
@@ -43,5 +46,10 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <ChangeEmail {...props} />,
     subject: changeSubject,
     previewProps: ChangeEmail.PreviewProps,
+  },
+  application_received: {
+    element: (props) => <ApplicationReceivedEmail {...props} />,
+    subject: applicationReceivedSubject,
+    previewProps: ApplicationReceivedEmail.PreviewProps,
   },
 };
