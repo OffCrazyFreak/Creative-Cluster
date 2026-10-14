@@ -9,31 +9,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { m } from "@/paraglide/messages";
-import { getLocale } from "@/paraglide/runtime";
+import { formatDate } from "@/utils/format-date";
 
-import type { IOwnListing } from "../listing-types";
+import type { IOwnSummary } from "../listing-types";
 
 interface IListingSummaryProps {
-  listing: IOwnListing;
+  listing: IOwnSummary;
 }
 
-function statusLabel(status: IOwnListing["status"]): string {
-  const labels = {
-    draft: m.account_status_draft,
-    pending: m.account_status_pending,
-    published: m.account_status_published,
-    suspended: m.account_status_suspended,
-    rejected: m.account_status_rejected,
-    archived: m.account_status_archived,
-  };
-  return labels[status]();
-}
+const statusLabels = {
+  draft: m.account_status_draft,
+  pending: m.account_status_pending,
+  published: m.account_status_published,
+  suspended: m.account_status_suspended,
+  rejected: m.account_status_rejected,
+  archived: m.account_status_archived,
+};
 
 function dateLabel(iso: string | null): string {
-  if (!iso) return m.account_home_never();
-  return new Intl.DateTimeFormat(getLocale(), { dateStyle: "long" }).format(
-    new Date(iso),
-  );
+  return iso ? formatDate(iso) : m.account_home_never();
 }
 
 export default function ListingSummary({ listing }: IListingSummaryProps) {
@@ -45,11 +39,17 @@ export default function ListingSummary({ listing }: IListingSummaryProps) {
       <CardContent>
         <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
           <dt>{m.account_home_status()}</dt>
-          <dd>{statusLabel(listing.status)}</dd>
+          <dd>{statusLabels[listing.status]()}</dd>
           <dt>{m.account_home_updated()}</dt>
           <dd>{dateLabel(listing.updatedAt)}</dd>
           <dt>{m.account_home_confirmed()}</dt>
           <dd>{dateLabel(listing.lastConfirmedAt)}</dd>
+          {listing.hasPendingEdit && (
+            <>
+              <dt>{m.account_home_pending()}</dt>
+              <dd>{m.account_home_pending_value()}</dd>
+            </>
+          )}
         </dl>
       </CardContent>
       <CardFooter className="flex flex-wrap gap-2">
