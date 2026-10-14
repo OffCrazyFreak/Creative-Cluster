@@ -11,8 +11,7 @@ vi.mock("@/db/client.server", () => ({ db: temp?.db }));
 vi.mock("@/lib/jobs/trigger-drain.server", () => ({
   triggerDrain: () => Promise.resolve(),
 }));
-
-const { enqueueTermsNotice, countTermsRecipients } =
+const { enqueueTermsNotice, countTermsRecipients, isRealDate } =
   await import("./enqueue-terms-notice.server");
 const { sendBlockedNotice } =
   await import("@/features/admin-users/blocked-notice.server");
@@ -39,6 +38,12 @@ beforeEach(async () => {
 afterAll(() => temp?.drop());
 
 describe("terms notice", () => {
+  it("recognises real dates only", () => {
+    expect(isRealDate("2027-01-01")).toBe(true);
+    expect(isRealDate("2027-02-31")).toBe(false);
+    expect(isRealDate("2027-13-45")).toBe(false);
+  });
+
   const notice = {
     effectiveDate: "2027-01-01",
     summary: { en: "English summary", hr: "Hrvatski sažetak" },
@@ -49,7 +54,10 @@ describe("terms notice", () => {
     await addPerson("b@example.org", "hr");
     await addPerson("c@example.org", "en", true);
     expect(await countTermsRecipients()).toBe(2);
-    expect(await enqueueTermsNotice(notice)).toBe(2);
+    expect(await enqueueTermsNotice(notice)).toEqual({
+      queued: 2,
+      alreadyQueued: 0,
+    });
     const jobs = await db.select().from(schema.job);
     const byTo = Object.fromEntries(
       jobs.map((j) => [
@@ -66,10 +74,23 @@ describe("terms notice", () => {
     expect(byTo["a@example.org"]?.effectiveDate).toBe("January 1, 2027");
   });
 
+  it("drops a final full stop from the summary and from the Croatian date", async () => {
+    await addPerson("h@example.org", "hr");
+    await enqueueTermsNotice({
+      ...notice,
+      summary: { en: "x.", hr: "Hrvatski sažetak." },
+    });
+    const [queued] = await db.select().from(schema.job);
+    const props = (queued?.payload as { props: Record<string, string> }).props;
+    expect(props.summary).toBe("Hrvatski sažetak");
+    expect(props.effectiveDate).not.toMatch(/\.$/);
+  });
+
   it("is a no-op when the same notice runs twice", async () => {
     await addPerson("a@example.org", "en");
     await enqueueTermsNotice(notice);
-    await enqueueTermsNotice(notice);
+    const again = await enqueueTermsNotice(notice);
+    expect(again).toEqual({ queued: 0, alreadyQueued: 1 });
     expect(await db.select().from(schema.job)).toHaveLength(1);
   });
 });

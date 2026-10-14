@@ -2,14 +2,14 @@ import type { ReactElement } from "react";
 
 import type { EmailTemplateName } from "@/constants/email";
 
+import BlockedEmail, { subject as blockedSubject } from "./blocked-email";
 import ChangeEmail, { subject as changeSubject } from "./change-email";
 import ClaimEmail, { subject as claimSubject } from "./claim-email";
 import ContactEmail, { subject as contactSubject } from "./contact-email";
-import BlockedEmail, { subject as blockedSubject } from "./blocked-email";
 import type { EmailPropsOf } from "./email-types";
-import TermsEmail, { subject as termsSubject } from "./terms-email";
 import InviteEmail, { subject as inviteSubject } from "./invite-email";
 import ResetEmail, { subject as resetSubject } from "./reset-email";
+import TermsEmail, { subject as termsSubject } from "./terms-email";
 import VerifyEmail, { subject as verifySubject } from "./verify-email";
 
 interface ITemplate<P> {

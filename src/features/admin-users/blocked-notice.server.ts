@@ -19,7 +19,8 @@ export async function sendBlockedNotice(userId: string, reason: string) {
     await enqueueEmail(db, {
       template: "blocked",
       to: person.email,
-      idempotencyKey: `blocked:${userId}:${Date.now()}`,
+      // Per minute: a double click sends one notice, a later re-block after unblocking sends another.
+      idempotencyKey: `blocked:${userId}:${Math.floor(Date.now() / 60_000)}`,
       props: { locale: person.locale as AppLocale, name: person.name, reason },
     });
     await triggerDrain();
