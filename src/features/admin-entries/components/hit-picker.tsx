@@ -32,6 +32,7 @@ export default function HitPicker<T extends IHit>({
   onSelect,
 }: IHitPickerProps<T>) {
   const [text, setText] = useState("");
+  const [selected, setSelected] = useState("");
   const q = useDebouncedValue(text.trim(), 300);
   const { data } = useQuery({
     queryKey: [...ADMIN_KEY, queryKey, q],
@@ -51,6 +52,7 @@ export default function HitPicker<T extends IHit>({
           autoComplete="off"
           onChange={(event) => {
             setText(event.target.value);
+            setSelected("");
             onSelect(null);
           }}
         />
@@ -61,9 +63,12 @@ export default function HitPicker<T extends IHit>({
       {hits.length > 0 && (
         <RadioGroup
           aria-label={label}
-          onValueChange={(value) =>
-            onSelect(hits.find((hit) => hit.id === value) ?? null)
-          }
+          value={selected}
+          onValueChange={(value) => {
+            const picked = String(value);
+            setSelected(picked);
+            onSelect(hits.find((hit) => hit.id === picked) ?? null);
+          }}
         >
           {hits.map((hit) => (
             <label

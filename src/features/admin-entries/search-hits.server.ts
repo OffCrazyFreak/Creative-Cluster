@@ -1,14 +1,15 @@
-import { and, asc, ilike, ne, or, sql } from "drizzle-orm";
+import { and, asc, ilike, isNull, ne, or } from "drizzle-orm";
 
 import { db } from "@/db/client.server";
 import { entry, user } from "@/db/schema";
+import { escapeLike } from "@/utils/escape-like";
 
 import type { IEntryHit, IUserHit } from "./admin-entries-schemas";
 
 const HITS = 8;
 
 function like(text: string): string {
-  return `%${text.replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
+  return `%${escapeLike(text)}%`;
 }
 
 export async function searchUsers(q: string): Promise<IUserHit[]> {
@@ -33,7 +34,7 @@ export async function searchRealEntries(q: string): Promise<IEntryHit[]> {
     .where(
       and(
         ne(entry.kind, "outside_partner"),
-        sql`${entry.erasureRequestedAt} is null`,
+        isNull(entry.erasureRequestedAt),
         or(ilike(entry.name, like(q)), ilike(entry.slug, like(q))),
       ),
     )

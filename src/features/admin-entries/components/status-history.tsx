@@ -13,7 +13,9 @@ interface IStatusHistoryProps {
 }
 
 function label(status: string | null): string {
-  return status ? statusLabel(status as EntryStatus) : "";
+  return status
+    ? statusLabel(status as EntryStatus)
+    : m.admin_entries_empty_value();
 }
 
 export default function StatusHistory({
