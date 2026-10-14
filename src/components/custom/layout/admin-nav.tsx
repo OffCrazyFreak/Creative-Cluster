@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 
 import { m } from "@/paraglide/messages";
 
+const ACTIVE = { className: "font-semibold" };
+
 // Every admin page was reachable only by typing its address; this is the one place that lists them.
 export default function AdminNav() {
   return (
@@ -11,27 +13,43 @@ export default function AdminNav() {
     >
       <ul className="flex flex-wrap gap-x-4 [&_a]:inline-block [&_a]:py-2">
         <li>
-          <Link to="/admin" activeOptions={{ exact: true }}>
+          <Link
+            to="/admin"
+            activeOptions={{ exact: true }}
+            activeProps={ACTIVE}
+          >
             {m.admin_nav_queue()}
           </Link>
         </li>
         <li>
-          <Link to="/admin/entries">{m.admin_nav_entries()}</Link>
+          <Link to="/admin/entries" activeProps={ACTIVE}>
+            {m.admin_nav_entries()}
+          </Link>
         </li>
         <li>
-          <Link to="/admin/tags">{m.tags_admin_title()}</Link>
+          <Link to="/admin/tags" activeProps={ACTIVE}>
+            {m.admin_nav_tags()}
+          </Link>
         </li>
         <li>
-          <Link to="/admin/users">{m.admin_nav_users()}</Link>
+          <Link to="/admin/users" activeProps={ACTIVE}>
+            {m.admin_nav_users()}
+          </Link>
         </li>
         <li>
-          <Link to="/admin/changes">{m.review_changes_title()}</Link>
+          <Link to="/admin/changes" activeProps={ACTIVE}>
+            {m.admin_nav_changes()}
+          </Link>
         </li>
         <li>
-          <Link to="/admin/import">{m.admin_nav_import()}</Link>
+          <Link to="/admin/import" activeProps={ACTIVE}>
+            {m.admin_nav_import()}
+          </Link>
         </li>
         <li>
-          <Link to="/admin/export">{m.connections_export_title()}</Link>
+          <Link to="/admin/export" activeProps={ACTIVE}>
+            {m.admin_nav_export()}
+          </Link>
         </li>
       </ul>
     </nav>

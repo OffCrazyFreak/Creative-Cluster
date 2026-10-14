@@ -46,5 +46,8 @@
   "admin_nav_queue": "Review queue",
   "admin_nav_entries": "Entries",
   "admin_nav_import": "Import",
-  "admin_nav_users": "Users"
+  "admin_nav_users": "Users",
+  "admin_nav_tags": "Tags",
+  "admin_nav_changes": "Changes",
+  "admin_nav_export": "Export"
 }

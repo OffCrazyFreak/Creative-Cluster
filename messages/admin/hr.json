@@ -46,5 +46,8 @@
   "admin_nav_queue": "Red za pregled",
   "admin_nav_entries": "Unosi",
   "admin_nav_import": "Uvoz",
-  "admin_nav_users": "Korisnici"
+  "admin_nav_users": "Korisnici",
+  "admin_nav_tags": "Oznake",
+  "admin_nav_changes": "Promjene",
+  "admin_nav_export": "Izvoz"
 }
