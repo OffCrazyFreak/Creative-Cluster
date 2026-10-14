@@ -28,6 +28,7 @@
     "geonames:build": "tsx scripts/geonames-build.ts",
     "jobs:drain": "tsx scripts/drain-jobs.ts",
     "terms:notify": "tsx scripts/enqueue-terms-notice.ts",
+    "maintenance:run": "tsx scripts/run-maintenance.ts",
     "email:dev": "email dev --dir src/emails --port 3020"
   },
   "dependencies": {

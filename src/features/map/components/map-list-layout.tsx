@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 
 import PageContainer from "@/components/custom/layout/page-container";
-import { Button } from "@/components/ui/button";
-import { m } from "@/paraglide/messages";
 
 import type { MapStatus } from "../map-frame-context";
 import MapFilterChips from "./map-filter-chips";
@@ -11,28 +9,28 @@ import MapStatusNotice from "./map-status-notice";
 
 interface IMapListLayoutProps {
   status: MapStatus;
-  canShowMap: boolean;
-  onShowMap: () => void;
+  entryOnly: boolean;
   children: ReactNode;
 }
 
 // The server-rendered layout: the accessible list on its own, also the fallback when the map cannot run.
 export default function MapListLayout({
   status,
-  canShowMap,
-  onShowMap,
+  entryOnly,
   children,
 }: IMapListLayoutProps) {
+  // An entry opened directly stands alone; its back link leads to the map.
+  if (entryOnly)
+    return (
+      <PageContainer as="div" size="prose">
+        <div id="results-panel">{children}</div>
+      </PageContainer>
+    );
   return (
     <PageContainer as="div" size="prose">
       <MapSearchBar />
       <MapFilterChips />
       <MapStatusNotice status={status} />
-      {canShowMap ? (
-        <Button variant="outline" className="self-start" onClick={onShowMap}>
-          {m.map_show_map()}
-        </Button>
-      ) : null}
       <div id="results-panel">{children}</div>
     </PageContainer>
   );

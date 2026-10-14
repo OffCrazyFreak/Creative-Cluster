@@ -5,6 +5,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 
 import { AUTH_LINK_EXPIRY, AUTH_LINK_TTL_SECONDS } from "@/constants/email";
 import { db } from "@/db/client.server";
+import { purgeErasedUser } from "@/features/lifecycle/purge-erased-user.server";
 import * as schema from "@/db/schema";
 import { env } from "@/env.server";
 import { site } from "@/sites";
@@ -57,6 +58,7 @@ export const auth = betterAuth({
       delete: {
         before: async (user) => {
           await assertAdminsRemain(user.id);
+          await purgeErasedUser({ id: user.id, ...toRecipient(user) });
         },
       },
     },
