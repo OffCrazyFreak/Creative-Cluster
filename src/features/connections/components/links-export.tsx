@@ -4,21 +4,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { m } from "@/paraglide/messages";
+import { downloadCsv } from "@/utils/download-csv";
 
 import { exportLinksCsv } from "../export.functions";
-
-// The byte order mark makes Excel read the file as UTF-8, which Croatian names need.
-function download(csv: string) {
-  const url = URL.createObjectURL(
-    new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }),
-  );
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = `connections-${new Date().toISOString().slice(0, 10)}.csv`;
-  anchor.click();
-  // Some browsers start the download after click returns; revoking at once can cancel it.
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
-}
 
 export default function LinksExport() {
   const [busy, setBusy] = useState(false);
@@ -26,7 +14,7 @@ export default function LinksExport() {
   async function run() {
     setBusy(true);
     try {
-      download(await exportLinksCsv());
+      downloadCsv(await exportLinksCsv(), "connections");
     } catch {
       toast.error(m.connections_export_failed());
     } finally {

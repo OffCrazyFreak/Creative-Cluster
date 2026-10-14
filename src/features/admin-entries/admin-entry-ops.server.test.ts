@@ -19,6 +19,7 @@ const { mergePartner } = await import("./merge-partner.server");
 const { movePin } = await import("./move-pin.server");
 const { changeSlug } = await import("./change-slug.server");
 const { getAdminEntryDetail } = await import("./entry-detail.server");
+const { exportEntries } = await import("./export-entries.server");
 
 describe.skipIf(!temp)("admin entry operations", () => {
   const { db } = temp as ITempDatabase;
@@ -226,5 +227,23 @@ describe.skipIf(!temp)("admin entry operations", () => {
     });
     expect(detail.reviews).toHaveLength(1);
     expect(detail.fields.find((f) => f.key === "contactEmail")).toBeDefined();
+  });
+
+  it("exports contact data, escapes formulas and leaves out listings queued for deletion", async () => {
+    const shown = await addEntry(db, "=Formula Org");
+    await db
+      .update(schema.entry)
+      .set({ contactEmail: "contact@example.test" })
+      .where(eq(schema.entry.id, shown.id));
+    const gone = await addEntry(db, "Erasing Org");
+    await db
+      .update(schema.entry)
+      .set({ erasureRequestedAt: new Date() })
+      .where(eq(schema.entry.id, gone.id));
+    const csv = await exportEntries();
+    expect(csv.split("\r\n")[0]).toContain("contact_email");
+    expect(csv).toContain("contact@example.test");
+    expect(csv).toContain("'=Formula Org");
+    expect(csv).not.toContain("Erasing Org");
   });
 });
