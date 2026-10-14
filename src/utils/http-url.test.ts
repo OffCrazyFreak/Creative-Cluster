@@ -32,4 +32,10 @@ describe("normalizeHttpUrl", () => {
     expect(normalizeHttpUrl("javascript:alert(1)")).toBeNull();
     expect(normalizeHttpUrl("   ")).toBeNull();
   });
+
+  it("adds https to a bare host with a port", () => {
+    expect(normalizeHttpUrl("example.org:8080/x")).toBe(
+      "https://example.org:8080/x",
+    );
+  });
 });
