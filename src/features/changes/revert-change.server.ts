@@ -7,7 +7,9 @@ import { changeLog, entry, user } from "@/db/schema";
 import { invalidateMapDirectory } from "@/features/directory/map-directory.server";
 import { isRevertibleField } from "@/features/review/entry-fields";
 import { pageLink } from "@/lib/auth/auth-email.server";
+import { translatedTextChanged } from "@/features/account/save-own-listing.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
+import { enqueueJob } from "@/lib/jobs/enqueue-job.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
 import { NotFoundError } from "@/server/errors";
 import { site } from "@/sites";
@@ -28,10 +30,16 @@ function text(value: unknown): string {
 }
 
 // Only fields that still have a stored "before" can be restored: old rows lose personal fields.
+// A group (for example the location) is restored whole or not at all, so a half-stripped row
+// never leaves a city without its coordinates.
 function restorableFields(log: LogRow): string[] {
   const before = log.before ?? {};
-  return log.changedFields.filter(
-    (field) => isRevertibleField(field) && field in before,
+  const changed = log.changedFields.filter(isRevertibleField);
+  const incomplete = new Set(
+    changed.filter((field) => !(field in before)).map(revertFieldGroup),
+  );
+  return changed.filter(
+    (field) => field in before && !incomplete.has(revertFieldGroup(field)),
   );
 }
 
@@ -154,6 +162,17 @@ export async function revertChange(
       .update(changeLog)
       .set({ revertedByLogId: row.id })
       .where(eq(changeLog.id, log.id));
+    if (
+      translatedTextChanged(fields, listing, {
+        extra: listing.extra,
+        ...restored,
+      })
+    )
+      await enqueueJob(tx, {
+        type: "translate",
+        payload: { entityType: "entry", entityId: listing.id },
+        idempotencyKey: `translate:entry:${listing.id}:${row.id}`,
+      });
     await mailOwner(tx, listing, fields, reason, row.id);
     return "ok" as const;
   });

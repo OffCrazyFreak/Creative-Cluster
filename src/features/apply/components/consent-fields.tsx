@@ -2,7 +2,8 @@ import { withForm } from "@/components/custom/form/app-form";
 import { m } from "@/paraglide/messages";
 
 import { emptyApplication } from "../apply-defaults";
-import ConsentSection, { ConsentBox } from "./consent-section";
+import ConsentBox from "./consent-box";
+import ConsentSection from "./consent-section";
 
 // Shown for people only; the stored consent version is CONSENT_TEXT_VERSION, bumped with this wording.
 export const ConsentFields = withForm({
