@@ -39,7 +39,7 @@ export default function OpportunityListItem({
         />
       ) : null}
       <div className="flex min-w-0 flex-col gap-1">
-        <h3 className="font-semibold">
+        <h2 className="font-semibold">
           <Link
             to="/opportunities/$id"
             params={{ id: item.id }}
@@ -48,7 +48,7 @@ export default function OpportunityListItem({
           >
             {item.title}
           </Link>
-        </h3>
+        </h2>
         <ul className="flex flex-wrap gap-1">
           {item.filled ? (
             <li>

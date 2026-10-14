@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as schema from "@/db/schema";
 
@@ -12,8 +12,11 @@ const { temp } = await vi.hoisted(async () => {
   return { temp: await helper.createTempDatabase("opp_public") };
 });
 vi.mock("@/db/client.server", () => ({ db: temp?.db }));
-const { listPublicOpportunities, countActiveByEntry } =
-  await import("./public-opportunities.server");
+const {
+  listPublicOpportunities,
+  countActiveByEntry,
+  invalidateOpportunityFacets,
+} = await import("./public-opportunities.server");
 
 const DAY = 86_400_000;
 
@@ -21,6 +24,10 @@ describe.skipIf(!temp)("public opportunities", () => {
   const { db } = temp as ITempDatabase;
   afterAll(async () => {
     await temp?.drop();
+  });
+
+  beforeEach(() => {
+    invalidateOpportunityFacets();
   });
 
   async function live(entryId: string, title: string, extra = {}) {
@@ -116,15 +123,25 @@ describe.skipIf(!temp)("public opportunities", () => {
     await live(de[0].id, "f-seek-partner", {
       expiresAt: new Date(Date.now() + 3 * DAY),
     });
+    // Filled this week with an end date inside the window: not open, so not "closing".
+    await live(de[0].id, "f-filled-soon", {
+      status: "closed",
+      closedReason: "filled",
+      closedAt: new Date(),
+      expiresAt: new Date(Date.now() + 3 * DAY),
+    });
     function only(found: string[]) {
       return found.filter((t) => t.startsWith("f-"));
     }
     expect(only(await titles({ type: "offering" }))).toEqual(["f-offer-space"]);
     expect(only(await titles({ category: "partner" }))).toEqual([
       "f-seek-partner",
+      "f-filled-soon",
     ]);
     expect(only(await titles({ country: "hr" }))).toEqual(["f-offer-space"]);
     expect(only(await titles({ closing: true }))).toEqual(["f-seek-partner"]);
+    const all = await listPublicOpportunities({ locale: "en", country: "DE" });
+    expect(all.total).toBe(all.items.length);
     expect(only(await titles({ tags: ["filter-tag"] }))).toEqual([
       "f-offer-space",
     ]);

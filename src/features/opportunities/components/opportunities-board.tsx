@@ -24,8 +24,13 @@ export default function OpportunitiesBoard() {
       <p>{m.opportunities_board_intro()}</p>
       <OpportunityFilters search={search} facets={data.facets} />
       <p role="status" className="font-semibold">
-        {m.opportunities_board_count({ count: data.items.length })}
+        {m.opportunities_board_count({ count: data.total })}
       </p>
+      {data.total > data.items.length ? (
+        <p className="text-sm">
+          {m.opportunities_board_truncated({ shown: data.items.length })}
+        </p>
+      ) : null}
       {data.items.length === 0 ? (
         <p>{m.opportunities_board_empty()}</p>
       ) : (

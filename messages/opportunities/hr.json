@@ -78,13 +78,8 @@
   "opportunities_refused_not_editable": "Ovu objavu više nije moguće uređivati.",
   "opportunities_expiring_notice": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} tvoja prilika uskoro istječe ili je istekla.",
         "countPlural=few": "{count} tvoje prilike uskoro ističu ili su istekle.",
@@ -98,13 +93,8 @@
   "opportunities_board_meta_description": "Otvoreni pozivi i ponude kreativnih organizacija na {site}: partneri, vještine, prostori, usluge i natječaji.",
   "opportunities_board_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} prilika",
         "countPlural=few": "{count} prilike",
@@ -127,5 +117,7 @@
   "opportunities_item_remote": "Moguće na daljinu",
   "opportunities_item_closes": "Završava {date}",
   "opportunities_item_open_until": "Otvoreno do {date}",
-  "opportunities_review_note_none": "Tvoja sljedeća prilika objavljuje se odmah."
+  "opportunities_review_note_none": "Tvoja sljedeća prilika objavljuje se odmah.",
+  "opportunities_filter_tags_several": "Oznaka: {count}",
+  "opportunities_board_truncated": "Prikazano je prvih {shown}. Filtrima sužavaš popis."
 }

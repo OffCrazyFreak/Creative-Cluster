@@ -52,6 +52,8 @@ export interface IPublicOpportunity {
 
 export interface IPublicOpportunities {
   items: IPublicOpportunity[];
+  // All matching posts; the list shows at most the first 100.
+  total: number;
   // Options for the filters, from every active post, so choosing one never empties the choices.
   facets: { countries: string[]; tags: IOpportunityTagRef[] };
 }

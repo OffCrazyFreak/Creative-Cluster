@@ -78,13 +78,8 @@
   "opportunities_refused_not_editable": "This post can no longer be edited.",
   "opportunities_expiring_notice": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} of your opportunities expires soon or has expired.",
         "countPlural=other": "{count} of your opportunities expire soon or have expired."
@@ -97,13 +92,8 @@
   "opportunities_board_meta_description": "Open calls and offers from creative organizations on {site}: partners, skills, spaces, services and funding calls.",
   "opportunities_board_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} opportunity",
         "countPlural=other": "{count} opportunities"
@@ -125,5 +115,7 @@
   "opportunities_item_remote": "Remote OK",
   "opportunities_item_closes": "Closes {date}",
   "opportunities_item_open_until": "Open until {date}",
-  "opportunities_review_note_none": "Your next opportunity is published at once."
+  "opportunities_review_note_none": "Your next opportunity is published at once.",
+  "opportunities_filter_tags_several": "{count} tags",
+  "opportunities_board_truncated": "Showing the first {shown}. Use the filters to narrow the list."
 }

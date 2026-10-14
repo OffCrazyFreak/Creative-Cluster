@@ -1,6 +1,7 @@
 import {
   and,
   asc,
+  count,
   desc,
   eq,
   exists,
@@ -36,8 +37,10 @@ function filtersOf(input: PublicOpportunitiesInput): SQL[] {
   if (input.category) filters.push(eq(opportunity.category, input.category));
   if (input.country)
     filters.push(eq(entry.countryCode, input.country.toUpperCase()));
+  // Only live posts can be closing: a post filled this week keeps its old end date but is not open.
   if (input.closing)
     filters.push(
+      activeOpportunityCondition(),
       lte(
         opportunity.expiresAt,
         sql`now() + make_interval(days => ${OPPORTUNITY_CLOSING_SOON_DAYS})`,
@@ -80,7 +83,25 @@ async function loadTags(ids: string[]) {
   return byPost;
 }
 
+const FACETS_CACHE_MS = 30_000;
+let facetsCache: { at: number; value: IPublicOpportunities["facets"] } | null =
+  null;
+
+// Mutation services call this after any change that adds or removes live posts.
+export function invalidateOpportunityFacets() {
+  facetsCache = null;
+}
+
+// The options do not depend on the filters, so one short-lived copy serves every request.
 async function loadFacets(): Promise<IPublicOpportunities["facets"]> {
+  if (facetsCache && Date.now() - facetsCache.at < FACETS_CACHE_MS)
+    return facetsCache.value;
+  const value = await queryFacets();
+  facetsCache = { at: Date.now(), value };
+  return value;
+}
+
+async function queryFacets(): Promise<IPublicOpportunities["facets"]> {
   const [countries, tags] = await Promise.all([
     db
       .selectDistinct({ code: entry.countryCode })
@@ -104,7 +125,7 @@ async function loadFacets(): Promise<IPublicOpportunities["facets"]> {
   ]);
   return {
     countries: countries.flatMap((row) => (row.code ? [row.code] : [])).sort(),
-    tags: tags.sort((a, b) => a.labelEn.localeCompare(b.labelEn)),
+    tags,
   };
 }
 
@@ -134,7 +155,12 @@ export async function listPublicOpportunities(
     )
     .limit(OPPORTUNITY_LIST_MAX);
   const ids = rows.map((row) => row.opp.id);
-  const [tagsByPost, translations, facets] = await Promise.all([
+  const [[{ total }], tagsByPost, translations, facets] = await Promise.all([
+    db
+      .select({ total: count() })
+      .from(opportunity)
+      .innerJoin(entry, eq(entry.id, opportunity.entryId))
+      .where(and(...filtersOf(input))),
     loadTags(ids),
     loadOpportunityTranslations(db, ids, input.locale),
     loadFacets(),
@@ -168,7 +194,7 @@ export async function listPublicOpportunities(
       tags: tagsByPost.get(opp.id) ?? [],
     };
   });
-  return { items, facets };
+  return { items, total, facets };
 }
 
 // Entries with live posts, for the badge on their map pins.
