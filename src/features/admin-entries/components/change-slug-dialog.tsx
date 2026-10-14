@@ -27,7 +27,7 @@ interface IChangeSlugDialogProps {
 function errorText(error: SlugError): string {
   if (error === "taken") return m.admin_entries_slug_taken();
   if (error === "invalid") return m.admin_entries_slug_invalid();
-  return m.admin_entries_transfer_not_found();
+  return m.admin_entries_entry_gone();
 }
 
 export default function ChangeSlugDialog({

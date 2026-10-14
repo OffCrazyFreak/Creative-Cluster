@@ -150,6 +150,61 @@ describe.skipIf(!temp)("admin entry operations", () => {
     });
   });
 
+  it("a confirmed stub link replaces a proposed duplicate on the target, and a no-op transfer writes no log", async () => {
+    const boss = await addUser(db, "Boss", "admin");
+    const target = await addEntry(db, "Strong Target");
+    const other = await addEntry(db, "Strong Other");
+    const [stub] = await db
+      .insert(schema.entry)
+      .values({
+        slug: "stub-strong",
+        kind: "outside_partner",
+        status: "draft",
+        name: "Stub Strong",
+        sourceLocale: "en",
+      })
+      .returning();
+    const [a, b] =
+      other.id < stub.id ? [other.id, stub.id] : [stub.id, other.id];
+    await db
+      .insert(schema.link)
+      .values({
+        fromId: a,
+        toId: b,
+        kind: "mentor",
+        symmetric: false,
+        status: "confirmed",
+      })
+      .returning();
+    const [proposed] = await db
+      .insert(schema.link)
+      .values({
+        fromId: other.id,
+        toId: target.id,
+        kind: "mentor",
+        symmetric: false,
+        status: "proposed",
+      })
+      .returning();
+    expect(await mergePartner(stub.id, target.id, boss.id)).toEqual({
+      ok: true,
+    });
+    const rows = await db
+      .select()
+      .from(schema.link)
+      .where(eq(schema.link.kind, "mentor"));
+    expect(rows.map((r) => r.status)).toEqual(["confirmed"]);
+    expect(rows.some((r) => r.id === proposed.id)).toBe(false);
+
+    const owner = await addUser(db, "Same Owner");
+    const mine = await addEntry(db, "Mine", {}, { ownerUserId: owner.id });
+    const before = (await changesOf(mine.id)).length;
+    expect(await transferOwner(mine.id, owner.id, boss.id)).toEqual({
+      ok: true,
+    });
+    expect((await changesOf(mine.id)).length).toBe(before);
+  });
+
   it("moves a pin by hand, and refuses people", async () => {
     const boss = await addUser(db, "Boss", "admin");
     const org = await addEntry(db, "Pin Org");

@@ -24,7 +24,7 @@ async function repoint(tx: Tx, row: LinkRow, stubId: string, targetId: string) {
   if (row.symmetric && fromId > toId) [fromId, toId] = [toId, fromId];
   if (LIVE.some((status) => status === row.status)) {
     const [dup] = await tx
-      .select({ id: link.id })
+      .select({ id: link.id, status: link.status })
       .from(link)
       .where(
         and(
@@ -36,7 +36,12 @@ async function repoint(tx: Tx, row: LinkRow, stubId: string, targetId: string) {
         ),
       )
       .limit(1);
-    if (dup) return false;
+    if (dup) {
+      // Keep the stronger of the two: a confirmed stub link replaces a merely proposed one on the target.
+      if (!(row.status === "confirmed" && dup.status === "proposed"))
+        return false;
+      await tx.delete(link).where(eq(link.id, dup.id));
+    }
   }
   await tx
     .update(link)

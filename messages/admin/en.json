@@ -154,5 +154,6 @@
   "admin_entries_field_publishedAt": "Published",
   "admin_entries_field_lastConfirmedAt": "Last confirmed",
   "admin_entries_field_importedAt": "Imported",
-  "admin_entries_field_erasureRequestedAt": "Deletion requested"
+  "admin_entries_field_erasureRequestedAt": "Deletion requested",
+  "admin_entries_entry_gone": "The entry no longer exists."
 }
