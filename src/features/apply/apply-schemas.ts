@@ -9,6 +9,7 @@ import { LOCALES } from "@/constants/locales";
 import { locationValueSchema } from "@/features/location";
 import type { IParsedRichText } from "@/lib/rich-text/parse-rich-text";
 import { richTextInput } from "@/lib/rich-text/rich-text-input";
+import { site } from "@/sites";
 import { normalizeHttpUrl } from "@/utils/http-url";
 import { m } from "@/paraglide/messages";
 
@@ -89,8 +90,10 @@ export function requireConsentForPeople(
     });
 }
 
+// The form only offers this site's kinds; the server must not trust that.
 export const applicationSchema = applicationFieldsSchema
   .extend(consentSchema.shape)
+  .refine((value) => site.entryKinds.includes(value.kind), { path: ["kind"] })
   .superRefine(requireConsentForPeople);
 
 export const submitApplicationSchema = z.object({

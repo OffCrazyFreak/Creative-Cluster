@@ -22,6 +22,8 @@ import type {
 import {
   entryIdForToken,
   issueApplicationToken,
+  revokeApplicationTokens,
+  tokenDigest,
 } from "./application-tokens.server";
 
 async function queueVerification(
@@ -49,7 +51,7 @@ async function queueVerification(
       expiry: APPLY_VERIFY_EXPIRY,
       entryName,
     },
-    idempotencyKey: `apply-verify:${token}`,
+    idempotencyKey: `apply-verify:${entryId}:${tokenDigest(token)}`,
   });
 }
 
@@ -61,6 +63,20 @@ export async function enterReviewQueue(
   entryName: string,
   locale: AppLocale,
 ) {
+  const [open] = await tx
+    .select({ id: reviewItem.id })
+    .from(reviewItem)
+    .where(
+      and(
+        eq(reviewItem.type, "application"),
+        eq(reviewItem.entityType, "entry"),
+        eq(reviewItem.entityId, entryId),
+        eq(reviewItem.status, "open"),
+      ),
+    )
+    .limit(1);
+  // One open item per application, even if confirm and resubmit race.
+  if (open) return;
   const [item] = await tx
     .insert(reviewItem)
     .values({ type: "application", entityType: "entry", entityId: entryId })
@@ -136,7 +152,10 @@ export async function resubmitApplication(
       before: { status: "rejected" },
       after: { status: emailChanged ? "draft" : "pending" },
     });
+    // The edit link served its purpose; a new address also invalidates every earlier confirm link.
+    await revokeApplicationTokens(tx, "apply-edit", entryId);
     if (emailChanged) {
+      await revokeApplicationTokens(tx, "apply-verify", entryId);
       await queueVerification(
         tx,
         entryId,

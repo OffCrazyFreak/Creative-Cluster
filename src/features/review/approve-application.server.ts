@@ -19,21 +19,23 @@ async function ownerAccount(
 ) {
   async function find() {
     const [row] = await tx
-      .select({ id: user.id })
+      .select({ id: user.id, banned: user.banned })
       .from(user)
       .where(eq(user.email, email))
       .limit(1);
-    return row?.id;
+    return row;
   }
   const existing = await find();
-  if (existing) return { id: existing, created: false };
+  // A blocked account must not receive a listing; the admin sees a failed decision and can act.
+  if (existing?.banned) throw new Error("The applicant's account is blocked");
+  if (existing) return { id: existing.id, created: false };
   // The confirmed application address is the proof of ownership, so the account starts verified.
   const [created] = await tx
     .insert(user)
     .values({ email, name, emailVerified: true, locale })
     .onConflictDoNothing({ target: user.email })
     .returning({ id: user.id });
-  const id = created?.id ?? (await find());
+  const id = created?.id ?? (await find())?.id;
   if (!id) throw new Error("Approval could not resolve the owner account");
   return { id, created: Boolean(created) };
 }

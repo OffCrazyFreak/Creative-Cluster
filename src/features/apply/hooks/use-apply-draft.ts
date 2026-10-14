@@ -6,12 +6,44 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import type { ApplicationFormValues } from "../apply-schemas";
 
 // Consent is never part of a draft: it must be given again at the moment of sending.
+const DRAFT_MAX_AGE_MS = 30 * 86_400_000;
+const TEXT_FIELDS = [
+  "name",
+  "contactName",
+  "contactEmail",
+  "contactPhone",
+  "website",
+];
+
+interface IStoredDraft {
+  savedAt: number;
+  values: Record<string, unknown>;
+}
+
+// A stale or hand-edited draft must not reach the editor in a shape it cannot render.
+function isUsable(values: Record<string, unknown>): boolean {
+  const description = values.description as { type?: unknown } | undefined;
+  const location = values.location as { countryCode?: unknown } | undefined;
+  return (
+    TEXT_FIELDS.every((key) => typeof values[key] === "string") &&
+    description?.type === "doc" &&
+    typeof location === "object" &&
+    location !== null &&
+    (values.kind === "organization" || values.kind === "person")
+  );
+}
+
 export function readApplyDraft(): Partial<ApplicationFormValues> | null {
   try {
     const raw = localStorage.getItem(APPLY_DRAFT_STORAGE_KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : null;
-    if (typeof parsed !== "object" || parsed === null) return null;
-    return { ...parsed, consent: false, ageConfirmed: false };
+    const stored = (raw ? JSON.parse(raw) : null) as IStoredDraft | null;
+    if (!stored || Date.now() - stored.savedAt > DRAFT_MAX_AGE_MS) return null;
+    if (!isUsable(stored.values)) return null;
+    return {
+      ...(stored.values as Partial<ApplicationFormValues>),
+      consent: false,
+      ageConfirmed: false,
+    };
   } catch {
     return null;
   }
@@ -30,14 +62,17 @@ export function useApplyDraftSaver(
   enabled: boolean,
 ) {
   const debounced = useDebouncedValue(values, 600);
-  // Until the person changes something, the value is still the form as loaded and needs no saving.
+  // The form as loaded needs no saving until something changes.
   const initial = useRef(values);
 
   useEffect(() => {
     if (!enabled || debounced === initial.current) return;
     const { consent: _consent, ageConfirmed: _age, ...rest } = debounced;
     try {
-      localStorage.setItem(APPLY_DRAFT_STORAGE_KEY, JSON.stringify(rest));
+      localStorage.setItem(
+        APPLY_DRAFT_STORAGE_KEY,
+        JSON.stringify({ savedAt: Date.now(), values: rest }),
+      );
     } catch {
       // Storage can be blocked or full; losing the draft is acceptable.
     }

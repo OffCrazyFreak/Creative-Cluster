@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useIsClient } from "@/hooks/use-is-client";
 import { REVIEW_STALE_DAYS } from "@/constants/moderation";
+import { track } from "@/lib/analytics/track";
 import { m } from "@/paraglide/messages";
 
 import type {
@@ -32,6 +33,9 @@ export default function ApplyPage({ resubmitToken, initial }: IApplyPageProps) {
     () => (isClient && !resubmitToken ? readApplyDraft() : null),
     [isClient, resubmitToken],
   );
+  useEffect(() => {
+    track("apply_started", { kind: initial?.kind ?? emptyApplication().kind });
+  }, [initial?.kind]);
   const expired = resubmitToken !== undefined && !initial;
 
   function handleSent(result: SubmitApplicationResult, email: string) {
