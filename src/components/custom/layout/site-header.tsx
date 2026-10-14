@@ -19,7 +19,10 @@ export default function SiteHeader() {
         <Link to="/" className="min-w-0 truncate py-2 font-semibold">
           {site.name}
         </Link>
-        <MainNav className="hidden lg:block lg:flex-1" />
+        <MainNav
+          className="hidden lg:block lg:flex-1"
+          listClassName="whitespace-nowrap"
+        />
         <div className="ml-auto hidden items-center justify-end gap-x-4 lg:flex [&_a]:inline-block [&_a]:py-2">
           <AuthNav />
           <LanguageSwitch />

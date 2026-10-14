@@ -1,6 +1,7 @@
 import { MenuIcon, XIcon } from "lucide-react";
 import { useState, type MouseEvent } from "react";
 
+import { useMediaQuery } from "@/features/map/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -19,14 +20,17 @@ import MainNav from "./main-nav";
 // Below the lg breakpoint the links move into a side sheet; Base UI supplies the focus trap.
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
+  // The portaled sheet outlives its hidden trigger when the window grows past lg.
+  const desktop = useMediaQuery("(min-width: 1024px)", false);
 
-  // Links and log out close the sheet, including links to the page already open.
+  // Links close the sheet, including links to the page already open; log out stays until it finishes.
   function closeOnAction(event: MouseEvent<HTMLElement>) {
-    if ((event.target as HTMLElement).closest("a, button")) setOpen(false);
+    if (event.target instanceof Element && event.target.closest("a"))
+      setOpen(false);
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open && !desktop} onOpenChange={setOpen}>
       <SheetTrigger
         render={<Button variant="outline" size="icon" />}
         aria-label={m.common_menu()}

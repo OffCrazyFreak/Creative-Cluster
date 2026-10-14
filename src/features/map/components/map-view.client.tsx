@@ -158,7 +158,7 @@ export default function MapView(props: IMapViewProps) {
       ref={containerRef}
       role="region"
       aria-label={m.map_region_label()}
-      className="size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-right]:bottom-[min(var(--map-sheet-covered,96px),50%)]! max-md:[&_.maplibregl-ctrl-top-right]:top-32!"
+      className="size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-right]:bottom-[min(var(--map-sheet-covered,50dvh),50dvh)]! max-md:[&_.maplibregl-ctrl-top-right]:top-32!"
     >
       <Map
         key={mapKey}
@@ -189,7 +189,11 @@ export default function MapView(props: IMapViewProps) {
       >
         <NavigationControl position="top-right" showCompass={false} />
         {/* On phones the control collapses to an info button that rides above the results sheet. */}
-        <AttributionControl position="bottom-right" compact={!wide} />
+        <AttributionControl
+          key={String(wide)}
+          position="bottom-right"
+          compact={!wide}
+        />
         <Source
           id={SOURCE_ID}
           type="geojson"

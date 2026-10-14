@@ -41,7 +41,7 @@ export default function MapOverlayLayout({
   children,
 }: IMapOverlayLayoutProps) {
   // Lets the map keep its attribution above the phone sheet.
-  const [sheetCovered, setSheetCovered] = useState("96px");
+  const [sheetCovered, setSheetCovered] = useState("50dvh");
 
   return (
     <div
