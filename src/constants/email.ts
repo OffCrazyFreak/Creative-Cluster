@@ -16,6 +16,7 @@ export const EMAIL_TEMPLATE_NAMES = [
   "suspended",
   "erasure_scheduled",
   "erasure_done",
+  "contact",
 ] as const;
 export type EmailTemplateName = (typeof EMAIL_TEMPLATE_NAMES)[number];
 
@@ -38,6 +39,7 @@ export const EMAIL_TEMPLATE_PRIORITY: Record<
   suspended: "normal",
   erasure_scheduled: "urgent",
   erasure_done: "urgent",
+  contact: "normal",
 };
 
 // Non-urgent mail waits for the next UTC day once this share of the cap is sent.

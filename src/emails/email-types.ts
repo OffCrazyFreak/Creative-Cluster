@@ -101,6 +101,15 @@ export interface IErasureDoneEmailProps extends IBaseEmailProps {
   entryName: string | null;
 }
 
+export interface IContactEmailProps extends IBaseEmailProps {
+  entryName: string;
+  senderName: string;
+  senderEmail: string;
+  messageText: string;
+  // The "Report this message" link; named link like every other template's main link.
+  link: string;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
@@ -116,6 +125,7 @@ export interface IEmailPropsMap {
   suspended: ISuspendedEmailProps;
   erasure_scheduled: IErasureScheduledEmailProps;
   erasure_done: IErasureDoneEmailProps;
+  contact: IContactEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

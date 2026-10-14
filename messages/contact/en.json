@@ -1,3 +1,11 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "contact_email_subject": "New message for {entryName} via {siteName}",
+  "contact_email_preheader": "Reply directly to this message. Your reply goes to the sender.",
+  "contact_email_intro": "a visitor of {siteName} sent a message for {entryName}.",
+  "contact_email_sender": "Sender: {senderName} ({senderEmail})",
+  "contact_email_reply_note": "If you reply to this message, the reply goes straight to the sender, who will then see your address. You do not have to reply. We do not keep the message on the site.",
+  "contact_email_report_prompt": "Think it is spam or abuse?",
+  "contact_email_report_button": "Report this message",
+  "contact_email_footer": "You are getting this message because a visitor to {siteName} wants to contact your listing {entryName}. Your address was not shown to the sender. Do not want messages like this? Report it with the link above or write to {contactEmail}. {controllerName}."
 }
