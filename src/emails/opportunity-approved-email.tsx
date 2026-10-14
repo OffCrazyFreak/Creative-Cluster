@@ -14,7 +14,14 @@ export function subject({ locale }: IOpportunityApprovedEmailProps) {
 export default function OpportunityApprovedEmail(
   props: IOpportunityApprovedEmailProps,
 ) {
-  const { locale, entryName, opportunityTitle, expiresAt, link } = props;
+  const {
+    locale,
+    entryName,
+    opportunityTitle,
+    expiresAt,
+    publishedAtOnce,
+    link,
+  } = props;
   return (
     <EmailLayout
       locale={locale}
@@ -31,6 +38,9 @@ export default function OpportunityApprovedEmail(
           { locale },
         )}
       </Text>
+      {publishedAtOnce ? (
+        <Text>{m.email_opportunity_approved_body_auto({}, { locale })}</Text>
+      ) : null}
       <Text>{m.email_opportunity_approved_body_2({}, { locale })}</Text>
       <ActionButton
         href={link}
@@ -46,5 +56,6 @@ OpportunityApprovedEmail.PreviewProps = {
   entryName: "Studio Example",
   opportunityTitle: "Looking for a print partner",
   expiresAt: "1 December 2026",
+  publishedAtOnce: true,
   link: `${site.origin}/opportunities/preview-id`,
 } satisfies IOpportunityApprovedEmailProps;

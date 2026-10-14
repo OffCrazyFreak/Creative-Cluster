@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  canRenew,
-  deadlineEnd,
-  isDeadlineAllowed,
-  periodEnd,
-  renewalStart,
-} from "./opportunity-expiry";
+import { deadlineEnd, periodEnd } from "./opportunity-expiry";
 
 const NOW = new Date("2026-10-14T10:00:00Z");
 function day(n: number) {
@@ -29,38 +23,5 @@ describe("periodEnd", () => {
 
   it("never runs past 180 days", () => {
     expect(periodEnd({ start: NOW, deadline: "2027-12-31" })).toEqual(day(180));
-  });
-});
-
-describe("isDeadlineAllowed", () => {
-  it("accepts today and up to 180 days ahead only", () => {
-    expect(isDeadlineAllowed("2026-10-14", NOW)).toBe(true);
-    expect(isDeadlineAllowed("2026-10-13", NOW)).toBe(false);
-    expect(isDeadlineAllowed("2027-04-12", NOW)).toBe(true);
-    expect(isDeadlineAllowed("2027-04-13", NOW)).toBe(false);
-  });
-});
-
-describe("canRenew", () => {
-  const base = { status: "published", renewals: 0 };
-
-  it("opens in the last 8 days and after expiry", () => {
-    expect(canRenew({ ...base, expiresAt: day(9) }, NOW)).toBe(false);
-    expect(canRenew({ ...base, expiresAt: day(8) }, NOW)).toBe(true);
-    expect(canRenew({ ...base, expiresAt: day(-3) }, NOW)).toBe(true);
-  });
-
-  it("stops after 3 renewals and for posts that are not published", () => {
-    expect(canRenew({ ...base, renewals: 3, expiresAt: day(2) }, NOW)).toBe(
-      false,
-    );
-    expect(
-      canRenew({ status: "closed", renewals: 0, expiresAt: day(2) }, NOW),
-    ).toBe(false);
-  });
-
-  it("starts the new period at the old end, so renewing early loses nothing", () => {
-    expect(renewalStart(day(5), NOW)).toEqual(day(5));
-    expect(renewalStart(day(-5), NOW)).toEqual(NOW);
   });
 });

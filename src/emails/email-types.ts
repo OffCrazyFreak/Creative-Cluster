@@ -41,6 +41,8 @@ export interface IOpportunityApprovedEmailProps extends IBaseEmailProps {
   entryName: string;
   opportunityTitle: string;
   expiresAt: string;
+  // False when an admin made this entry's posts go through review, so the promise below would be wrong.
+  publishedAtOnce: boolean;
   link: string;
 }
 
