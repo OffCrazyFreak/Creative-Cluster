@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 
-import { TAG_FIELDS, type TagField } from "@/constants/tags";
+import { TAG_FIELDS } from "@/constants/tags";
 import type { Tx } from "@/db/client.server";
 import { entry, image, reviewItem } from "@/db/schema";
 import { translatedTextChanged } from "@/features/account/save-own-listing.server";
@@ -121,7 +121,7 @@ export async function applyUntrustedEditTags(
     try {
       await saveEntryTags({
         entryId,
-        field: field as TagField,
+        field,
         tagIds: ids.filter((id): id is string => typeof id === "string"),
         actor: { userId: submittedBy, isAdmin: false },
       });
