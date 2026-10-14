@@ -62,7 +62,7 @@ describe.skipIf(!temp)("claim sending", () => {
       .update(schema.claimInvite)
       .set({ expiresAt: new Date(Date.now() + 86_400_000) });
 
-    expect(await planClaimBatch(5)).toEqual({ invites: 2, reminders: 0 });
+    expect(await planClaimBatch(5)).toMatchObject({ invites: 2, reminders: 0 });
     expect(await sendClaimBatch(1, "A test source")).toEqual({
       invites: 1,
       reminders: 0,
@@ -120,6 +120,48 @@ describe.skipIf(!temp)("claim sending", () => {
     });
   });
 
+  it("fills the batch past candidates that went stale, and ignores a changed contact address", async () => {
+    await reset();
+    await imported("stale-a");
+    await imported("stale-b");
+    await imported("good-c");
+    await prepareClaimInvites();
+    await db
+      .update(schema.entry)
+      .set({ contactEmail: "corrected@example.com" })
+      .where(eq(schema.entry.contactEmail, "stale-a@example.com"));
+    await db
+      .update(schema.entry)
+      .set({ erasureRequestedAt: new Date() })
+      .where(eq(schema.entry.contactEmail, "stale-b@example.com"));
+    expect(await sendClaimBatch(1, "A test source")).toMatchObject({
+      invites: 1,
+    });
+    const [row] = await db.select().from(schema.job);
+    expect(row.payload).toMatchObject({ to: "good-c@example.com" });
+  });
+
+  it("does not double mail an address when two runs overlap", async () => {
+    await reset();
+    await imported("dup-a", { contactEmail: "dup@example.com" });
+    await imported("dup-b", { contactEmail: "dup@example.com" });
+    await prepareClaimInvites();
+    await Promise.all([
+      sendClaimBatch(5, "A test source"),
+      sendClaimBatch(5, "A test source"),
+    ]);
+    expect(await templates()).toEqual(["claim"]);
+  });
+
+  it("reports first mails whose job failed in the plan", async () => {
+    await reset();
+    await imported("failed-one");
+    await prepareClaimInvites();
+    await sendClaimBatch(5, "A test source");
+    await db.update(schema.job).set({ status: "failed" });
+    expect(await planClaimBatch(5)).toMatchObject({ failedFirstMails: 1 });
+  });
+
   it("sends the single reminder after ten days, once the first mail was delivered, to open invites only", async () => {
     await reset();
     await imported("r-open");
@@ -139,7 +181,7 @@ describe.skipIf(!temp)("claim sending", () => {
       .where(eq(schema.claimInvite.email, "r-used@example.com"));
     await suppressEmail(db, "r-quiet@example.com", "claim_removal");
 
-    expect(await planClaimBatch(5)).toEqual({ invites: 0, reminders: 1 });
+    expect(await planClaimBatch(5)).toMatchObject({ invites: 0, reminders: 1 });
     expect(await sendClaimBatch(5, "x")).toEqual({ invites: 0, reminders: 1 });
     const reminders = (await templates()).filter((t) => t === "claim_reminder");
     expect(reminders).toHaveLength(1);

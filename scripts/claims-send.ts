@@ -34,6 +34,10 @@ if (values["dry-run"]) {
   console.log(
     `Dry run: would queue ${plan.reminders} reminders and ${plan.invites} claim emails. Nothing was written.`,
   );
+  if (plan.failedFirstMails > 0)
+    console.log(
+      `${plan.failedFirstMails} first mails are marked sent but their job failed: check the job table.`,
+    );
   process.exit(0);
 }
 

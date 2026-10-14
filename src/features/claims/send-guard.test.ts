@@ -26,6 +26,18 @@ describe("sendBlocker", () => {
     ).toContain("--import-source");
   });
 
+  it("lets a dry run show counts without approval, but still needs a valid batch", () => {
+    expect(
+      sendBlocker(
+        {},
+        { ...ok, dryRun: true, confirm: false, importSource: null },
+      ),
+    ).toBeNull();
+    expect(sendBlocker({}, { ...ok, dryRun: true, batch: 0 })).toContain(
+      "--batch",
+    );
+  });
+
   it("allows a fully approved run", () => {
     expect(sendBlocker({ CLAIMS_SENDING_APPROVED: "yes" }, ok)).toBeNull();
   });
