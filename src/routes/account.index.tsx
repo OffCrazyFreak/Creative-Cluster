@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import PagePlaceholder from "@/components/custom/layout/page-placeholder";
-import { m } from "@/paraglide/messages";
+import { myListingQuery } from "@/features/account/account-queries";
+import AccountHomePage from "@/features/account/components/account-home-page";
 
 export const Route = createFileRoute("/account/")({
-  component: () => <PagePlaceholder title={m.common_nav_account()} />,
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(myListingQuery()),
+  component: AccountHomePage,
 });
