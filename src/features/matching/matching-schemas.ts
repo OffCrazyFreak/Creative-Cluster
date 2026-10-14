@@ -26,6 +26,16 @@ export interface ICollaborationCard {
   reasons: IMatchReason[];
 }
 
+/** Whose point of view the reason lines are written from. */
+export interface IMatchPerspective {
+  entryName: string;
+  /** True when the reader owns the entry whose page is shown. */
+  viewerOwns: boolean;
+}
+
+export interface ICollaborationView
+  extends ICollaborationResult, IMatchPerspective {}
+
 export interface ICollaborationResult {
   /** "similar" is the topic-only fallback for entries with no offering or seeking tags. */
   mode: "collaborate" | "similar";
