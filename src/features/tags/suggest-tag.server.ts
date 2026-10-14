@@ -1,7 +1,7 @@
 import { and, count, eq, sql } from "drizzle-orm";
 
 import type { AppLocale } from "@/constants/locales";
-import { db, type DbOrTx, type Tx } from "@/db/client.server";
+import { db, type Tx } from "@/db/client.server";
 import { reviewItem, tag } from "@/db/schema";
 import { enforceLimits } from "@/lib/limits/check-limit.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
@@ -9,16 +9,16 @@ import { LimitError } from "@/server/errors";
 import { slugify } from "@/utils/slugify";
 
 import { TagSelectionError } from "./tag-errors";
-import { foldText, tagAliases, tagLabel } from "./tag-label";
+import { foldText } from "./tag-label";
 import type { ITagOption } from "./tag-schemas";
-import { tagOptionColumns, usableTagCondition } from "./tag-visibility.server";
+import { findUsableTag, tagOptionColumns } from "./tag-visibility.server";
 
 // Caps what one account can leave in the review queue at a time.
 export const MAX_OPEN_SUGGESTIONS = 10;
 // Above the open-suggestion cap so a few rejected suggestions do not lock a user out.
 const SUGGESTIONS_PER_HOUR = 30;
 // Picking a label that already exists is normal use, so it only gets a loose ceiling.
-const LOOKUPS_PER_HOUR = 300;
+export const LOOKUPS_PER_HOUR = 120;
 
 type SuggestionValues = Pick<
   typeof tag.$inferInsert,
@@ -67,22 +67,6 @@ async function insertSuggestion(
 function slugBase(label: string) {
   const slug = slugify(label);
   return slug === "entry" && foldText(label) !== "entry" ? "tag" : slug;
-}
-
-async function findUsableTag(
-  executor: DbOrTx,
-  { userId, label, locale }: ISuggestTag,
-) {
-  const visible = await executor
-    .select(tagOptionColumns)
-    .from(tag)
-    .where(usableTagCondition({ userId }));
-  const folded = foldText(label);
-  return visible.find((option) =>
-    [tagLabel(option, locale), ...tagAliases(option, locale)].some(
-      (text) => foldText(text) === folded,
-    ),
-  );
 }
 
 // The other language gets the same text until an admin translates it on approval.

@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import * as schema from "@/db/schema";
-import { NotFoundError } from "@/server/errors";
+import { LimitError, NotFoundError } from "@/server/errors";
 
 import { addEntry, addTag, addUser } from "../../../tests/helpers/fixture-data";
 import type { ITempDatabase } from "../../../tests/helpers/temp-database";
@@ -20,7 +20,7 @@ const { decideSuggestion } = await import("./decide-suggestion.server");
 const { mergeTags } = await import("./merge-tags.server");
 const { listPickerTags, getEntryTags } = await import("./tag-queries.server");
 const { saveEntryTags } = await import("./save-entry-tags.server");
-const { suggestTag, MAX_OPEN_SUGGESTIONS } =
+const { suggestTag, LOOKUPS_PER_HOUR, MAX_OPEN_SUGGESTIONS } =
   await import("./suggest-tag.server");
 
 describe.skipIf(!temp)("tag services", () => {
@@ -377,6 +377,21 @@ describe.skipIf(!temp)("tag services", () => {
       ).resolves.toMatchObject({ created: true });
     });
 
+    it("caps label lookups at a loose hourly ceiling", async () => {
+      const looper = await addUser(db, "looper");
+      await addTag(db, "loomweaving");
+      for (let i = 0; i < LOOKUPS_PER_HOUR; i += 1) {
+        await suggestTag({
+          userId: looper.id,
+          label: "Loomweaving",
+          locale: "en",
+        });
+      }
+      await expect(
+        suggestTag({ userId: looper.id, label: "Loomweaving", locale: "en" }),
+      ).rejects.toBeInstanceOf(LimitError);
+    });
+
     it("counts refused new suggestions toward the hourly limit", async () => {
       const admin = await addUser(db, "admin-hourly", "admin");
       const eager = await addUser(db, "eager");
@@ -386,11 +401,13 @@ describe.skipIf(!temp)("tag services", () => {
         locale: "en",
       });
       for (let i = 1; i < 30; i += 1) {
-        await suggestTag({
+        const attempt = suggestTag({
           userId: eager.id,
           label: `Eager ${i}`,
           locale: "en",
-        }).catch(() => undefined);
+        });
+        if (i < MAX_OPEN_SUGGESTIONS) await attempt;
+        else await expect(attempt).rejects.toBeInstanceOf(LimitError);
       }
       await decideSuggestion({
         tagId: first.tag.id,
