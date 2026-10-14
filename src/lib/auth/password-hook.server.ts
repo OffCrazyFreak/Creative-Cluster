@@ -1,4 +1,5 @@
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import * as Sentry from "@sentry/tanstackstart-react";
 import { isPasswordCompromised } from "better-auth/plugins/haveibeenpwned";
 
 import {
@@ -36,6 +37,9 @@ async function isBreached(password: string): Promise<boolean> {
       "Have I Been Pwned is unreachable, password accepted without the breach check",
       error,
     );
+    Sentry.captureMessage("Have I Been Pwned unreachable", {
+      level: "warning",
+    });
     return false;
   } finally {
     clearTimeout(timer);

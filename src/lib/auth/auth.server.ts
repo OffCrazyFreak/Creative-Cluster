@@ -46,6 +46,8 @@ export const auth = betterAuth({
   session: {
     cookieCache: { enabled: true, maxAge: 60 },
   },
+  // The spec rules out impersonation in v1; the admin plugin would otherwise still serve it.
+  disabledPaths: ["/admin/impersonate-user", "/admin/stop-impersonating"],
   hooks: { before: passwordPolicyHook },
   databaseHooks: {
     user: {
@@ -94,6 +96,7 @@ export const auth = betterAuth({
             clientId: env.GOOGLE_CLIENT_ID,
             clientSecret: env.GOOGLE_CLIENT_SECRET,
             disableSignUp: true,
+            scope: ["openid", "email", "profile"],
           },
         }
       : {},

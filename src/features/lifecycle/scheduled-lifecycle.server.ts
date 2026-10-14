@@ -8,6 +8,7 @@ import {
   ERASURE_GRACE_DAYS,
   ERASURE_MARKER_PREFIX,
   IMPORT_ARCHIVE_MONTHS,
+  INVITE_RETENTION_DAYS,
 } from "@/constants/lifecycle";
 import { db } from "@/db/client.server";
 import { entry, user, verification } from "@/db/schema";
@@ -92,6 +93,21 @@ export async function purgeExpiredApplications(): Promise<number> {
       ),
     );
   return purged;
+}
+
+// Set-password links (invites, claims, approvals) are dropped 90 days after they were issued, expired or not.
+export async function purgeOldInviteTokens(): Promise<void> {
+  await db
+    .delete(verification)
+    .where(
+      and(
+        like(verification.identifier, "reset-password:%"),
+        lt(
+          verification.createdAt,
+          sql`now() - make_interval(days => ${INVITE_RETENTION_DAYS})`,
+        ),
+      ),
+    );
 }
 
 // Deletes accounts whose 14 day grace period is over. The admin rule is checked and the data purged first:

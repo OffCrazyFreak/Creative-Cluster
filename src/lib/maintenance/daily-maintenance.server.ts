@@ -3,6 +3,7 @@ import {
   archiveStaleImports,
   deleteDueErasedAccounts,
   purgeExpiredApplications,
+  purgeOldInviteTokens,
 } from "@/features/lifecycle/scheduled-lifecycle.server";
 import { queueReviewDigests } from "@/features/review/review-digest.server";
 import { triggerDrain } from "@/lib/jobs/trigger-drain.server";
@@ -16,6 +17,7 @@ const TASKS: Task[] = [
   { name: "delete-erased-accounts", run: () => deleteDueErasedAccounts() },
   { name: "archive-stale-imports", run: () => archiveStaleImports() },
   { name: "purge-expired-applications", run: () => purgeExpiredApplications() },
+  { name: "purge-old-invite-tokens", run: () => purgeOldInviteTokens() },
 ];
 
 export async function runDailyMaintenance(): Promise<Record<string, string>> {
