@@ -10,7 +10,7 @@ import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
 import { reviewTypeLabel } from "../review-labels";
-import { removesPost } from "../review-rows";
+import { canMovePin, removesPost } from "../review-rows";
 import type { IReviewRow } from "../review-schemas";
 import ReviewAge from "./review-age";
 
@@ -20,6 +20,7 @@ interface IReviewRowProps {
   onSelect: (checked: boolean) => void;
   onApprove: () => void;
   onReject: () => void;
+  onMovePin: () => void;
 }
 
 export default function ReviewRow({
@@ -28,6 +29,7 @@ export default function ReviewRow({
   onSelect,
   onApprove,
   onReject,
+  onMovePin,
 }: IReviewRowProps) {
   const isReport = row.type === "report";
   const removes = removesPost(row);
@@ -122,6 +124,16 @@ export default function ReviewRow({
             >
               {isReport ? m.review_dismiss() : m.review_reject()}
             </Button>
+            {canMovePin(row) && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={onMovePin}
+              >
+                {m.admin_entries_action_pin()}
+              </Button>
+            )}
           </div>
         )}
       </TableCell>
