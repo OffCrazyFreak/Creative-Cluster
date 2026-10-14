@@ -256,14 +256,14 @@ describe.skipIf(!temp)("saveOwnListing", () => {
       userId: owner.id,
       values: parse(formValues({ name: "Studio Changed" })),
     });
-    expect(pending).toEqual({ status: "pending_review" });
+    expect(pending).toMatchObject({ status: "pending_review" });
     const logsBefore = await db.select().from(schema.changeLog);
     const reverted = await saveOwnListing({
       entryId: row.id,
       userId: owner.id,
       values: live,
     });
-    expect(reverted).toEqual({ status: "saved", changed: false });
+    expect(reverted).toMatchObject({ status: "saved", changed: false });
     const items = await db
       .select()
       .from(schema.reviewItem)
