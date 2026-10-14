@@ -1,4 +1,4 @@
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, lt, type SQL } from "drizzle-orm";
 
 import { LINK_LIMITS } from "@/constants/links";
 import type { DbOrTx } from "@/db/client.server";
@@ -8,7 +8,10 @@ import { writeChange } from "@/lib/change-log/write-change.server";
 import { daysAgo } from "./link-conditions.server";
 
 // Daily job and propose both call this; "system" marks the change as nobody's decision.
-export async function withdrawStaleProposals(tx: DbOrTx): Promise<number> {
+export async function withdrawStaleProposals(
+  tx: DbOrTx,
+  scope?: SQL,
+): Promise<number> {
   const rows = await tx
     .update(link)
     .set({ status: "withdrawn", decidedAt: new Date() })
@@ -16,6 +19,7 @@ export async function withdrawStaleProposals(tx: DbOrTx): Promise<number> {
       and(
         eq(link.status, "proposed"),
         lt(link.createdAt, daysAgo(LINK_LIMITS.autoWithdrawDays)),
+        scope,
       ),
     )
     .returning({ id: link.id });

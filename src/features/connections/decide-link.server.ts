@@ -1,4 +1,4 @@
-import { and, eq, inArray, or, sql, type SQL } from "drizzle-orm";
+import { and, eq, inArray, isNull, ne, or, sql, type SQL } from "drizzle-orm";
 
 import type { ChangeSource } from "@/constants/moderation";
 import { db } from "@/db/client.server";
@@ -34,6 +34,8 @@ export async function decideLink(
         and(
           eq(link.id, linkId),
           eq(link.status, "proposed"),
+          // Nobody confirms their own proposal, an admin included.
+          or(isNull(link.proposedBy), ne(link.proposedBy, actor.userId)),
           isLiveLink(),
           recipientOwnedBy(actor),
         ),

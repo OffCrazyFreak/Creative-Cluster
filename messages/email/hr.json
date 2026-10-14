@@ -52,6 +52,6 @@
   "email_connection_kind": "Vrsta veze: {kind}",
   "email_connection_year": "Godina: {year}",
   "email_connection_note": "Napomena: {note}",
-  "email_connection_visibility": "Dok je ne potvrdite, veza je vidljiva samo vama, predlagatelju i administratorima. Potvrdite je ili odbijte u svom računu. Ako ne učinite ništa, prijedlog istječe nakon 60 dana.",
+  "email_connection_visibility": "Dok je ne potvrdite, veza je vidljiva samo vama, predlagatelju i administratorima. Potvrdite je ili odbijte u svom računu. Ako ne učinite ništa, prijedlog istječe nakon {days} dana.",
   "email_connection_button": "Pregledaj prijedlog"
 }

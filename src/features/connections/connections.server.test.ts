@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { link } from "@/db/schema";
+import { entry, link } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 import { addEntry, addUser } from "../../../tests/helpers/fixture-data";
@@ -166,6 +166,67 @@ describe.skipIf(!client.temp)("connections flow", () => {
       .where(eq(link.id, result.linkId));
     expect(await countPendingProposals(users.c)).toBe(0);
     expect(await withdrawStaleProposals(db)).toBe(1);
+  });
+
+  it("treats the two directions of a directed kind as separate links", async () => {
+    expect((await propose("a", "b", { kind: "mentor" })).ok).toBe(true);
+    expect((await propose("b", "a", { kind: "mentor" })).ok).toBe(true);
+    expect(await propose("b", "a", { kind: "mentor" })).toEqual({
+      ok: false,
+      error: "exists",
+    });
+  });
+
+  it("does not let an admin confirm their own proposal to an unclaimed listing", async () => {
+    const result = await propose("c", "unclaimed", { kind: "mentor" });
+    if (!result.ok) throw new Error("proposal failed");
+    await expect(
+      decideLink(
+        { linkId: result.linkId, decision: "confirm" },
+        { userId: users.c, admin: true },
+      ),
+    ).rejects.toThrow("Not found");
+  });
+
+  it("reuses one stub for the same outside partner", async () => {
+    const outside = {
+      type: "outside" as const,
+      name: "studio elsewhere",
+      website: "https://elsewhere.example",
+    };
+    const result = await propose("a", "b", {
+      target: outside,
+      kind: "supplier",
+      evidenceUrl: "https://elsewhere.example/supply",
+    });
+    expect(result.ok).toBe(true);
+    const stubs = await db
+      .select()
+      .from(entry)
+      .where(eq(entry.kind, "outside_partner"));
+    expect(stubs).toHaveLength(1);
+  });
+
+  it("shows a link on the owner's side even when their own entry is suspended", async () => {
+    const owner = (await addUser(db, "suspended-owner")).id;
+    const mine = await addEntry(
+      db,
+      "suspended mine",
+      {},
+      { ownerUserId: owner, status: "suspended" },
+    );
+    const [lo, hi] = [mine.id, ids.a].sort();
+    await db.insert(link).values({
+      fromId: lo,
+      toId: hi,
+      kind: "collaborated",
+      symmetric: true,
+      status: "confirmed",
+    });
+    const { items } = await listMyConnections(owner);
+    expect(items).toHaveLength(1);
+    expect(items[0].self.id).toBe(mine.id);
+    expect(items[0].other.id).toBe(ids.a);
   });
 
   it("reports the daily limit", async () => {

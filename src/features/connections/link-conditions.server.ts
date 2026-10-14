@@ -3,7 +3,7 @@ import { and, eq, gt, or, sql, type SQL } from "drizzle-orm";
 import { LINK_LIMITS } from "@/constants/links";
 import { link } from "@/db/schema";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+export const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function daysAgo(days: number, now = new Date()): Date {
   return new Date(now.getTime() - days * DAY_MS);
@@ -12,13 +12,11 @@ export function daysAgo(days: number, now = new Date()): Date {
 // A proposal older than the auto-withdraw window counts as withdrawn immediately,
 // even before the daily job writes the new status.
 export function isLiveLink(now = new Date()): SQL {
-  return and(
-    or(
-      eq(link.status, "confirmed"),
-      and(
-        eq(link.status, "proposed"),
-        gt(link.createdAt, daysAgo(LINK_LIMITS.autoWithdrawDays, now)),
-      ),
+  return or(
+    eq(link.status, "confirmed"),
+    and(
+      eq(link.status, "proposed"),
+      gt(link.createdAt, daysAgo(LINK_LIMITS.autoWithdrawDays, now)),
     ),
   ) as SQL;
 }

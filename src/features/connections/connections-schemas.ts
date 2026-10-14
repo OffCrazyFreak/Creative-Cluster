@@ -6,10 +6,13 @@ import { isHttpUrl, normalizeHttpUrl } from "@/utils/http-url";
 export const LINK_DIRECTIONS = ["outgoing", "incoming"] as const;
 export type LinkDirection = (typeof LINK_DIRECTIONS)[number];
 
+export const LINK_YEAR_RANGE = { min: 1900, max: 2100 } as const;
+export const LINK_URL_MAX_LENGTH = 300;
+
 const httpUrl = z
   .string()
   .trim()
-  .max(300)
+  .max(LINK_URL_MAX_LENGTH)
   .transform((value) => normalizeHttpUrl(value) ?? value)
   .refine(isHttpUrl);
 
@@ -23,7 +26,13 @@ function optionalText(max: number) {
     .default(null);
 }
 
-const year = z.number().int().min(1900).max(2100).nullable().default(null);
+const year = z
+  .number()
+  .int()
+  .min(LINK_YEAR_RANGE.min)
+  .max(LINK_YEAR_RANGE.max)
+  .nullable()
+  .default(null);
 
 const target = z.discriminatedUnion("type", [
   z.object({ type: z.literal("entry"), entryId: z.uuid() }),
@@ -44,15 +53,24 @@ export const proposeLinkInput = z
     endYear: year,
     project: optionalText(120),
     note: optionalText(500),
-    evidenceUrl: httpUrl.nullable().default(null),
+    // An empty field means "no evidence", not an invalid address.
+    evidenceUrl: z.preprocess(
+      (value) => (value === "" ? null : value),
+      httpUrl.nullable().default(null),
+    ),
   })
   // Links to outside partners are never confirmed by the other side, so the proof is the evidence.
   .refine((v) => v.target.type !== "outside" || v.evidenceUrl !== null, {
     path: ["evidenceUrl"],
+    message: "evidence_required",
   })
-  .refine((v) => v.year === null || v.endYear === null || v.endYear >= v.year, {
-    path: ["endYear"],
-  });
+  .refine(
+    (v) => v.endYear === null || (v.year !== null && v.endYear >= v.year),
+    {
+      path: ["endYear"],
+      message: "end_year_invalid",
+    },
+  );
 export type ProposeLinkInput = z.infer<typeof proposeLinkInput>;
 
 export const linkIdInput = z.object({ linkId: z.uuid() });

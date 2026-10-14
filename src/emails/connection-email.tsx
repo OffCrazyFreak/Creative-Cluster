@@ -1,5 +1,6 @@
 import { Text } from "@react-email/components";
 
+import { LINK_LIMITS } from "@/constants/links";
 import { m } from "@/paraglide/messages";
 import { kindLabel } from "@/features/connections/connection-kind-label";
 import { site } from "@/sites";
@@ -46,7 +47,12 @@ export default function ConnectionEmail(props: IConnectionEmailProps) {
           </>
         ) : null}
       </Text>
-      <Text>{m.email_connection_visibility({}, { locale })}</Text>
+      <Text>
+        {m.email_connection_visibility(
+          { days: LINK_LIMITS.autoWithdrawDays },
+          { locale },
+        )}
+      </Text>
       <ActionButton
         href={link}
         locale={locale}

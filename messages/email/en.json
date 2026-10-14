@@ -52,6 +52,6 @@
   "email_connection_kind": "Kind of connection: {kind}",
   "email_connection_year": "Year: {year}",
   "email_connection_note": "Note: {note}",
-  "email_connection_visibility": "Until you confirm it, the connection is visible only to you, the proposer and administrators. Confirm or decline it in your account. If you do nothing, the proposal expires after 60 days.",
+  "email_connection_visibility": "Until you confirm it, the connection is visible only to you, the proposer and administrators. Confirm or decline it in your account. If you do nothing, the proposal expires after {days} days.",
   "email_connection_button": "Review the proposal"
 }

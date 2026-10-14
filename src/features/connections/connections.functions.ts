@@ -55,7 +55,7 @@ export const withdrawConnection = createServerFn({ method: "POST" })
 export const getUnclaimedProposals = createServerFn({ method: "GET" })
   .middleware([adminGuard])
   .inputValidator(z.void())
-  .handler(() => listUnclaimedWaiting());
+  .handler(({ context }) => listUnclaimedWaiting(context.user.id));
 
 export const decideUnclaimedProposal = createServerFn({ method: "POST" })
   .middleware([adminGuard])

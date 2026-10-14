@@ -1,88 +1,32 @@
-import { and, eq, gt, inArray, ne, or } from "drizzle-orm";
+import { and, eq, isNull, ne } from "drizzle-orm";
 
 import { LINK_LIMITS } from "@/constants/links";
 import { db, type Tx } from "@/db/client.server";
-import { entry, link, linkEvidence, user } from "@/db/schema";
-import { allocateSlug } from "@/features/entry/slug.server";
+import { entry, link, linkEvidence } from "@/db/schema";
 import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
-import { enqueueEmail } from "@/lib/email/enqueue-email.server";
-import { pageLink } from "@/lib/auth/auth-email.server";
 import { triggerDrain } from "@/lib/jobs/trigger-drain.server";
 import { enforceLimits } from "@/lib/limits/check-limit.server";
 import { LimitError, NotFoundError } from "@/server/errors";
 
+import { assertLinkFree } from "./assert-link-free.server";
 import type {
-  ProposeError,
   ProposeLinkInput,
   ProposeLinkResult,
 } from "./connections-schemas";
 import { withdrawStaleProposals } from "./expire-links.server";
-import { daysAgo } from "./link-conditions.server";
 import { orientLink } from "./orient-link";
+import { findOrCreateOutsidePartner } from "./outside-partner.server";
+import { queueProposalEmail } from "./proposal-email.server";
+import { ProposeRefused } from "./propose-refused";
 
-class ProposeRefused extends Error {
-  constructor(readonly code: ProposeError) {
-    super(code);
-  }
-}
+const DAY_SECONDS = 24 * 60 * 60;
 
-async function createOutsidePartner(
+async function findProposerEntry(
   tx: Tx,
-  input: Extract<ProposeLinkInput["target"], { type: "outside" }>,
-  sourceLocale: "en" | "hr",
+  input: ProposeLinkInput,
   userId: string,
 ) {
-  const [row] = await tx
-    .insert(entry)
-    .values({
-      slug: await allocateSlug(tx, input.name),
-      kind: "outside_partner",
-      status: "draft",
-      name: input.name,
-      website: input.website,
-      sourceLocale,
-    })
-    .returning({ id: entry.id });
-  await writeChange(tx, {
-    entityType: "entry",
-    entityId: row.id,
-    userId,
-    source: "owner",
-    action: "create",
-    after: { kind: "outside_partner", name: input.name },
-  });
-  return row.id;
-}
-
-async function assertFree(tx: Tx, input: ProposeLinkInput, targetId: string) {
-  const pair = or(
-    and(eq(link.fromId, input.fromEntryId), eq(link.toId, targetId)),
-    and(eq(link.fromId, targetId), eq(link.toId, input.fromEntryId)),
-  );
-  const rows = await tx
-    .select({ status: link.status, decidedAt: link.decidedAt })
-    .from(link)
-    .where(
-      and(
-        pair,
-        eq(link.kind, input.kind),
-        or(
-          inArray(link.status, ["proposed", "confirmed"]),
-          and(
-            eq(link.status, "rejected"),
-            gt(link.decidedAt, daysAgo(LINK_LIMITS.rejectCooldownDays)),
-          ),
-        ),
-      ),
-    );
-  if (rows.some((row) => row.status !== "rejected"))
-    throw new ProposeRefused("exists");
-  if (rows.length > 0) throw new ProposeRefused("cooldown");
-}
-
-async function insertLink(tx: Tx, input: ProposeLinkInput, userId: string) {
-  await withdrawStaleProposals(tx);
   const [mine] = await tx
     .select({
       id: entry.id,
@@ -94,38 +38,68 @@ async function insertLink(tx: Tx, input: ProposeLinkInput, userId: string) {
       and(
         eq(entry.id, input.fromEntryId),
         eq(entry.ownerUserId, userId),
+        isNull(entry.erasureRequestedAt),
         publicEntryCondition(),
       ),
     )
     .limit(1);
   if (!mine) throw new NotFoundError();
+  return mine;
+}
 
+async function findRecipient(
+  tx: Tx,
+  targetId: string,
+  proposerEntryId: string,
+  userId: string,
+) {
+  const [row] = await tx
+    .select({ name: entry.name, ownerUserId: entry.ownerUserId })
+    .from(entry)
+    .where(
+      and(
+        eq(entry.id, targetId),
+        ne(entry.id, proposerEntryId),
+        isNull(entry.erasureRequestedAt),
+        publicEntryCondition(),
+      ),
+    )
+    .limit(1);
+  if (!row || row.ownerUserId === userId)
+    throw new ProposeRefused("target_unavailable");
+  return row;
+}
+
+async function insertLink(tx: Tx, input: ProposeLinkInput, userId: string) {
+  const mine = await findProposerEntry(tx, input, userId);
   const outside = input.target.type === "outside";
   let targetId: string;
   let recipient: { name: string; ownerUserId: string | null } | null = null;
   if (input.target.type === "outside") {
-    const locale = mine.sourceLocale === "hr" ? "hr" : "en";
-    targetId = await createOutsidePartner(tx, input.target, locale, userId);
+    targetId = await findOrCreateOutsidePartner(
+      tx,
+      mine.id,
+      input.target,
+      mine.sourceLocale === "hr" ? "hr" : "en",
+      userId,
+    );
   } else {
     targetId = input.target.entryId;
-    const [row] = await tx
-      .select({ name: entry.name, ownerUserId: entry.ownerUserId })
-      .from(entry)
-      .where(
-        and(
-          eq(entry.id, targetId),
-          ne(entry.id, mine.id),
-          publicEntryCondition(),
-        ),
-      )
-      .limit(1);
-    if (!row || row.ownerUserId === userId)
-      throw new ProposeRefused("target_unavailable");
-    recipient = row;
+    recipient = await findRecipient(tx, targetId, mine.id, userId);
   }
 
-  await assertFree(tx, input, targetId);
   const oriented = orientLink(input.kind, mine.id, targetId, input.direction);
+  // A stale proposal for this exact link would block the new one until the daily job runs.
+  await withdrawStaleProposals(
+    tx,
+    and(
+      eq(link.fromId, oriented.fromId),
+      eq(link.toId, oriented.toId),
+      eq(link.kind, input.kind),
+    ),
+  );
+  await assertLinkFree(tx, input.kind, oriented);
+
   const [created] = await tx
     .insert(link)
     .values({
@@ -160,6 +134,7 @@ async function insertLink(tx: Tx, input: ProposeLinkInput, userId: string) {
       toId: created.toId,
     },
   });
+  // An unclaimed target has no account to mail; the proposal shows on the account page after a claim.
   if (recipient?.ownerUserId)
     await queueProposalEmail(tx, {
       linkId: created.id,
@@ -171,36 +146,12 @@ async function insertLink(tx: Tx, input: ProposeLinkInput, userId: string) {
   return created.id;
 }
 
-interface IProposalMail {
-  linkId: string;
-  ownerUserId: string;
-  proposerName: string;
-  entryName: string;
-  input: ProposeLinkInput;
-}
-
-async function queueProposalEmail(tx: Tx, mail: IProposalMail) {
-  const [owner] = await tx
-    .select({ email: user.email, locale: user.locale, banned: user.banned })
-    .from(user)
-    .where(eq(user.id, mail.ownerUserId))
-    .limit(1);
-  if (!owner || owner.banned) return;
-  const locale = owner.locale === "hr" ? "hr" : "en";
-  await enqueueEmail(tx, {
-    template: "connection",
-    to: owner.email,
-    props: {
-      locale,
-      proposerName: mail.proposerName,
-      entryName: mail.entryName,
-      kind: mail.input.kind,
-      year: mail.input.year,
-      note: mail.input.note,
-      link: pageLink("/account/connections", locale),
-    },
-    idempotencyKey: `connection:${mail.linkId}`,
-  });
+function isUniqueViolation(error: unknown): boolean {
+  const { code, cause } = error as {
+    code?: string;
+    cause?: { code?: string };
+  };
+  return code === "23505" || cause?.code === "23505";
 }
 
 export async function proposeLink(
@@ -212,7 +163,7 @@ export async function proposeLink(
       {
         key: `link-propose:${userId}`,
         max: LINK_LIMITS.proposalsPerOwnerPerDay,
-        windowSeconds: 24 * 60 * 60,
+        windowSeconds: DAY_SECONDS,
       },
     ]);
     const linkId = await db.transaction((tx) => insertLink(tx, input, userId));
@@ -222,16 +173,8 @@ export async function proposeLink(
     if (error instanceof LimitError) return { ok: false, error: "limit" };
     if (error instanceof ProposeRefused)
       return { ok: false, error: error.code };
-    // Two requests racing past assertFree meet link_live_unique.
+    // Two requests racing past assertLinkFree meet link_live_unique.
     if (isUniqueViolation(error)) return { ok: false, error: "exists" };
     throw error;
   }
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  const cause = (error as { cause?: { code?: string } } | null)?.cause;
-  return (
-    (error as { code?: string } | null)?.code === "23505" ||
-    cause?.code === "23505"
-  );
 }
