@@ -1,3 +1,20 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "images_remove": "Ukloni sliku",
+  "images_none": "Još nema slike",
+  "images_hint": "JPEG, PNG ili WebP. SVG nije podržan.",
+  "images_crop_title": "Izreži sliku",
+  "images_crop_description": "Povuci sliku da je pomakneš, a klizačem je povećaj.",
+  "images_zoom": "Povećanje",
+  "images_alt_label": "Opis slike",
+  "images_alt_hint": "Opiši sliku za osobe koje je ne vide. Ako je slika samo logotip, ostavi naziv.",
+  "images_use": "Koristi ovu sliku",
+  "images_working": "Priprema slike",
+  "images_error_type": "Ova vrsta datoteke nije podržana. Odaberi JPEG, PNG ili WebP sliku.",
+  "images_error_too_big": "Datoteka je prevelika. Odaberi sliku manju od {size} MB.",
+  "images_error_decode": "Nismo mogli pročitati ovu sliku. Probaj drugu datoteku.",
+  "images_error_upload": "Sliku nije bilo moguće spremiti. Pokušaj ponovno.",
+  "images_error_limit": "Nedavno je učitano previše slika. Pokušaj kasnije.",
+  "images_error_too_small": "Ova je slika premala. Odaberi sliku koja je široka i visoka najmanje {size} piksela.",
+  "images_error_dimensions": "Ova veličina slike nije prihvaćena. Ponovno je izreži ili odaberi drugu sliku."
 }
