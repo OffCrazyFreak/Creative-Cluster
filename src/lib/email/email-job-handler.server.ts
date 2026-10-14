@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client.server";
 import { job as jobTable } from "@/db/schema";
 import type { IEmailJobPayload } from "@/emails/email-types";
+import { isSuppressed } from "@/features/claims/email-suppression.server";
 import { scrubContactJob } from "@/features/contact/scrub-contact-job.server";
 import {
   PermanentJobError,
@@ -35,6 +36,12 @@ export async function handleEmailJob(
 ): ReturnType<JobHandler> {
   if (!isEmailPayload(payload))
     throw new PermanentJobError("Malformed email job payload");
+  // Someone may have used the removal link after the mail was queued.
+  if (
+    (payload.template === "claim" || payload.template === "claim_reminder") &&
+    (await isSuppressed(db, payload.to))
+  )
+    throw new PermanentJobError("Address is on the suppression list");
   const now = new Date();
   if (!maySend(job.priority, await countSentToday(now, job.id))) {
     return { deferUntil: startOfNextUtcDay(now) };
