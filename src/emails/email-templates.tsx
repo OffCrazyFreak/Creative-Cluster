@@ -26,6 +26,9 @@ import ReportDigestEmail, {
 import BlockedEmail, { subject as blockedSubject } from "./blocked-email";
 import ChangeEmail, { subject as changeSubject } from "./change-email";
 import ClaimEmail, { subject as claimSubject } from "./claim-email";
+import ClaimReminderEmail, {
+  subject as claimReminderSubject,
+} from "./claim-reminder-email";
 import ContactEmail, { subject as contactSubject } from "./contact-email";
 import ConnectionEmail, {
   subject as connectionSubject,
@@ -64,6 +67,11 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <ClaimEmail {...props} />,
     subject: claimSubject,
     previewProps: ClaimEmail.PreviewProps,
+  },
+  claim_reminder: {
+    element: (props) => <ClaimReminderEmail {...props} />,
+    subject: claimReminderSubject,
+    previewProps: ClaimReminderEmail.PreviewProps,
   },
   verify: {
     element: (props) => <VerifyEmail {...props} />,
