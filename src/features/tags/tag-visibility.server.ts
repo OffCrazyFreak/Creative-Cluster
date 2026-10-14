@@ -1,6 +1,10 @@
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
 
+import type { DbOrTx } from "@/db/client.server";
 import { tag } from "@/db/schema";
+import type { AppLocale } from "@/constants/locales";
+
+import { foldText, tagAliases, tagLabel } from "./tag-label";
 
 // Merged tags (canonical_id set) are never offered again; their entries were repointed.
 export const publicTagCondition = and(
@@ -40,3 +44,24 @@ export const tagOptionColumns = {
   parentId: tag.parentId,
   status: tag.status,
 };
+
+// Accents and case are ignored, and aliases count as the tag's label.
+export async function findUsableTag(
+  executor: DbOrTx,
+  {
+    userId,
+    label,
+    locale,
+  }: { userId: string; label: string; locale: AppLocale },
+) {
+  const visible = await executor
+    .select(tagOptionColumns)
+    .from(tag)
+    .where(usableTagCondition({ userId }));
+  const folded = foldText(label);
+  return visible.find((option) =>
+    [tagLabel(option, locale), ...tagAliases(option, locale)].some(
+      (text) => foldText(text) === folded,
+    ),
+  );
+}
