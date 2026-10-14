@@ -80,5 +80,11 @@
   "connections_role_mentor_outgoing": "Moj unos mentorira partnera",
   "connections_role_mentor_incoming": "Partner mentorira moj unos",
   "connections_unclaimed_listing": "Unos bez vlasnika: {name}",
-  "connections_err_too_long": "Upiši najviše {max} znakova."
+  "connections_err_too_long": "Upiši najviše {max} znakova.",
+  "connections_public_heading": "Veze",
+  "connections_graph_label": "Dijagram ovog unosa i njegovih veza. Popis ispod sadrži iste podatke.",
+  "connections_graph_more": "i još {count} u popisu",
+  "connections_unverified_heading": "Neprovjerene veze",
+  "connections_unverified_hint": "Ovaj unos dodao je ove veze bez potvrde partnera.",
+  "connections_list_link": "Prikaži cijeli popis"
 }

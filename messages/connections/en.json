@@ -80,5 +80,11 @@
   "connections_role_mentor_outgoing": "My listing mentors the partner",
   "connections_role_mentor_incoming": "The partner mentors my listing",
   "connections_unclaimed_listing": "Listing without an owner: {name}",
-  "connections_err_too_long": "Use at most {max} characters."
+  "connections_err_too_long": "Use at most {max} characters.",
+  "connections_public_heading": "Connections",
+  "connections_graph_label": "Diagram of this listing and its connections. The list below has the same information.",
+  "connections_graph_more": "and {count} more in the list",
+  "connections_unverified_heading": "Unverified connections",
+  "connections_unverified_hint": "This listing added these without confirmation from the partner.",
+  "connections_list_link": "Show the full list"
 }

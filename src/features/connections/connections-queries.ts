@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 import {
   getMyConnections,
+  getPublicConnections,
   getPendingProposalCount,
   getUnclaimedProposals,
   searchConnectionTargets,
@@ -36,5 +37,13 @@ export function targetSearchQuery(query: string) {
     queryFn: ({ signal }) =>
       searchConnectionTargets({ data: { query }, signal }),
     staleTime: 30_000,
+  });
+}
+
+export function publicConnectionsQuery(entryId: string) {
+  return queryOptions({
+    queryKey: [...CONNECTIONS_QUERY_KEY, "public", entryId],
+    queryFn: () => getPublicConnections({ data: { entryId } }),
+    staleTime: 60_000,
   });
 }

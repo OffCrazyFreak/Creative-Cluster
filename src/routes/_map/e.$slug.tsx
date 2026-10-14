@@ -8,6 +8,7 @@ import { entryQueryOptions } from "@/features/entry/entry-queries";
 import { placeLine } from "@/features/entry/components/entry-location";
 import { useTrackEntryView } from "@/features/entry/use-track-entry-view";
 import { needsNoindex } from "@/features/translation/translation-indexing";
+import { publicConnectionsQuery } from "@/features/connections/connections-queries";
 import { entryTranslationQueryOptions } from "@/features/translation/translation-queries";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
@@ -38,6 +39,11 @@ export const Route = createFileRoute("/_map/e/$slug")({
             ),
           )
         : null;
+    // Prefetched so the connections list and the graph are in the server-rendered HTML.
+    if (result.status === "found")
+      await context.queryClient.prefetchQuery(
+        publicConnectionsQuery(result.entry.id),
+      );
     return { ...result, translation };
   },
   head: ({ loaderData, params }) => {
