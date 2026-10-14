@@ -8,6 +8,7 @@ import { entryQueryOptions } from "@/features/entry/entry-queries";
 import { placeLine } from "@/features/entry/components/entry-location";
 import { useTrackEntryView } from "@/features/entry/use-track-entry-view";
 import { needsNoindex } from "@/features/translation/translation-indexing";
+import { publicConnectionsQuery } from "@/features/connections/connections-queries";
 import { entryTranslationQueryOptions } from "@/features/translation/translation-queries";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
@@ -28,16 +29,24 @@ export const Route = createFileRoute("/_map/e/$slug")({
         params: { slug: result.slug },
         statusCode: 301,
       });
-    const translation =
+    // Connections are prefetched so the list is in the server-rendered HTML; they load alongside
+    // the translation instead of after it.
+    const [translation] = await Promise.all([
       result.status === "found" && result.entry.sourceLocale !== getLocale()
-        ? await context.queryClient.fetchQuery(
+        ? context.queryClient.fetchQuery(
             entryTranslationQueryOptions(
               result.entry.id,
               getLocale(),
               context.viewer?.id ?? null,
             ),
           )
-        : null;
+        : null,
+      result.status === "found"
+        ? context.queryClient.prefetchQuery(
+            publicConnectionsQuery(result.entry.id),
+          )
+        : null,
+    ]);
     return { ...result, translation };
   },
   head: ({ loaderData, params }) => {
