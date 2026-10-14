@@ -1,6 +1,7 @@
 import type { EmailExpiry, EmailTemplateName } from "@/constants/email";
 import type { AppLocale } from "@/constants/locales";
 import type { ReasonCode } from "@/constants/moderation";
+import type { LinkKind } from "@/constants/links";
 
 // Props are plain JSON because they are stored in the job payload.
 export interface IBaseEmailProps {
@@ -125,6 +126,36 @@ export interface IErasureDoneEmailProps extends IBaseEmailProps {
   entryName: string | null;
 }
 
+export interface IContactEmailProps extends IBaseEmailProps {
+  entryName: string;
+  senderName: string;
+  senderEmail: string;
+  messageText: string;
+  // The "Report this message" link; named link like every other template's main link.
+  link: string;
+}
+
+export interface ITermsEmailProps extends IBaseEmailProps {
+  name: string;
+  summary: string;
+  effectiveDate: string;
+  link: string;
+}
+
+export interface IBlockedEmailProps extends IBaseEmailProps {
+  name: string;
+  reason: string;
+}
+
+export interface IConnectionEmailProps extends IBaseEmailProps {
+  proposerName: string;
+  entryName: string;
+  kind: LinkKind;
+  year: number | null;
+  note: string | null;
+  link: string;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
@@ -143,6 +174,10 @@ export interface IEmailPropsMap {
   suspended: ISuspendedEmailProps;
   erasure_scheduled: IErasureScheduledEmailProps;
   erasure_done: IErasureDoneEmailProps;
+  contact: IContactEmailProps;
+  terms: ITermsEmailProps;
+  blocked: IBlockedEmailProps;
+  connection: IConnectionEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

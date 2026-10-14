@@ -23,8 +23,13 @@ import ErasureScheduledEmail, {
 import ReportDigestEmail, {
   subject as reportDigestSubject,
 } from "./report-digest-email";
+import BlockedEmail, { subject as blockedSubject } from "./blocked-email";
 import ChangeEmail, { subject as changeSubject } from "./change-email";
 import ClaimEmail, { subject as claimSubject } from "./claim-email";
+import ContactEmail, { subject as contactSubject } from "./contact-email";
+import ConnectionEmail, {
+  subject as connectionSubject,
+} from "./connection-email";
 import type { EmailPropsOf } from "./email-types";
 import InviteEmail, { subject as inviteSubject } from "./invite-email";
 import OpportunityApprovedEmail, {
@@ -37,6 +42,7 @@ import OpportunityRemovedEmail, {
   subject as opportunityRemovedSubject,
 } from "./opportunity-removed-email";
 import ResetEmail, { subject as resetSubject } from "./reset-email";
+import TermsEmail, { subject as termsSubject } from "./terms-email";
 import VerifyEmail, { subject as verifySubject } from "./verify-email";
 
 interface ITemplate<P> {
@@ -133,5 +139,25 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <ErasureDoneEmail {...props} />,
     subject: erasureDoneSubject,
     previewProps: ErasureDoneEmail.PreviewProps,
+  },
+  contact: {
+    element: (props) => <ContactEmail {...props} />,
+    subject: contactSubject,
+    previewProps: ContactEmail.PreviewProps,
+  },
+  terms: {
+    element: (props) => <TermsEmail {...props} />,
+    subject: termsSubject,
+    previewProps: TermsEmail.PreviewProps,
+  },
+  blocked: {
+    element: (props) => <BlockedEmail {...props} />,
+    subject: blockedSubject,
+    previewProps: BlockedEmail.PreviewProps,
+  },
+  connection: {
+    element: (props) => <ConnectionEmail {...props} />,
+    subject: connectionSubject,
+    previewProps: ConnectionEmail.PreviewProps,
   },
 };

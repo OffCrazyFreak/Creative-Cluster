@@ -1,0 +1,10 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "notices_terms_subject": "Mijenjamo uvjete korištenja stranice {siteName}",
+  "notices_terms_preheader": "Promjene vrijede od {effectiveDate}.",
+  "notices_terms_body": "Pozdrav, {name}. Mijenjamo uvjete korištenja stranice {siteName}. Ukratko: {summary}. Nove uvjete možeš pročitati na poveznici ispod. Promjene vrijede od {effectiveDate}. Ako se ne slažeš, svoj unos i račun možeš izbrisati u postavkama računa.",
+  "notices_terms_button": "Pročitaj nove uvjete",
+  "notices_blocked_subject": "Tvoj račun na stranici {siteName} je blokiran",
+  "notices_blocked_preheader": "Razlog i kako se žaliti.",
+  "notices_blocked_body": "Pozdrav, {name}. Tvoj račun na stranici {siteName} je blokiran. Razlog: {reason}. Tvoj unos ostaje vidljiv dok ga administrator zasebno ne skloni. Ako misliš da je to pogreška, piši na {contactEmail}."
+}
