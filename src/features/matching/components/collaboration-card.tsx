@@ -17,11 +17,15 @@ import MatchReasonLine from "./match-reason-line";
 interface ICollaborationCardProps {
   card: ICollaborationCard;
   locale: AppLocale;
+  entryName: string;
+  viewerOwns: boolean;
 }
 
 export default function CollaborationCardItem({
   card,
   locale,
+  entryName,
+  viewerOwns,
 }: ICollaborationCardProps) {
   const place = [card.city, card.countryCode].filter(Boolean).join(", ");
   return (
@@ -47,6 +51,8 @@ export default function CollaborationCardItem({
             key={reason.relation}
             reason={reason}
             locale={locale}
+            entryName={entryName}
+            viewerOwns={viewerOwns}
           />
         ))}
       </CardContent>

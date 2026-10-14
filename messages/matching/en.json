@@ -6,5 +6,7 @@
   "matching_strength_possible": "Possible match",
   "matching_reason_offers": "They offer {tags}, which you seek.",
   "matching_reason_seeks": "They seek {tags}, which you offer.",
-  "matching_reason_topic": "Shared topics: {tags}."
+  "matching_reason_topic": "Shared topics: {tags}.",
+  "matching_reason_offers_entry": "They offer {tags}, which {name} seeks.",
+  "matching_reason_seeks_entry": "They seek {tags}, which {name} offers."
 }

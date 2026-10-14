@@ -26,6 +26,12 @@ export interface ICollaborationCard {
   reasons: IMatchReason[];
 }
 
+export interface ICollaborationView extends ICollaborationResult {
+  entryName: string;
+  /** True when the reader owns the entry whose page is shown. */
+  viewerOwns: boolean;
+}
+
 export interface ICollaborationResult {
   /** "similar" is the topic-only fallback for entries with no offering or seeking tags. */
   mode: "collaborate" | "similar";

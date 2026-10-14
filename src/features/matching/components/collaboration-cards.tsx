@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useRouteContext } from "@tanstack/react-router";
 import { useId } from "react";
 
 import type { AppLocale } from "@/constants/locales";
@@ -20,7 +21,8 @@ export default function CollaborationCards({
   locale = getLocale(),
 }: ICollaborationCardsProps) {
   const headingId = useId();
-  const { data } = useQuery(collaborationQuery(entryId));
+  const { viewer } = useRouteContext({ from: "__root__" });
+  const { data } = useQuery(collaborationQuery(entryId, viewer?.id ?? null));
   if (!data || data.cards.length === 0) return null;
 
   return (
@@ -33,7 +35,12 @@ export default function CollaborationCards({
       <ul className="grid gap-3 sm:grid-cols-3">
         {data.cards.map((card) => (
           <li key={card.entryId}>
-            <CollaborationCardItem card={card} locale={locale} />
+            <CollaborationCardItem
+              card={card}
+              locale={locale}
+              entryName={data.entryName}
+              viewerOwns={data.viewerOwns}
+            />
           </li>
         ))}
       </ul>
