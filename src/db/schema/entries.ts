@@ -26,6 +26,10 @@ import {
   type LocationSource,
 } from "@/constants/entry";
 import { LOCALES } from "@/constants/locales";
+import {
+  SUPPRESSION_REASONS,
+  type SuppressionReason,
+} from "@/constants/import";
 import type { RichTextDoc } from "@/typings/rich-text";
 
 import { createdAt, id, oneOf, timestamptz, updatedAt } from "../columns";
@@ -140,4 +144,21 @@ export const claimInvite = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index().on(t.entryId)],
+);
+
+// People who asked not to be written to again. Only a keyed hash is kept, so the list cannot be read back as addresses.
+export const emailSuppression = pgTable(
+  "email_suppression",
+  {
+    id: id(),
+    emailHash: text().notNull().unique("email_suppression_email_hash_unique"),
+    reason: text().$type<SuppressionReason>().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check(
+      "email_suppression_reason_check",
+      oneOf(t.reason, SUPPRESSION_REASONS),
+    ),
+  ],
 );
