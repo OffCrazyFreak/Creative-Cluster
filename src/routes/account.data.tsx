@@ -1,7 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import PagePlaceholder from "@/components/custom/layout/page-placeholder";
+import AccountDataPage from "@/features/lifecycle/components/account-data-page";
+import {
+  erasureStateQueryOptions,
+  ownListingStatusQueryOptions,
+} from "@/features/lifecycle/lifecycle-queries";
 
 export const Route = createFileRoute("/account/data")({
-  component: () => <PagePlaceholder title="My data" />,
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(ownListingStatusQueryOptions()),
+      context.queryClient.ensureQueryData(erasureStateQueryOptions()),
+    ]),
+  component: AccountDataPage,
 });
