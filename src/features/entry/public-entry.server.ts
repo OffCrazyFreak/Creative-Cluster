@@ -4,6 +4,7 @@ import { db } from "@/db/client.server";
 import { entry, slugHistory } from "@/db/schema";
 
 import type { EntryPageResult } from "./entry-schemas";
+import { loadEntryImages } from "./entry-images.server";
 import { loadPublicTags } from "./entry-tags.server";
 import { publicEntryCondition } from "./public-entry-filter.server";
 import { redactEntry } from "./redact-entry";
@@ -42,9 +43,10 @@ export async function findEntryForPage(
   if (row.slug !== slug) return { status: "redirect", slug: row.slug };
 
   const tags = await loadPublicTags(db, [row.id]);
+  const images = await loadEntryImages(db, row);
   return {
     status: "found",
-    entry: redactEntry(row, tags.get(row.id) ?? [], isMember),
+    entry: redactEntry(row, tags.get(row.id) ?? [], isMember, images),
   };
 }
 

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import PageContainer from "@/components/custom/layout/page-container";
 import { m } from "@/paraglide/messages";
 
 import type { IListItem } from "../directory-schemas";
@@ -27,7 +28,7 @@ export default function DirectoryListPage({
   children,
 }: IDirectoryListPageProps) {
   return (
-    <section className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-4 sm:p-8">
+    <PageContainer>
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold">{title}</h1>
         {intro ? <p>{intro}</p> : null}
@@ -51,6 +52,6 @@ export default function DirectoryListPage({
         )}
         <DirectoryPagination page={page} pageCount={pageCount} />
       </section>
-    </section>
+    </PageContainer>
   );
 }

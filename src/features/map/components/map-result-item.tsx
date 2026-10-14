@@ -7,6 +7,7 @@ import type {
   IDirectoryEntry,
   IDirectoryTag,
 } from "@/features/directory/directory-schemas";
+import EntryImage from "@/features/images/components/entry-image";
 import { tagLabel } from "@/features/directory/tag-label";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
@@ -19,6 +20,7 @@ interface IMapResultItemProps {
 }
 
 const MAX_TAGS = 3;
+const LOGO_SIZE = 40;
 
 function MapResultItem({ entry, tags }: IMapResultItemProps) {
   const setHoveredSlug = useContext(SetHoveredSlugContext);
@@ -36,33 +38,48 @@ function MapResultItem({ entry, tags }: IMapResultItemProps) {
 
   return (
     <li
-      className="flex flex-col gap-1"
+      className="flex gap-3"
       onMouseEnter={() => setHoveredSlug(entry.slug)}
       onMouseLeave={() => setHoveredSlug(null)}
       onFocus={() => setHoveredSlug(entry.slug)}
       onBlur={() => setHoveredSlug(null)}
     >
-      <h3 className="font-semibold">
-        <Link to="/e/$slug" params={{ slug: entry.slug }}>
-          {entry.name}
-        </Link>
-      </h3>
-      <p className="text-sm">{[kind, place].filter(Boolean).join(" · ")}</p>
-      {entry.blurb ? <p className="text-sm">{entry.blurb}</p> : null}
-      {entry.tags.length > 0 ? (
-        <ul className="flex flex-wrap gap-1">
-          {entry.tags.slice(0, MAX_TAGS).map((index) => (
-            <li key={tags[index].slug}>
-              <Badge variant="secondary">
-                {tagLabel(
-                  { labelEn: tags[index].en, labelHr: tags[index].hr },
-                  locale,
-                )}
-              </Badge>
-            </li>
-          ))}
-        </ul>
+      {entry.logo ? (
+        <EntryImage
+          image={entry.logo}
+          alt=""
+          width={LOGO_SIZE}
+          height={LOGO_SIZE}
+          className="size-10 shrink-0 object-contain"
+        />
       ) : null}
+      <div className="flex min-w-0 flex-col gap-1">
+        <h3 className="font-semibold">
+          <Link
+            to="/e/$slug"
+            params={{ slug: entry.slug }}
+            className="inline-block py-1"
+          >
+            {entry.name}
+          </Link>
+        </h3>
+        <p className="text-sm">{[kind, place].filter(Boolean).join(" · ")}</p>
+        {entry.blurb ? <p className="text-sm">{entry.blurb}</p> : null}
+        {entry.tags.length > 0 ? (
+          <ul className="flex flex-wrap gap-1">
+            {entry.tags.slice(0, MAX_TAGS).map((index) => (
+              <li key={tags[index].slug}>
+                <Badge variant="secondary">
+                  {tagLabel(
+                    { labelEn: tags[index].en, labelHr: tags[index].hr },
+                    locale,
+                  )}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
     </li>
   );
 }

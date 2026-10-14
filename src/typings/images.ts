@@ -9,6 +9,11 @@ export interface IUploadedImage extends IImageRef {
   height: number;
 }
 
+// An entry image as the public pages receive it; the alt text is optional because the owner may leave it out.
+export interface IPublicImage extends IUploadedImage {
+  altText: string | null;
+}
+
 // Value of ImageUploadField: the alt text belongs to the entry, not to the shared image row.
 export interface IImageFieldValue extends IUploadedImage {
   altText: string;
