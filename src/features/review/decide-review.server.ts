@@ -7,6 +7,7 @@ import { decideSuggestion } from "@/features/tags/decide-suggestion.server";
 import { afterOpportunityChange } from "@/features/opportunities/opportunity-effects.server";
 import {
   OpportunityDeadlinePassedError,
+  OpportunityLimitError,
   OpportunityDecisionError,
 } from "@/features/opportunities/opportunity-errors";
 import { NotFoundError } from "@/server/errors";
@@ -172,7 +173,10 @@ export async function decideReviewItems(
         await dismissStale(id, adminId);
       } else if (error instanceof OpportunityDeadlinePassedError) {
         outcome = "expired";
-      } else if (error instanceof OpportunityDecisionError) {
+      } else if (
+        error instanceof OpportunityDecisionError ||
+        error instanceof OpportunityLimitError
+      ) {
         outcome = "failed";
       } else {
         console.error("review decision failed", id, error);

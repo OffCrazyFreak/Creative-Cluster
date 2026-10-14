@@ -44,8 +44,10 @@ function restorableFields(log: LogRow, current?: EntryRow): string[] {
         (field) =>
           !(field in before) ||
           (current !== undefined &&
-            field in after &&
-            !dequal(current[field as keyof EntryRow], after[field])),
+            !(
+              field in after &&
+              dequal(current[field as keyof EntryRow], after[field])
+            )),
       )
       .map(revertFieldGroup),
   );

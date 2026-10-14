@@ -39,8 +39,9 @@ export default function ChangesFilters({
       className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end"
       onSubmit={(event) => {
         event.preventDefault();
+        if (entityId !== "" && !idValid) return;
         onChange({
-          entityId: idValid ? entityId.toLowerCase() : undefined,
+          entityId: entityId === "" ? undefined : entityId.toLowerCase(),
           page: 1,
         });
       }}
