@@ -18,6 +18,7 @@ interface IApplyPageProps {
   resubmitToken?: string;
   // Null means the edit link is no longer usable.
   initial?: ApplicationFormValues | null;
+  formToken: string;
 }
 
 interface ISent {
@@ -25,7 +26,11 @@ interface ISent {
   email: string;
 }
 
-export default function ApplyPage({ resubmitToken, initial }: IApplyPageProps) {
+export default function ApplyPage({
+  resubmitToken,
+  initial,
+  formToken,
+}: IApplyPageProps) {
   const [sent, setSent] = useState<ISent | null>(null);
   const isClient = useIsClient();
   // The draft lives in this browser only, so it can be read after hydration; the form then remounts with it.
@@ -63,6 +68,7 @@ export default function ApplyPage({ resubmitToken, initial }: IApplyPageProps) {
           }
           draftRestored={Boolean(draft)}
           resubmitToken={resubmitToken}
+          formToken={formToken}
           onSent={handleSent}
         />
       )}

@@ -5,7 +5,9 @@ import { db } from "@/db/client.server";
 import { entry } from "@/db/schema";
 import { writeChange } from "@/lib/change-log/write-change.server";
 
-import { enterReviewQueue } from "./apply.server";
+import { allocateSlug } from "@/features/entry/slug.server";
+
+import { DRAFT_SLUG_PREFIX, enterReviewQueue } from "./apply.server";
 import type { VerifyApplicationResult } from "./apply-schemas";
 import { entryIdForToken } from "./application-tokens.server";
 
@@ -38,9 +40,13 @@ export async function verifyApplication(
     if (row.status !== "draft")
       return { status: "already", entryName: row.name } as const;
 
+    // The slug is reserved only now that the address is confirmed.
+    const slug = row.slug.startsWith(DRAFT_SLUG_PREFIX)
+      ? await allocateSlug(tx, row.name)
+      : row.slug;
     await tx
       .update(entry)
-      .set({ status: "pending" })
+      .set({ status: "pending", slug })
       .where(eq(entry.id, row.id));
     await writeChange(tx, {
       entityType: "entry",

@@ -13,6 +13,8 @@ interface ICountrySelectProps {
   id: string;
   value: string | null;
   onChange: (code: string) => void;
+  invalid?: boolean;
+  describedBy?: string;
 }
 
 function countryItems() {
@@ -27,6 +29,8 @@ export default function CountrySelect({
   id,
   value,
   onChange,
+  invalid,
+  describedBy,
 }: ICountrySelectProps) {
   const items = countryItems();
   return (
@@ -35,7 +39,12 @@ export default function CountrySelect({
       value={value}
       onValueChange={(code) => code && onChange(code)}
     >
-      <SelectTrigger id={id} className="w-full">
+      <SelectTrigger
+        id={id}
+        className="w-full"
+        aria-invalid={invalid}
+        aria-describedby={describedBy}
+      >
         <SelectValue placeholder={m.location_country_placeholder()} />
       </SelectTrigger>
       <SelectContent>

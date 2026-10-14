@@ -22,17 +22,25 @@ import {
 import CountrySelect from "./country-select";
 import { useAddressSearch } from "./use-address-search";
 
+// Same cap as locationValueSchema.city.
+const CITY_MAX_LENGTH = 120;
+
 export interface IAddressFieldProps {
   value: LocationValue;
   onChange: (value: LocationValue) => void;
   // Country preselected for new entries (the site's home country); the user can still change it.
   defaultCountryCode?: string;
+  // Set by the form when the location failed validation; ties the controls to the error text.
+  invalid?: boolean;
+  describedBy?: string;
 }
 
 export default function AddressField({
   value,
   onChange,
   defaultCountryCode,
+  invalid,
+  describedBy,
 }: IAddressFieldProps) {
   const base = useId();
   const [inputValue, setInputValue] = useState(value.addressText ?? "");
@@ -95,6 +103,8 @@ export default function AddressField({
         </FieldLabel>
         <CountrySelect
           id={`${base}-country`}
+          invalid={invalid}
+          describedBy={describedBy}
           value={countryCode}
           onChange={(code) => {
             // A new country invalidates the old pick, so nothing stale is saved under it.
@@ -110,6 +120,8 @@ export default function AddressField({
         </FieldLabel>
         <AddressCombobox
           id={`${base}-address`}
+          invalid={invalid}
+          describedBy={describedBy}
           options={toOptions(search.hits, m.location_manual_row())}
           inputValue={inputValue}
           open={open}
@@ -135,6 +147,9 @@ export default function AddressField({
           </FieldLabel>
           <Input
             id={`${base}-city`}
+            maxLength={CITY_MAX_LENGTH}
+            aria-invalid={invalid}
+            aria-describedby={describedBy}
             value={value.city ?? ""}
             onChange={(event) =>
               onChange(

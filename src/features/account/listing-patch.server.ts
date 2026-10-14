@@ -1,10 +1,10 @@
 import { SOCIAL_PLATFORMS } from "@/constants/account";
 import type { EntryKind } from "@/constants/entry";
 import type { entry } from "@/db/schema";
-import { site } from "@/sites";
 import { applyPersonOffset } from "@/features/location/person-offset-fn.server";
 import { normalizeHttpUrl } from "@/utils/http-url";
 
+import { hasLegalStatus } from "./listing-rules";
 import type { ListingInput } from "./listing-schemas";
 
 type EntryRow = typeof entry.$inferSelect;
@@ -35,7 +35,7 @@ function extraOf(
   const { legal_status: _legal, ...rest } = current;
   return {
     ...rest,
-    ...(site.id === "rpcc" && kind !== "person" && input.legalStatus
+    ...(hasLegalStatus(kind) && input.legalStatus
       ? { legal_status: input.legalStatus }
       : {}),
     references: input.references.doc,
