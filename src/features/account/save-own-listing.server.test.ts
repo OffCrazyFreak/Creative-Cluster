@@ -80,15 +80,16 @@ describe.skipIf(!temp)("saveOwnListing", () => {
     await temp?.drop();
   });
 
+  async function distrust(id: string) {
+    await db
+      .update(schema.entry)
+      .set({ trusted: false })
+      .where(eq(schema.entry.id, id));
+  }
   async function setup(trusted = true) {
     const owner = await addUser(db, "owner");
     const row = await addEntry(db, "Studio", {}, { ownerUserId: owner.id });
-    if (!trusted) {
-      await db
-        .update(schema.entry)
-        .set({ trusted: false })
-        .where(eq(schema.entry.id, row.id));
-    }
+    if (!trusted) await distrust(row.id);
     return { owner, row };
   }
   async function reload(id: string) {
@@ -243,6 +244,37 @@ describe.skipIf(!temp)("saveOwnListing", () => {
         .where(eq(schema.reviewItem.entityId, row.id))
     ).filter((item) => item.status === "open");
     expect(open).toHaveLength(1);
+  });
+
+  it("closes the pending edit when an untrusted owner reverts to the live values", async () => {
+    const { owner, row } = await setup();
+    const live = parse(formValues());
+    await saveOwnListing({ entryId: row.id, userId: owner.id, values: live });
+    await distrust(row.id);
+    const pending = await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues({ name: "Studio Changed" })),
+    });
+    expect(pending).toEqual({ status: "pending_review" });
+    const logsBefore = await db.select().from(schema.changeLog);
+    const reverted = await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: live,
+    });
+    expect(reverted).toEqual({ status: "saved", changed: false });
+    const items = await db
+      .select()
+      .from(schema.reviewItem)
+      .where(eq(schema.reviewItem.entityId, row.id));
+    expect(items.map((item) => item.status)).toEqual(["dismissed"]);
+    expect(items[0].decidedAt).toBeInstanceOf(Date);
+    expect((await findOwnListing(owner.id))?.hasPendingEdit).toBe(false);
+    expect((await reload(row.id)).name).toBe(live.name);
+    expect(await db.select().from(schema.changeLog)).toHaveLength(
+      logsBefore.length,
+    );
   });
 
   it("drops the pin of a person when a forged location carries no town population", async () => {

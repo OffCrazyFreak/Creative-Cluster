@@ -22,6 +22,8 @@ const { decideReviewItems } = await import("./decide-review.server");
 const { listReviewItems } = await import("./review-queue.server");
 const { createReport } = await import("./report.server");
 const { queueReviewDigests } = await import("./review-digest.server");
+const { BOUNCE_SOURCE } =
+  await import("@/features/contact/bounce-events.server");
 
 function application(name: string, email: string): ApplicationInput {
   return {
@@ -324,6 +326,89 @@ describe.skipIf(!temp)("review services", () => {
       (j) => (j.payload as { template?: string }).template === "report_digest",
     );
     expect(digests).toHaveLength(1);
+  });
+
+  it("writes digest lines in each admin's language, opportunity reports included", async () => {
+    await admin();
+    await db.insert(schema.user).values({
+      name: "Admin HR",
+      email: "admin-hr@example.test",
+      role: "admin",
+      locale: "hr",
+    });
+    const listing = await addEntry(db, "Digest Language Place");
+    await createReport({ entryId: listing.id, reason: "spam", message: "" });
+    const bounced = await addEntry(db, "Digest Bounce Place");
+    const [post] = await db
+      .insert(schema.opportunity)
+      .values({
+        entryId: listing.id,
+        type: "seeking",
+        category: "partner",
+        title: "Digest Post",
+        body: { type: "doc", content: [] },
+        sourceLocale: "en",
+        expiresAt: new Date(Date.now() + 86_400_000),
+        status: "published",
+      })
+      .returning();
+    await db.insert(schema.reviewItem).values([
+      {
+        type: "report",
+        entityType: "opportunity",
+        entityId: post.id,
+        payload: { message: "" },
+      },
+      {
+        type: "report",
+        entityType: "entry",
+        entityId: bounced.id,
+        payload: { reason: "other", source: BOUNCE_SOURCE, message: "" },
+      },
+    ]);
+    await verifiedApplication("Digest Applicant", "digest@example.test");
+    await queueReviewDigests();
+
+    const lines = (await db.select().from(schema.job))
+      .map(
+        (j) =>
+          j.payload as {
+            template?: string;
+            to?: string;
+            props?: { items?: { name: string; detail: string }[] };
+          },
+      )
+      .filter((p) => p.template?.endsWith("_digest"))
+      .flatMap((p) =>
+        (p.props?.items ?? [])
+          .filter((item) => item.name.startsWith("Digest"))
+          .map((item) => [p.to, item.name, item.detail]),
+      );
+    expect(lines).toEqual(
+      expect.arrayContaining([
+        [
+          "admin@example.test",
+          "Digest Language Place",
+          "Spam or advertising, Today",
+        ],
+        [
+          "admin-hr@example.test",
+          "Digest Language Place",
+          "Neželjeni sadržaj ili reklama, Danas",
+        ],
+        ["admin@example.test", "Digest Post", "Opportunity, Today"],
+        [
+          "admin@example.test",
+          "Digest Bounce Place",
+          "Contact email stopped working, Today",
+        ],
+        [
+          "admin-hr@example.test",
+          "Digest Applicant",
+          "Organizacija, HR, Danas",
+        ],
+      ]),
+    );
   });
 
   it("applies and logs only the fields that differ from the live listing", async () => {

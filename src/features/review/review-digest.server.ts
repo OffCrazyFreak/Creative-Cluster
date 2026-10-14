@@ -1,20 +1,26 @@
-import { and, asc, count, eq, gte, lt } from "drizzle-orm";
+import { and, asc, count, eq, gte, isNotNull, lt, or, sql } from "drizzle-orm";
 
 import { LOCALES, type AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
-import { entry, reviewItem, usageCounter, user } from "@/db/schema";
-import type { IDigestItem } from "@/emails/email-types";
+import {
+  entry,
+  opportunity,
+  reviewItem,
+  usageCounter,
+  user,
+} from "@/db/schema";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
 import { site } from "@/sites";
 
-const DAY_MS = 86_400_000;
+import {
+  DAY_MS,
+  ageDays,
+  applicationLines,
+  reportLines,
+} from "./review-digest-lines";
 
-function ageDays(createdAt: Date, now: Date): number {
-  return Math.floor((now.getTime() - createdAt.getTime()) / DAY_MS);
-}
-
-async function recentItems(
+export async function recentItems(
   type: "application" | "report",
   since: Date,
   until: Date,
@@ -24,16 +30,32 @@ async function recentItems(
       id: reviewItem.id,
       createdAt: reviewItem.createdAt,
       payload: reviewItem.payload,
-      name: entry.name,
+      // Reports can target an opportunity post as well as a listing.
+      name: sql<string>`coalesce(${entry.name}, ${opportunity.title})`,
+      entityType: reviewItem.entityType,
       kind: entry.kind,
       countryCode: entry.countryCode,
     })
     .from(reviewItem)
-    .innerJoin(entry, eq(entry.id, reviewItem.entityId))
+    .leftJoin(
+      entry,
+      and(
+        eq(reviewItem.entityType, "entry"),
+        eq(entry.id, reviewItem.entityId),
+      ),
+    )
+    .leftJoin(
+      opportunity,
+      and(
+        eq(reviewItem.entityType, "opportunity"),
+        eq(opportunity.id, reviewItem.entityId),
+      ),
+    )
     .where(
       and(
         eq(reviewItem.type, type),
         eq(reviewItem.status, "open"),
+        or(isNotNull(entry.id), isNotNull(opportunity.id)),
         gte(reviewItem.createdAt, since),
         // Items after this run's start belong to the next window, not to both.
         lt(reviewItem.createdAt, until),
@@ -109,45 +131,32 @@ export async function queueReviewDigests(now = new Date()) {
   const openTotal = await openApplicationTotal();
   const oldestAgeDays = await oldestOpenApplication(now);
 
-  const applicationItems: IDigestItem[] = applications.map((row) => ({
-    name: row.name,
-    detail: [row.kind, row.countryCode, `${ageDays(row.createdAt, now)} d`]
-      .filter(Boolean)
-      .join(", "),
-    ageDays: ageDays(row.createdAt, now),
-  }));
-  const reportItems: IDigestItem[] = reports.map((row) => ({
-    name: row.name,
-    detail: typeof row.payload.reason === "string" ? row.payload.reason : "",
-    ageDays: ageDays(row.createdAt, now),
-  }));
-
   await db.transaction(async (tx) => {
     for (const admin of admins) {
       const locale = adminLocale(admin.locale);
       const link = pageLink("/admin", locale);
-      if (applicationItems.length > 0)
+      if (applications.length > 0)
         await enqueueEmail(tx, {
           template: "application_digest",
           to: admin.email,
           props: {
             locale,
-            count: applicationItems.length,
+            count: applications.length,
             openTotal,
             oldestAgeDays,
-            items: applicationItems,
+            items: applicationLines(applications, now, locale),
             link,
           },
           idempotencyKey: `digest:application:${window}:${admin.id}`,
         });
-      if (reportItems.length > 0)
+      if (reports.length > 0)
         await enqueueEmail(tx, {
           template: "report_digest",
           to: admin.email,
           props: {
             locale,
-            count: reportItems.length,
-            items: reportItems,
+            count: reports.length,
+            items: reportLines(reports, now, locale),
             link,
           },
           idempotencyKey: `digest:report:${window}:${admin.id}`,

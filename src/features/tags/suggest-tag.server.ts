@@ -9,14 +9,16 @@ import { LimitError } from "@/server/errors";
 import { slugify } from "@/utils/slugify";
 
 import { TagSelectionError } from "./tag-errors";
-import { foldText, tagAliases, tagLabel } from "./tag-label";
+import { foldText } from "./tag-label";
 import type { ITagOption } from "./tag-schemas";
-import { tagOptionColumns, usableTagCondition } from "./tag-visibility.server";
+import { findUsableTag, tagOptionColumns } from "./tag-visibility.server";
 
 // Caps what one account can leave in the review queue at a time.
 export const MAX_OPEN_SUGGESTIONS = 10;
-// Above the open-suggestion cap so repeat clicks on an existing label do not lock a user out.
+// Above the open-suggestion cap so a few rejected suggestions do not lock a user out.
 const SUGGESTIONS_PER_HOUR = 30;
+// Picking a label that already exists is normal use, so it only gets a loose ceiling.
+export const LOOKUPS_PER_HOUR = 120;
 
 type SuggestionValues = Pick<
   typeof tag.$inferInsert,
@@ -68,11 +70,20 @@ function slugBase(label: string) {
 }
 
 // The other language gets the same text until an admin translates it on approval.
-export async function suggestTag({
-  userId,
-  label,
-  locale,
-}: ISuggestTag): Promise<{ tag: ITagOption; created: boolean }> {
+export async function suggestTag(
+  input: ISuggestTag,
+): Promise<{ tag: ITagOption; created: boolean }> {
+  const { userId, label, locale } = input;
+  await enforceLimits([
+    {
+      key: `tag-lookup:${userId}`,
+      max: LOOKUPS_PER_HOUR,
+      windowSeconds: 3600,
+    },
+  ]);
+  const known = await findUsableTag(db, input);
+  if (known) return { tag: known, created: false };
+  // Counted outside the transaction so refused attempts still use up the budget.
   await enforceLimits([
     {
       key: `tag-suggest:${userId}`,
@@ -83,16 +94,7 @@ export async function suggestTag({
   return db.transaction(async (tx) => {
     // Serialises one account's suggestions so the duplicate check and the cap cannot race.
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}))`);
-    const visible = await tx
-      .select(tagOptionColumns)
-      .from(tag)
-      .where(usableTagCondition({ userId }));
-    const folded = foldText(label);
-    const existing = visible.find((option) =>
-      [tagLabel(option, locale), ...tagAliases(option, locale)].some(
-        (text) => foldText(text) === folded,
-      ),
-    );
+    const existing = await findUsableTag(tx, input);
     if (existing) return { tag: existing, created: false };
 
     const [{ open }] = await tx
