@@ -54,5 +54,6 @@
   "auth_claim_failed": "Could not claim the listing. Please try again.",
   "auth_claim_next": "Now choose a password for your account.",
   "auth_error_generic": "Something went wrong. Please try again.",
-  "auth_login_error_google": "This Google account has no account here. Accounts are created by invitation."
+  "auth_login_error_google": "This Google account has no account here. Accounts are created by invitation.",
+  "auth_claim_used_hint": "Already claimed it? Log in, or reset your password if you did not finish choosing one."
 }
