@@ -15,7 +15,10 @@ import type {
   DecideReviewInput,
   IDecideResult,
 } from "./review-schemas";
-import { applyUntrustedEdit } from "./untrusted-edit.server";
+import {
+  applyUntrustedEdit,
+  applyUntrustedEditTags,
+} from "./untrusted-edit.server";
 
 type Item = typeof reviewItem.$inferSelect;
 
@@ -57,6 +60,12 @@ async function decideInTx(
   decision: IDecision,
 ): Promise<DecideOutcome> {
   const { adminId } = decision;
+  // Queue items for listings always point at an entry; anything else is not ours to decide here.
+  if (
+    ["application", "untrusted_edit", "report"].includes(item.type) &&
+    item.entityType !== "entry"
+  )
+    return "failed";
   if (item.type === "application") {
     if (decision.decision === "approve") {
       await approveApplication(tx, {
@@ -117,7 +126,7 @@ async function decideOne(
     });
     return "ok";
   }
-  return db.transaction(async (tx) => {
+  const outcome = await db.transaction(async (tx) => {
     const [item] = await tx
       .select()
       .from(reviewItem)
@@ -126,6 +135,13 @@ async function decideOne(
       .for("update");
     return item ? decideInTx(tx, item, decision) : "gone";
   });
+  if (
+    outcome === "ok" &&
+    peek.type === "untrusted_edit" &&
+    decision.decision === "approve"
+  )
+    await applyUntrustedEditTags(peek.entityId, peek.payload);
+  return outcome;
 }
 
 // Each item is its own transaction: one failure in a bulk run never blocks the others.
