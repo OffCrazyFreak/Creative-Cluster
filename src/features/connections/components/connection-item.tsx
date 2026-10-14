@@ -3,9 +3,9 @@ import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Item, ItemActions, ItemContent } from "@/components/ui/item";
 import { m } from "@/paraglide/messages";
-import { getLocale } from "@/paraglide/runtime";
 
 import type { IConnectionItem } from "../connections-schemas";
+import { formatMediumDate } from "../format-date";
 import { relationLabel } from "../relation-label";
 import ConnectionActions from "./connection-actions";
 
@@ -69,8 +69,8 @@ export default function ConnectionItem({
         {details ? <p className="text-sm">{details}</p> : null}
         {item.note ? <p className="text-sm">{item.note}</p> : null}
         {item.evidence.length > 0 ? (
-          <p className="text-sm">
-            {m.connections_evidence()}:{" "}
+          <div className="flex flex-col text-sm">
+            <span>{m.connections_evidence()}</span>
             {item.evidence.map((url) => (
               <a
                 key={url}
@@ -81,7 +81,7 @@ export default function ConnectionItem({
                 {url}
               </a>
             ))}
-          </p>
+          </div>
         ) : null}
         {waiting ? (
           <p className="text-sm">
@@ -90,9 +90,7 @@ export default function ConnectionItem({
               : m.connections_proposed_to({ name: other.name })}
             {" · "}
             {m.connections_expires({
-              date: new Intl.DateTimeFormat(getLocale(), {
-                dateStyle: "medium",
-              }).format(new Date(item.expiresAt)),
+              date: formatMediumDate(item.expiresAt),
             })}
           </p>
         ) : null}

@@ -81,7 +81,7 @@ export default function ConnectionActions({
           void run(
             () => withdrawConnection({ data: { linkId: item.id } }),
             m.connections_done_withdraw(),
-          ).then(() => setConfirmingWithdraw(false))
+          ).then((done) => done && setConfirmingWithdraw(false))
         }
       />
     </>

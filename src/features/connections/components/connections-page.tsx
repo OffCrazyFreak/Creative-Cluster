@@ -1,4 +1,5 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useRouteContext } from "@tanstack/react-router";
 
 import { m } from "@/paraglide/messages";
 
@@ -8,11 +9,9 @@ import {
 } from "../connections-queries";
 import ConnectionSection from "./connection-section";
 
-interface IConnectionsPageProps {
-  isAdmin: boolean;
-}
-
-export default function ConnectionsPage({ isAdmin }: IConnectionsPageProps) {
+export default function ConnectionsPage() {
+  const { viewer } = useRouteContext({ from: "__root__" });
+  const isAdmin = viewer?.role === "admin";
   const { data } = useSuspenseQuery(myConnectionsQuery());
   const unclaimed = useQuery({
     ...unclaimedProposalsQuery(),

@@ -41,7 +41,7 @@
   "connections_error_cooldown": "This connection was declined recently. Try again in a few weeks.",
   "connections_error_limit": "You have reached today's limit of proposals. Try again tomorrow.",
   "connections_error_target_unavailable": "That listing is not available for connections.",
-  "connections_badge_label": "{count} proposals waiting for your answer",
+  "connections_badge_label": "Proposals waiting for your answer: {count}",
   "connections_account_link": "Connections",
   "connections_propose_title": "Propose a connection",
   "connections_field_listing": "Your listing",

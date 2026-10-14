@@ -16,7 +16,12 @@ export default function PendingConnectionsLink() {
     >
       {m.connections_account_link()}
       {count > 0 ? (
-        <Badge aria-label={m.connections_badge_label({ count })}>{count}</Badge>
+        <Badge>
+          <span aria-hidden="true">{count}</span>
+          <span className="sr-only">
+            {m.connections_badge_label({ count })}
+          </span>
+        </Badge>
       ) : null}
     </Link>
   );

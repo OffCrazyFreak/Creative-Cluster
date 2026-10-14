@@ -17,13 +17,13 @@ export function useConnectionAction() {
     try {
       await action();
       toast.success(doneText);
-      await queryClient.invalidateQueries({ queryKey: CONNECTIONS_QUERY_KEY });
       return true;
     } catch {
       toast.error(m.connections_failed());
-      await queryClient.invalidateQueries({ queryKey: CONNECTIONS_QUERY_KEY });
       return false;
     } finally {
+      // Also after a failure: the link may already have been decided or withdrawn elsewhere.
+      await queryClient.invalidateQueries({ queryKey: CONNECTIONS_QUERY_KEY });
       setBusy(false);
     }
   }
