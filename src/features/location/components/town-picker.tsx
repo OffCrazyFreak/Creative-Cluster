@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 
 import {
   Combobox,
@@ -34,6 +34,7 @@ export default function TownPicker({
   const base = useId();
   const countryCode = value.countryCode ?? defaultCountryCode ?? null;
   const [text, setText] = useState(value.city ?? "");
+  const justPicked = useRef(false);
   const { data: towns = [] } = useQuery({
     ...townsQueryOptions(countryCode ?? "HR"),
     enabled: Boolean(countryCode),
@@ -70,7 +71,15 @@ export default function TownPicker({
           filter={null}
           value={null as ITown | null}
           inputValue={text}
-          onInputValueChange={(next) => {
+          onInputValueChange={(next, details) => {
+            // Picking an item makes Base UI echo the label and then clear its controlled input; the pick
+            // itself already set the text, and a real edit or clear comes as a later event.
+            if (details.reason === "item-press") return;
+            if (details.reason === "input-clear" && justPicked.current) {
+              justPicked.current = false;
+              return;
+            }
+            justPicked.current = false;
             setText(next);
             // Editing after a pick must not leave the old town's coordinates behind.
             if (value.lat !== null && next !== value.city)
@@ -87,6 +96,7 @@ export default function TownPicker({
           }}
           onValueChange={(town) => {
             if (!town) return;
+            justPicked.current = true;
             setText(town.name);
             onChange(valueFromTown(value, town));
           }}
