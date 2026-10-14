@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 
 import {
   Combobox,
@@ -23,6 +23,8 @@ export interface ITownPickerProps {
   value: LocationValue;
   onChange: (value: LocationValue) => void;
   defaultCountryCode?: string;
+  invalid?: boolean;
+  describedBy?: string;
 }
 
 // For people: only a town from the static GeoNames list, never an address (privacy by default).
@@ -30,16 +32,28 @@ export default function TownPicker({
   value,
   onChange,
   defaultCountryCode,
+  invalid,
+  describedBy,
 }: ITownPickerProps) {
   const base = useId();
   const countryCode = value.countryCode ?? defaultCountryCode ?? null;
   const [text, setText] = useState(value.city ?? "");
-  const justPicked = useRef(false);
   const { data: towns = [] } = useQuery({
     ...townsQueryOptions(countryCode ?? "HR"),
     enabled: Boolean(countryCode),
   });
   const matches = searchTowns(towns, text);
+  // The chosen town is the controlled value, so Base UI keeps its label in the input when the popup closes.
+  const selected: ITown | null =
+    value.lat !== null && value.lng !== null && value.city
+      ? {
+          name: value.city,
+          lat: value.lat,
+          lng: value.lng,
+          population: value.townPopulation ?? 0,
+          countryCode: value.countryCode ?? "",
+        }
+      : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -49,6 +63,8 @@ export default function TownPicker({
         </FieldLabel>
         <CountrySelect
           id={`${base}-country`}
+          invalid={invalid}
+          describedBy={describedBy}
           value={countryCode}
           onChange={(code) => {
             setText("");
@@ -69,17 +85,9 @@ export default function TownPicker({
         <Combobox
           items={matches}
           filter={null}
-          value={null as ITown | null}
+          value={selected}
           inputValue={text}
-          onInputValueChange={(next, details) => {
-            // Picking an item makes Base UI echo the label and then clear its controlled input; the pick
-            // itself already set the text, and a real edit or clear comes as a later event.
-            if (details.reason === "item-press") return;
-            if (details.reason === "input-clear" && justPicked.current) {
-              justPicked.current = false;
-              return;
-            }
-            justPicked.current = false;
+          onInputValueChange={(next) => {
             setText(next);
             // Editing after a pick must not leave the old town's coordinates behind.
             if (value.lat !== null && next !== value.city)
@@ -96,7 +104,6 @@ export default function TownPicker({
           }}
           onValueChange={(town) => {
             if (!town) return;
-            justPicked.current = true;
             setText(town.name);
             onChange(valueFromTown(value, town));
           }}
@@ -105,6 +112,9 @@ export default function TownPicker({
         >
           <ComboboxInput
             id={`${base}-town`}
+            maxLength={120}
+            aria-invalid={invalid}
+            aria-describedby={describedBy}
             placeholder={m.location_town_placeholder()}
             autoComplete="off"
             disabled={!countryCode}

@@ -92,9 +92,3 @@ export function formValuesOfRow(
     matchingOptOut: row.matchingOptOut,
   };
 }
-
-export const EMPTY_TAGS: ListingFormValues["tags"] = {
-  topic: [],
-  offering: [],
-  seeking: [],
-};

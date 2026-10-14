@@ -10,7 +10,7 @@ import EmailLayout from "./components/email-layout";
 import type { IApplicationDigestEmailProps } from "./email-types";
 
 export function subject({ locale, count }: IApplicationDigestEmailProps) {
-  return m.email_application_digest_subject({ count }, { locale });
+  return m.moderation_email_application_digest_subject({ count }, { locale });
 }
 
 export default function ApplicationDigestEmail(
@@ -21,14 +21,14 @@ export default function ApplicationDigestEmail(
     <EmailLayout
       locale={locale}
       footer="account"
-      preview={m.email_application_digest_preheader(
+      preview={m.moderation_email_application_digest_preheader(
         { count, oldestAge: oldestAgeDays },
         { locale },
       )}
     >
       <Text>{m.email_greeting({}, { locale })}</Text>
       <Text>
-        {m.email_application_digest_body(
+        {m.moderation_email_application_digest_body(
           { count, openTotal, days: REVIEW_STALE_DAYS },
           { locale },
         )}
@@ -37,7 +37,7 @@ export default function ApplicationDigestEmail(
       <ActionButton
         href={link}
         locale={locale}
-        label={m.email_digest_button({}, { locale })}
+        label={m.moderation_email_digest_button({}, { locale })}
       />
     </EmailLayout>
   );

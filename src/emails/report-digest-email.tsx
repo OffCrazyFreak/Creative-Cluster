@@ -9,7 +9,7 @@ import EmailLayout from "./components/email-layout";
 import type { IReportDigestEmailProps } from "./email-types";
 
 export function subject({ locale, count }: IReportDigestEmailProps) {
-  return m.email_report_digest_subject({ count }, { locale });
+  return m.moderation_email_report_digest_subject({ count }, { locale });
 }
 
 export default function ReportDigestEmail(props: IReportDigestEmailProps) {
@@ -18,15 +18,20 @@ export default function ReportDigestEmail(props: IReportDigestEmailProps) {
     <EmailLayout
       locale={locale}
       footer="account"
-      preview={m.email_report_digest_preheader({ count }, { locale })}
+      preview={m.moderation_email_report_digest_preheader(
+        { count },
+        { locale },
+      )}
     >
       <Text>{m.email_greeting({}, { locale })}</Text>
-      <Text>{m.email_report_digest_body({ count }, { locale })}</Text>
+      <Text>
+        {m.moderation_email_report_digest_body({ count }, { locale })}
+      </Text>
       <DigestList items={items} />
       <ActionButton
         href={link}
         locale={locale}
-        label={m.email_digest_button({}, { locale })}
+        label={m.moderation_email_digest_button({}, { locale })}
       />
     </EmailLayout>
   );

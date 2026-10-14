@@ -15,6 +15,9 @@ import type { IAddressOption } from "./address-options";
 // Selection lives in the form value; the input text is the only state the list needs.
 const NO_SELECTION = null as IAddressOption | null;
 
+// Same cap as locationValueSchema.addressText.
+const ADDRESS_MAX_LENGTH = 300;
+
 interface IAddressComboboxProps {
   id: string;
   options: IAddressOption[];
@@ -26,6 +29,8 @@ interface IAddressComboboxProps {
   onOpenChange: (open: boolean) => void;
   onPick: (option: IAddressOption) => void;
   onSearch: () => void;
+  invalid?: boolean;
+  describedBy?: string;
 }
 
 // filter={null}: the server already ranked the matches, so Base UI must not filter them again.
@@ -40,6 +45,8 @@ export default function AddressCombobox({
   onOpenChange,
   onPick,
   onSearch,
+  invalid,
+  describedBy,
 }: IAddressComboboxProps) {
   return (
     <div className="flex gap-2">
@@ -61,6 +68,9 @@ export default function AddressCombobox({
         <ComboboxInput
           id={id}
           className="flex-1"
+          maxLength={ADDRESS_MAX_LENGTH}
+          aria-invalid={invalid}
+          aria-describedby={describedBy}
           placeholder={m.location_address_placeholder()}
           autoComplete="off"
           disabled={disabled}

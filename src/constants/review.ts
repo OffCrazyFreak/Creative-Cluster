@@ -1,4 +1,4 @@
-import { REASON_CODES, type ReasonCode } from "./moderation";
+import type { ReasonCode } from "./moderation";
 
 export const REPORT_REASONS = [
   "inaccurate",
@@ -21,6 +21,7 @@ export const NOTE_REQUIRED_REASON_CODES: readonly ReasonCode[] = ["other"];
 
 export const REVIEW_AGE_FILTERS = ["all", "stale", "fresh"] as const;
 export type ReviewAgeFilter = (typeof REVIEW_AGE_FILTERS)[number];
+<<<<<<< HEAD
 
 export { REASON_CODES };
 
@@ -37,3 +38,5 @@ export const CHANGE_LOG_PERSONAL_FIELDS = [
   "lng",
   "ownerUserId",
 ] as const;
+=======
+>>>>>>> feat/apply-review-2

@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { APPLY_DRAFT_STORAGE_KEY } from "@/constants/apply";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
+import { emptyApplication } from "../apply-defaults";
 import type { ApplicationFormValues } from "../apply-schemas";
 
 // Consent is never part of a draft: it must be given again at the moment of sending.
@@ -57,6 +58,15 @@ export function clearApplyDraft() {
   }
 }
 
+// An untouched form is not worth keeping, and saving it right after "discard" would bring the draft back.
+function isPristine(values: ApplicationFormValues): boolean {
+  const blank = emptyApplication();
+  return (
+    JSON.stringify({ ...values, consent: false, ageConfirmed: false }) ===
+    JSON.stringify(blank)
+  );
+}
+
 export function useApplyDraftSaver(
   values: ApplicationFormValues,
   enabled: boolean,
@@ -66,7 +76,8 @@ export function useApplyDraftSaver(
   const initial = useRef(values);
 
   useEffect(() => {
-    if (!enabled || debounced === initial.current) return;
+    if (!enabled || debounced === initial.current || isPristine(debounced))
+      return;
     const { consent: _consent, ageConfirmed: _age, ...rest } = debounced;
     try {
       localStorage.setItem(

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { memberGuard } from "@/server/guards";
 
+import { findOwnSummary } from "./get-own-summary.server";
 import { findOwnListing } from "./get-own-listing.server";
 import { saveListingInput } from "./listing-schemas";
 import type { OwnListingWire } from "./listing-types";
@@ -22,3 +23,8 @@ export const saveMyListing = createServerFn({ method: "POST" })
   .handler(({ data, context }) =>
     saveOwnListing({ ...data, userId: context.user.id }),
   );
+
+export const getMySummary = createServerFn({ method: "GET" })
+  .middleware([memberGuard])
+  .inputValidator(z.void())
+  .handler(({ context }) => findOwnSummary(context.user.id));
