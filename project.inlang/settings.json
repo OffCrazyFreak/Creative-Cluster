@@ -29,7 +29,8 @@
       "./messages/legal/{locale}.json",
       "./messages/email/{locale}.json",
       "./messages/moderation-email/{locale}.json",
-      "./messages/lifecycle/{locale}.json"
+      "./messages/lifecycle/{locale}.json",
+      "./messages/import/{locale}.json"
     ]
   }
 }
