@@ -44,7 +44,11 @@ export default function DirectoryEntryCard({ item }: IDirectoryEntryCardProps) {
       ) : null}
       <div className="flex flex-col gap-1">
         <h3 className="font-semibold">
-          <Link to="/e/$slug" params={{ slug: item.slug }}>
+          <Link
+            to="/e/$slug"
+            params={{ slug: item.slug }}
+            className="inline-block py-1"
+          >
             {item.name}
           </Link>
         </h3>
