@@ -5,7 +5,9 @@ import type { EmailTemplateName } from "@/constants/email";
 import ChangeEmail, { subject as changeSubject } from "./change-email";
 import ClaimEmail, { subject as claimSubject } from "./claim-email";
 import ContactEmail, { subject as contactSubject } from "./contact-email";
+import BlockedEmail, { subject as blockedSubject } from "./blocked-email";
 import type { EmailPropsOf } from "./email-types";
+import TermsEmail, { subject as termsSubject } from "./terms-email";
 import InviteEmail, { subject as inviteSubject } from "./invite-email";
 import ResetEmail, { subject as resetSubject } from "./reset-email";
 import VerifyEmail, { subject as verifySubject } from "./verify-email";
@@ -49,5 +51,15 @@ export const EMAIL_TEMPLATES: TemplateMap = {
     element: (props) => <ContactEmail {...props} />,
     subject: contactSubject,
     previewProps: ContactEmail.PreviewProps,
+  },
+  terms: {
+    element: (props) => <TermsEmail {...props} />,
+    subject: termsSubject,
+    previewProps: TermsEmail.PreviewProps,
+  },
+  blocked: {
+    element: (props) => <BlockedEmail {...props} />,
+    subject: blockedSubject,
+    previewProps: BlockedEmail.PreviewProps,
   },
 };

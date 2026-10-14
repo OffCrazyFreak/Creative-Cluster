@@ -45,6 +45,18 @@ export interface IContactEmailProps extends IBaseEmailProps {
   link: string;
 }
 
+export interface ITermsEmailProps extends IBaseEmailProps {
+  name: string;
+  summary: string;
+  effectiveDate: string;
+  link: string;
+}
+
+export interface IBlockedEmailProps extends IBaseEmailProps {
+  name: string;
+  reason: string;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
@@ -52,6 +64,8 @@ export interface IEmailPropsMap {
   reset: IResetEmailProps;
   change: IChangeEmailProps;
   contact: IContactEmailProps;
+  terms: ITermsEmailProps;
+  blocked: IBlockedEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];
