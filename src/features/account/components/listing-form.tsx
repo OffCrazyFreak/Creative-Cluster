@@ -46,8 +46,10 @@ function noticeText(notice: Notice): string {
 export default function ListingForm({ listing }: IListingFormProps) {
   const [notice, setNotice] = useState<Notice | null>(null);
   const save = useSaveListing(listing);
-  // Fixed at mount: a refetch after saving must not replace what the owner is looking at.
-  const [initial] = useState(() => withDefaultCountry(listing.values));
+  // Moves only with the owner's own saves: a refetch must not replace what the owner is looking at.
+  const [initial, setInitial] = useState(() =>
+    withDefaultCountry(listing.values),
+  );
 
   const form = useAppForm({
     defaultValues: initial,
@@ -60,7 +62,11 @@ export default function ListingForm({ listing }: IListingFormProps) {
       setNotice(null);
       try {
         const result = await save.mutateAsync(value);
-        formApi.reset(value);
+        // The server may have replaced the language with the one it detected.
+        const saved = { ...value, sourceLocale: result.sourceLocale };
+        // The form re-applies its default values on every render, so they must follow the save.
+        setInitial(saved);
+        formApi.reset(saved);
         if (result.status === "pending_review") setNotice("pending");
         else setNotice(result.changed ? "saved" : "unchanged");
       } catch (error) {
