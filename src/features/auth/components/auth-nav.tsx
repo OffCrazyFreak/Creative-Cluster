@@ -19,7 +19,7 @@ export default function AuthNav() {
 
   if (!viewer) return <Link to="/login">{m.common_nav_login()}</Link>;
   return (
-    <ul className="flex flex-wrap items-center gap-4">
+    <ul className="flex flex-wrap items-center gap-x-4 [&_a]:inline-block [&_a]:py-2">
       <li>
         <Link to="/account">{m.common_nav_account()}</Link>
       </li>
