@@ -16,13 +16,13 @@
   "apply_section_contact": "Kontakt",
   "apply_contact_name": "Kontakt osoba (neobavezno)",
   "apply_contact_email": "Kontaktna e-adresa",
-  "apply_contact_email_hint": "Prvo potvrđujemo ovu adresu, a onda na nju šaljemo odluku. Ne prikazuje se javno dok to kasnije sam ne odabereš.",
+  "apply_contact_email_hint": "Prvo potvrđujemo ovu adresu, a onda na nju šaljemo odluku. Nakon odobrenja to je i adresa tvog računa. Ne prikazuje se javno ako to kasnije ne odabereš.",
   "apply_contact_phone": "Telefon (neobavezno)",
   "apply_website": "Mrežna stranica (neobavezno)",
   "apply_section_place": "Mjesto",
   "apply_tags_note": "Oznake možeš dodati kad se unos odobri.",
   "apply_section_consent": "Suglasnost",
-  "apply_consent_text": "Slažem se da se moje puno ime, opis, mjesto i ostali podaci koje ovdje upišem objave u javnom registru i da ih mogu pronaći tražilice poput Googlea. Moje puno ime dio je adrese stranice. Suglasnost mogu povući u svom računu u bilo kojem trenutku, a moj se unos tada odmah prestaje objavljivati.",
+  "apply_consent_text": "Slažem se da se moje puno ime, opis, mjesto i ostali podaci koje ovdje upišem objave u javnom registru i da ih mogu pronaći tražilice poput Googlea. Moje puno ime dio je adrese stranice. Nakon odobrenja suglasnost mogu povući u svom računu ili e-poštom registru, a moj se unos tada odmah prestaje objavljivati.",
   "apply_age_text": "Imam 16 ili više godina.",
   "apply_duplicate_title": "Jesi li to ti? Preuzmi unos",
   "apply_duplicate_unclaimed": "već je u imeniku{place}. Otvori unos i preuzmi ga umjesto nove prijave.",
@@ -53,5 +53,7 @@
   "apply_verify_done_body": "Tvoja prijava {entryName} sada je na pregledu. Odluku donosimo u roku od {days} dana i javljamo ti e-poštom.",
   "apply_verify_already": "Prijava {entryName} već je potvrđena. Odluku ćeš dobiti e-poštom.",
   "apply_verify_invalid": "Ova poveznica nije valjana ili je istekla. Možeš ponovno poslati prijavu.",
-  "apply_verify_failed": "Potvrda nije uspjela. Pokušaj ponovno."
+  "apply_verify_failed": "Potvrda nije uspjela. Pokušaj ponovno.",
+  "apply_error_retry": "Obrazac ovaj put nije poslan. Provjeri odgovore i pritisni slanje ponovno.",
+  "apply_error_invalid_town": "Ponovno odaberi svoje mjesto s popisa."
 }

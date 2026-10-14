@@ -16,13 +16,13 @@
   "apply_section_contact": "Contact",
   "apply_contact_name": "Contact person (optional)",
   "apply_contact_email": "Contact email",
-  "apply_contact_email_hint": "We confirm this address first, then send the decision here. It is not shown publicly unless you choose so later.",
+  "apply_contact_email_hint": "We confirm this address first, then send the decision here. After approval it is also the address of your account. It is not shown publicly unless you choose so later.",
   "apply_contact_phone": "Phone (optional)",
   "apply_website": "Website (optional)",
   "apply_section_place": "Place",
   "apply_tags_note": "You can add tags after the listing is approved.",
   "apply_section_consent": "Consent",
-  "apply_consent_text": "I agree that my full name, description, town and the other details I enter here are published in the public registry and can be found by search engines such as Google. My full name is part of the page address. I can withdraw this consent in my account at any time, and my listing is then unpublished at once.",
+  "apply_consent_text": "I agree that my full name, description, town and the other details I enter here are published in the public registry and can be found by search engines such as Google. My full name is part of the page address. After approval I can withdraw this consent in my account, or by email to the registry, and my listing is then unpublished at once.",
   "apply_age_text": "I am 16 or older.",
   "apply_duplicate_title": "Is this you? Claim it",
   "apply_duplicate_unclaimed": "already listed{place}. Open it to claim it instead of applying again.",
@@ -53,5 +53,7 @@
   "apply_verify_done_body": "Your application {entryName} is now in review. We decide within {days} days and email you.",
   "apply_verify_already": "The application {entryName} is already confirmed. You will get an email with the decision.",
   "apply_verify_invalid": "This link is not valid or has expired. You can send the application again.",
-  "apply_verify_failed": "Confirming failed. Please try again."
+  "apply_verify_failed": "Confirming failed. Please try again.",
+  "apply_error_retry": "We could not send the form this time. Check your answers and press send again.",
+  "apply_error_invalid_town": "Choose your town from the list again."
 }

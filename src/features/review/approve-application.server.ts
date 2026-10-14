@@ -8,6 +8,7 @@ import { pageLink } from "@/lib/auth/auth-email.server";
 import { createPasswordToken } from "@/lib/auth/password-token.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
+import { enqueueTranslation } from "@/lib/translation/enqueue-translation.server";
 import { NotFoundError } from "@/server/errors";
 import { site } from "@/sites";
 
@@ -101,6 +102,7 @@ export async function approveApplication(tx: Tx, input: IApproveInput) {
     after: { status: "published", ownerUserId: owner.id },
   });
 
+  await enqueueTranslation(tx, { entityType: "entry", entityId: row.id });
   const needsPassword = !(await hasPassword(tx, owner.id));
   const token = needsPassword
     ? await createPasswordToken(tx, owner.id, INVITE_TOKEN_TTL_SECONDS)
@@ -115,7 +117,8 @@ export async function approveApplication(tx: Tx, input: IApproveInput) {
         ? pageLink(`/set-password?token=${encodeURIComponent(token)}`, locale)
         : pageLink("/login", locale),
       expiry: INVITE_EXPIRY,
-      newAccount: needsPassword,
+      newAccount: owner.created,
+      needsPassword,
     },
     idempotencyKey: `approved:${input.itemId}`,
   });

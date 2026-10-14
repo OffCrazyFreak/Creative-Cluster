@@ -45,8 +45,9 @@ export interface IApprovedEmailProps extends IBaseEmailProps {
   entryName: string;
   link: string;
   expiry: EmailExpiry;
-  // False when the applicant already had an account and keeps their password.
   newAccount: boolean;
+  // True when the account has no password yet, whether it is new or was created another way.
+  needsPassword: boolean;
 }
 
 export interface IRejectedEmailProps extends IBaseEmailProps {

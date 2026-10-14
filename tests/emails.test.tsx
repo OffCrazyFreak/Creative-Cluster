@@ -19,7 +19,7 @@ beforeAll(async () => {
 });
 
 // Paraglide returns the message key itself when a translation is missing.
-const MISSING_MESSAGE = /\bemail_[a-z0-9_]+\b/;
+const MISSING_MESSAGE = /\b(?:moderation_)?email_[a-z0-9_]+\b/;
 
 describe("email templates", () => {
   for (const name of EMAIL_TEMPLATE_NAMES) {
