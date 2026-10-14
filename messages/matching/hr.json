@@ -1,3 +1,10 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "matching_heading_collaborate": "Mogući suradnici",
+  "matching_heading_similar": "Slični unosi",
+  "matching_strength_strong": "Snažno podudaranje",
+  "matching_strength_possible": "Moguće podudaranje",
+  "matching_reason_offers": "Nude {tags}, što ti tražiš.",
+  "matching_reason_seeks": "Traže {tags}, što ti nudiš.",
+  "matching_reason_topic": "Zajedničke teme: {tags}."
 }

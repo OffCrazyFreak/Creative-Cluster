@@ -29,7 +29,9 @@ export default defineConfig(({ command, mode }) => {
   return {
     resolve: { tsconfigPaths: true },
     plugins: [
-      paraglideVitePlugin(paraglideOptions(siteId)),
+      paraglideVitePlugin(
+        paraglideOptions(siteId, command === "build" && mode === "production"),
+      ),
       tailwindcss(),
       tanstackStart({
         importProtection: {

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import PagePlaceholder from "@/components/custom/layout/page-placeholder";
+import AdminTagsPage from "@/features/tags/components/admin-tags-page";
 
 export const Route = createFileRoute("/admin/tags")({
-  component: () => <PagePlaceholder title="Tags" />,
+  component: AdminTagsPage,
 });
