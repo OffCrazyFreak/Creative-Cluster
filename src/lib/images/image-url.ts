@@ -54,3 +54,10 @@ export function imageUrl({
     width,
   });
 }
+
+// Social cards want an absolute 1200x630 crop; JPEG because not every crawler reads AVIF or WebP.
+export function socialImageUrl(image: IImageRef, name = cloudName()): string {
+  const source = `${site.origin}${ownImageUrl(image)}`;
+  if (!name) return source;
+  return `https://res.cloudinary.com/${name}/image/fetch/f_jpg,q_auto,c_fill,w_1200,h_630/${source}`;
+}

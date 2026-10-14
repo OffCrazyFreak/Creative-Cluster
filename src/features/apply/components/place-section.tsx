@@ -5,7 +5,7 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field";
-import { AddressField, TownPicker } from "@/features/location";
+import { AddressField, PinPicker, TownPicker } from "@/features/location";
 import { m } from "@/paraglide/messages";
 
 import { defaultCountry, emptyApplication } from "../apply-defaults";
@@ -39,7 +39,15 @@ export const PlaceSection = withForm({
                         {kind === "person" ? (
                           <TownPicker key="person" {...props} />
                         ) : (
-                          <AddressField key="organization" {...props} />
+                          <>
+                            <AddressField key="organization" {...props} />
+                            {!field.state.value.onlineOnly && (
+                              <PinPicker
+                                value={field.state.value}
+                                onChange={field.handleChange}
+                              />
+                            )}
+                          </>
                         )}
                         {invalid && (
                           <FieldError>{m.apply_location_required()}</FieldError>

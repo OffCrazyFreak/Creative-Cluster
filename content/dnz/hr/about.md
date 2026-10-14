@@ -28,3 +28,9 @@ Pitanja: {{contactEmail}}. [[GAP: potvrditi da se ta adresa smije javno navesti 
 ## Tko to vodi
 
 Udruga inovatora Dubrovačko-neretvanske županije, {{legal.seat}}. Predsjednik: {{legal.representative}}. [[GAP: OIB, matični broj i broj upisa u Registar udruga; pravni naziv točno kako je upisan; ovlaštena osoba za zastupanje.]] Više o udruzi: https://inovatoridnz.org
+
+## Podaci i zasluge
+
+- Hrvatske adrese: Državna geodetska uprava, Otvorena dozvola Republike Hrvatske. Popis adresa osvježava se mjesečno.
+- Pretraga ostalih adresa: [Geoapify](https://www.geoapify.com/) i podaci suradnika OpenStreetMapa.
+- Karta: OpenFreeMap, OpenMapTiles, podaci OpenStreetMapa.

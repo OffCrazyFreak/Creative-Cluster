@@ -28,3 +28,9 @@ Questions: {{contactEmail}}. [[GAP: confirm this address may be shown publicly f
 ## Who runs it
 
 Udruga inovatora Dubrovačko-neretvanske županije, {{legal.seat}}. President: {{legal.representative}}. [[GAP: OIB, register number, exact legal name and authorised representative.]] More about the association: https://inovatoridnz.org
+
+## Data and credits
+
+- Croatian addresses: Državna geodetska uprava (State Geodetic Administration), Open Licence of the Republic of Croatia. The address list is refreshed monthly.
+- Other address search: [Geoapify](https://www.geoapify.com/) and data from OpenStreetMap contributors.
+- Map: OpenFreeMap, OpenMapTiles, data from OpenStreetMap.

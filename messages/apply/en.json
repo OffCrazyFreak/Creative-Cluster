@@ -22,7 +22,7 @@
   "apply_section_place": "Place",
   "apply_tags_note": "You can add tags after the listing is approved.",
   "apply_section_consent": "Consent",
-  "apply_consent_text": "I agree that my full name, description, town and the other details I enter here are published in the public registry and can be found by search engines such as Google. My full name is part of the page address. After approval I can withdraw this consent in my account, or by email to the registry, and my listing is then unpublished at once.",
+  "apply_consent_text": "I agree that my full name, description, town and the other details I enter here are published in the public registry and can be found by search engines such as Google. My full name is part of the page address. After approval I can withdraw this consent in my account, or by email to the registry, and my listing is then unpublished at once. Photos are optional; if I add one, it is delivered through Cloudinary, which stores images in the United States (EU-US Data Privacy Framework and standard contractual clauses).",
   "apply_age_text": "I am 16 or older.",
   "apply_duplicate_title": "Is this you? Claim it",
   "apply_duplicate_unclaimed": "already listed{place}. Open it to claim it instead of applying again.",

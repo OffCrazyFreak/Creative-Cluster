@@ -12,6 +12,7 @@ import { publicConnectionsQuery } from "@/features/connections/connections-queri
 import { entryTranslationQueryOptions } from "@/features/translation/translation-queries";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
+import { socialImageUrl } from "@/lib/images/image-url";
 import { site } from "@/sites";
 import { canonicalLink, indexableLinks } from "@/utils/seo-links";
 import { serializeJsonLd } from "@/utils/json-ld";
@@ -79,6 +80,12 @@ export const Route = createFileRoute("/_map/e/$slug")({
         { property: "og:title", content: entry.name },
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
+        ...(entry.cover
+          ? [
+              { property: "og:image", content: socialImageUrl(entry.cover) },
+              { name: "twitter:card", content: "summary_large_image" },
+            ]
+          : []),
         ...(noindex ? [{ name: "robots", content: "noindex, follow" }] : []),
       ],
       links: noindex

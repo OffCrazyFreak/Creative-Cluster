@@ -36,3 +36,9 @@ Dodaj svoju organizaciju na stranici Prijava. Traje nekoliko minuta. Svaki upis 
 Creative Cluster dio je projekta Restorative Practices, kojeg sufinancira Europska unija u okviru programa Kreativna Europa. Broj ugovora o dodjeli bespovratnih sredstava: [[GAP: broj ugovora o dodjeli bespovratnih sredstava, iz ugovora ili s Portala za financiranje i natječaje]].
 
 Financirano sredstvima Europske unije. Izneseni stavovi i mišljenja su stavovi i mišljenja autora i ne moraju se podudarati sa stavovima i mišljenjima Europske unije ili Europske izvršne agencije za obrazovanje i kulturu (EACEA). Ni Europska unija ni EACEA ne mogu se smatrati odgovornima za njih.
+
+## Podaci i zasluge
+
+- Hrvatske adrese: Državna geodetska uprava, Otvorena dozvola Republike Hrvatske. Popis adresa osvježava se mjesečno.
+- Pretraga ostalih adresa: [Geoapify](https://www.geoapify.com/) i podaci suradnika OpenStreetMapa.
+- Karta: OpenFreeMap, OpenMapTiles, podaci OpenStreetMapa.

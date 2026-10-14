@@ -139,3 +139,25 @@ describe("redactEntry", () => {
     expect(redactEntry(row(), [], false).logo).toBeNull();
   });
 });
+
+describe("redactEntry references", () => {
+  const doc = {
+    type: "doc",
+    content: [
+      { type: "paragraph", content: [{ type: "text", text: "Funded by X" }] },
+    ],
+  };
+
+  it("passes a valid references document through to visitors", () => {
+    const result = redactEntry(row({ extra: { references: doc } }), [], false);
+    expect(result.references).toEqual(doc);
+  });
+
+  it("returns null when empty or invalid", () => {
+    expect(redactEntry(row(), [], false).references).toBeNull();
+    expect(
+      redactEntry(row({ extra: { references: { bad: true } } }), [], false)
+        .references,
+    ).toBeNull();
+  });
+});

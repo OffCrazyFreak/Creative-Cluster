@@ -111,6 +111,8 @@ GitHub Actions secrets and variables are listed in `docs/runbook.md`.
 - `pnpm maintenance:run`: run the daily maintenance tasks once.
 - `pnpm terms:notify`: queue the "terms changed" email to all accounts; needs `--yes` to actually queue.
 - `pnpm dgu:import`: refresh the Croatian address data in the database. `pnpm geonames:build`: rebuild the town lists after changing `LOCATION_COUNTRIES`.
+- `pnpm import:legacy-export`, `pnpm import:run`: turn the old organizations export into a staging file, then import it (idempotent; geocodes once). Run `import:run` against a local database first.
+- `pnpm claims:prepare`, `pnpm claims:send`: create claim invites for imported listings, then send them. Sending needs `CLAIMS_SENDING_APPROVED=yes`, `--confirm`, a batch of 500 or fewer and a final import source text; wait for the project owner's go-ahead (see `docs/runbook.md`).
 - `pnpm email:dev`: React Email preview server on port 3020.
 
 ## Deploy model

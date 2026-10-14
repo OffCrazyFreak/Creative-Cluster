@@ -35,6 +35,8 @@ export interface IPublicEntry {
   // Rich text as stored; null for entries written before the editor, which fall back to descriptionText.
   description: JsonRichTextDoc | null;
   descriptionText: string;
+  // Site extra field shown on both sites; null when empty or when the stored JSON no longer validates.
+  references: JsonRichTextDoc | null;
   offeringText: string;
   seekingText: string;
   website: string | null;

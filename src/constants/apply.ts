@@ -8,7 +8,7 @@ export const APPLY_CONTACT_MAX = 200;
 export const APPLY_MIN_AGE = 16;
 
 // Bump when the wording of the person consent text changes; entry.consent_version stores it.
-export const CONSENT_TEXT_VERSION = "2026-10-v1";
+export const CONSENT_TEXT_VERSION = "2026-10-v2";
 
 export const APPLY_VERIFY_EXPIRY: EmailExpiry = "days7";
 export const APPLY_VERIFY_TTL_SECONDS =
