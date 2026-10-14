@@ -1,4 +1,4 @@
-import { and, eq, inArray, notExists, or } from "drizzle-orm";
+import { and, eq, inArray, notExists, or, sql } from "drizzle-orm";
 
 import type { Tx } from "@/db/client.server";
 import {
@@ -15,7 +15,11 @@ import { stripEntityChangeLog } from "@/features/changes/strip-change-log.server
 // nothing else uses. Change log rows stay for the audit trail but lose their identifiers.
 export async function purgeEntry(tx: Tx, entryId: string) {
   const [row] = await tx
-    .select({ logo: entry.logoImageId, cover: entry.coverImageId })
+    .select({
+      logo: entry.logoImageId,
+      cover: entry.coverImageId,
+      contactEmail: entry.contactEmail,
+    })
     .from(entry)
     .where(eq(entry.id, entryId))
     .limit(1)
@@ -51,6 +55,14 @@ export async function purgeEntry(tx: Tx, entryId: string) {
           : undefined,
       ),
     );
+  // Mail already sent to the listing's contact address no longer needs the address; queued mail still does.
+  if (row.contactEmail)
+    await tx.execute(sql`
+      update job
+      set payload = jsonb_build_object('template', payload -> 'template', 'scrubbed', true)
+      where status in ('done', 'failed')
+        and type = 'email'
+        and lower(payload ->> 'to') = ${row.contactEmail.toLowerCase()}`);
   const related = [entryId, ...posts, ...links];
   await tx.delete(reviewItem).where(inArray(reviewItem.entityId, related));
   for (const id of related) await stripEntityChangeLog(tx, id);

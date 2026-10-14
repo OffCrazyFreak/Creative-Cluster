@@ -149,6 +149,19 @@ describe.skipIf(!temp)("erasure and export", () => {
       payload: { template: "invite", to: account.email, props: {} },
       status: "done",
     });
+    await db
+      .update(schema.entry)
+      .set({ contactEmail: "contact-line@example.test" })
+      .where(eq(schema.entry.id, listing.id));
+    await db.insert(schema.job).values({
+      type: "email",
+      payload: {
+        template: "rejected",
+        to: "contact-line@example.test",
+        props: {},
+      },
+      status: "done",
+    });
 
     await erasure.requestErasure(account.id);
     await backdate(account.id, 15);
@@ -182,7 +195,7 @@ describe.skipIf(!temp)("erasure and export", () => {
       .from(schema.changeLog)
       .where(eq(schema.changeLog.entityId, listing.id));
     expect(log.userId).toBeNull();
-    expect(log.before).toEqual({ name: "a" });
+    expect(log.before).toBeNull();
 
     const jobs = (await db.select().from(schema.job)).map(
       (j) => j.payload as { template: string; to?: string; scrubbed?: boolean },
@@ -192,6 +205,9 @@ describe.skipIf(!temp)("erasure and export", () => {
     );
     expect(
       jobs.filter((j) => j.to === account.email && j.template === "invite"),
+    ).toHaveLength(0);
+    expect(
+      jobs.filter((j) => j.to === "contact-line@example.test"),
     ).toHaveLength(0);
     expect(
       await db
@@ -244,5 +260,105 @@ describe.skipIf(!temp)("erasure and export", () => {
     expect(data.changes.every((c) => c.entityId === mine.listing.id)).toBe(
       true,
     );
+  });
+
+  it("refuses to cancel once the grace period is over", async () => {
+    const { account } = await owner("Too Late");
+    await erasure.requestErasure(account.id);
+    await backdate(account.id, 15);
+    await expect(erasure.cancelErasure(account.id)).rejects.toThrow(
+      "Not found",
+    );
+  });
+
+  it("leaves the last admins and their data alone", async () => {
+    const lone = await addUser(db, "Lone", "admin");
+    const listing = await addEntry(
+      db,
+      "Admin listing",
+      {},
+      { ownerUserId: lone.id },
+    );
+    await erasure.requestErasure(lone.id);
+    await backdate(lone.id, 15);
+    await scheduled.deleteDueErasedAccounts();
+    expect(
+      await db.select().from(schema.user).where(eq(schema.user.id, lone.id)),
+    ).toHaveLength(1);
+    expect(await entryOf(listing.id)).toBeDefined();
+    // The marker stays, so the run tries again once another admin exists.
+    expect(
+      (await erasure.getErasureState(lone.id)).scheduledFor,
+    ).not.toBeNull();
+  });
+
+  it("sweeps images nothing references after a week", async () => {
+    const week = new Date(Date.now() - 8 * 86_400_000);
+    const rows = await db
+      .insert(schema.image)
+      .values([
+        {
+          bytes: Buffer.from("a"),
+          mime: "image/webp",
+          width: 1,
+          height: 1,
+          size: 1,
+          contentHash: "o1",
+          createdAt: week,
+        },
+        {
+          bytes: Buffer.from("b"),
+          mime: "image/webp",
+          width: 1,
+          height: 1,
+          size: 1,
+          contentHash: "o2",
+        },
+      ])
+      .returning();
+    expect(await scheduled.sweepOrphanImages()).toBeGreaterThanOrEqual(1);
+    const left = (
+      await db.select({ id: schema.image.id }).from(schema.image)
+    ).map((r) => r.id);
+    expect(left).not.toContain(rows[0].id);
+    expect(left).toContain(rows[1].id);
+  });
+
+  it("exports connections without hidden listings or the other side's words", async () => {
+    const mine = await owner("Link Owner");
+    const hidden = await addEntry(
+      db,
+      "Hidden Partner",
+      {},
+      { status: "suspended" },
+    );
+    const open = await addEntry(db, "Open Partner");
+    const [a, b] = [mine.listing.id, hidden.id].sort();
+    await db.insert(schema.link).values([
+      {
+        fromId: a,
+        toId: b,
+        kind: "collaborated",
+        symmetric: true,
+        status: "confirmed",
+        note: "their note",
+        proposedByEntryId: hidden.id,
+      },
+      {
+        fromId: mine.listing.id,
+        toId: open.id,
+        kind: "supplier",
+        symmetric: false,
+        status: "confirmed",
+        note: "my note",
+        proposedByEntryId: mine.listing.id,
+      },
+    ]);
+    const data = await exporter.exportUserData(mine.account.id);
+    const text = JSON.stringify(data);
+    expect(text).not.toContain("Hidden Partner");
+    expect(text).not.toContain("their note");
+    expect(text).toContain("Open Partner");
+    expect(text).toContain("my note");
   });
 });

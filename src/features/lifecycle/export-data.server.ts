@@ -14,6 +14,7 @@ import {
   translation,
   user,
 } from "@/db/schema";
+import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 import { NotFoundError } from "@/server/errors";
 import { site } from "@/sites";
 
@@ -105,6 +106,7 @@ export async function exportUserData(userId: string) {
           endYear: link.endYear,
           project: link.project,
           note: link.note,
+          proposedByEntryId: link.proposedByEntryId,
         })
         .from(link)
         .where(or(inArray(link.fromId, ids), inArray(link.toId, ids))),
@@ -166,16 +168,23 @@ export async function exportUserData(userId: string) {
     ? await db
         .select({ id: entry.id, name: entry.name, slug: entry.slug })
         .from(entry)
-        .where(inArray(entry.id, otherIds))
+        // Only listings visitors can see: the name of a suspended or pending listing is not this user's data.
+        .where(and(inArray(entry.id, otherIds), publicEntryCondition()))
     : [];
   const otherById = new Map(others.map((row) => [row.id, row]));
-  const connectionRows = connections.map(({ fromId, toId, ...rest }) => ({
-    ...rest,
-    from: ids.includes(fromId)
-      ? "this listing"
-      : (otherById.get(fromId) ?? null),
-    to: ids.includes(toId) ? "this listing" : (otherById.get(toId) ?? null),
-  }));
+  const connectionRows = connections.map(
+    ({ fromId, toId, proposedByEntryId, note, project, ...rest }) => ({
+      ...rest,
+      // The project and note were written by whoever proposed the connection; the other side's words are not exported.
+      ...(proposedByEntryId && ids.includes(proposedByEntryId)
+        ? { project, note }
+        : {}),
+      from: ids.includes(fromId)
+        ? "this listing"
+        : (otherById.get(fromId) ?? null),
+      to: ids.includes(toId) ? "this listing" : (otherById.get(toId) ?? null),
+    }),
+  );
 
   return bundle(account, listings, {
     tags,

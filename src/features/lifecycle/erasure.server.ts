@@ -33,12 +33,13 @@ function marker(userId: string) {
   return `${ERASURE_MARKER_PREFIX}${userId}`;
 }
 
-async function markerRow(tx: DbOrTx, userId: string) {
-  const [row] = await tx
+async function markerRow(tx: DbOrTx, userId: string, lock = false) {
+  const query = tx
     .select()
     .from(verification)
     .where(eq(verification.identifier, marker(userId)))
     .limit(1);
+  const [row] = await (lock ? query.for("update") : query);
   return row;
 }
 
@@ -56,11 +57,13 @@ export async function getErasureState(userId: string): Promise<IErasureState> {
 // Archives the listing at once and starts the grace period. The purge job does the rest after 14 days.
 export async function requestErasure(userId: string): Promise<IErasureState> {
   const scheduledFor = await db.transaction(async (tx) => {
+    // Locking the account row serialises two requests, so only one marker is ever written.
     const [account] = await tx
       .select({ email: user.email, locale: user.locale })
       .from(user)
       .where(eq(user.id, userId))
-      .limit(1);
+      .limit(1)
+      .for("update");
     if (!account) throw new NotFoundError();
     const existing = await markerRow(tx, userId);
     if (existing) return deleteDateOf(existing.createdAt);
@@ -135,8 +138,10 @@ async function previousState(tx: Tx, entryId: string) {
 
 export async function cancelErasure(userId: string): Promise<void> {
   await db.transaction(async (tx) => {
-    const row = await markerRow(tx, userId);
-    if (!row) throw new NotFoundError();
+    // The lock makes cancel and the purge job take turns; once the grace period is over it is too late.
+    const row = await markerRow(tx, userId, true);
+    if (!row || deleteDateOf(row.createdAt) <= new Date())
+      throw new NotFoundError();
     const flagged = await tx
       .select({ id: entry.id })
       .from(entry)

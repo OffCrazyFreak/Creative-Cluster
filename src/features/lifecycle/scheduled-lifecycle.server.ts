@@ -1,4 +1,4 @@
-import { and, eq, isNull, like, lt, sql } from "drizzle-orm";
+import { and, eq, isNull, like, lt, notExists, or, sql } from "drizzle-orm";
 
 import {
   APPLY_VERIFY_TTL_SECONDS,
@@ -10,14 +10,16 @@ import {
   IMPORT_ARCHIVE_MONTHS,
 } from "@/constants/lifecycle";
 import { db } from "@/db/client.server";
-import { entry, verification } from "@/db/schema";
+import { entry, image, user, verification } from "@/db/schema";
 import { auth } from "@/lib/auth/auth.server";
+import { assertAdminsRemain } from "@/lib/auth/min-admins.server";
 import { invalidateMapDirectory } from "@/features/directory/map-directory.server";
 
 import { NotFoundError } from "@/server/errors";
 
 import { transitionEntry } from "./entry-transitions.server";
 import { purgeEntry } from "./purge-entry.server";
+import { purgeErasedUser } from "./purge-erased-user.server";
 
 // Unclaimed imports nobody claimed within a year are hidden, never deleted: an admin can restore them.
 export async function archiveStaleImports(): Promise<number> {
@@ -85,7 +87,8 @@ export async function purgeExpiredApplications(): Promise<number> {
   return purged;
 }
 
-// Deletes accounts whose 14 day grace period is over. better-auth's delete hook purges their listing data.
+// Deletes accounts whose 14 day grace period is over. The admin rule is checked and the data purged first:
+// better-auth removes sessions and credentials before its delete hook runs, so a refusal there would lock the person out.
 export async function deleteDueErasedAccounts(): Promise<number> {
   const due = await db
     .select({ identifier: verification.identifier })
@@ -104,15 +107,48 @@ export async function deleteDueErasedAccounts(): Promise<number> {
   for (const { identifier } of due) {
     const userId = identifier.slice(ERASURE_MARKER_PREFIX.length);
     try {
-      await context.internalAdapter.deleteUser(userId);
+      const [account] = await db
+        .select({ id: user.id, email: user.email, locale: user.locale })
+        .from(user)
+        .where(eq(user.id, userId))
+        .limit(1);
+      if (account) {
+        await assertAdminsRemain(userId);
+        await purgeErasedUser(account);
+        await context.internalAdapter.deleteUser(userId);
+      }
       await db
         .delete(verification)
         .where(eq(verification.identifier, identifier));
       deleted += 1;
     } catch (error) {
-      // An admin who must stay (minimum admins rule) or a transient failure: the next daily run retries.
+      // The last admins, or a transient failure: the marker stays and the next daily run retries.
       console.error("erasure of an account failed", userId, error);
     }
   }
   return deleted;
+}
+
+// Images replaced during edits lose their last reference; uploads still waiting to be saved get a week of grace.
+export async function sweepOrphanImages(): Promise<number> {
+  const removed = await db
+    .delete(image)
+    .where(
+      and(
+        lt(image.createdAt, sql`now() - interval '7 days'`),
+        notExists(
+          db
+            .select({ one: entry.id })
+            .from(entry)
+            .where(
+              or(
+                eq(entry.logoImageId, image.id),
+                eq(entry.coverImageId, image.id),
+              ),
+            ),
+        ),
+      ),
+    )
+    .returning({ id: image.id });
+  return removed.length;
 }

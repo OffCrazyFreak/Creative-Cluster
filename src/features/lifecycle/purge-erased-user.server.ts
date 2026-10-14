@@ -19,8 +19,9 @@ interface IErasedAccount {
   locale?: string | null;
 }
 
-// better-auth's user delete hook calls this. It only acts for an account whose erasure grace period is over,
-// so an admin removing an account (which leaves listings as they are) is not an erasure.
+// Purges an account's data once its erasure grace period is over; safe to run twice. The marker stays until the
+// account row is gone, so a failed account delete is retried. The better-auth user delete hook calls this too,
+// but only acts for a due marker, so an admin removing an account (which leaves listings alone) is not an erasure.
 export async function purgeErasedUser(
   account: IErasedAccount,
 ): Promise<boolean> {
@@ -44,9 +45,6 @@ export async function purgeErasedUser(
       .from(entry)
       .where(eq(entry.ownerUserId, account.id));
     for (const item of owned) await purgeEntry(tx, item.id);
-    await tx
-      .delete(verification)
-      .where(eq(verification.identifier, identifier));
     // Set-password and reset links for this account must not outlive it.
     await tx
       .delete(verification)
