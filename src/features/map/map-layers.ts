@@ -1,5 +1,6 @@
 import type {
   CircleLayerSpecification,
+  LineLayerSpecification,
   ExpressionSpecification,
 } from "maplibre-gl";
 
@@ -11,6 +12,7 @@ const COLORS = {
   point: "#4f46e5",
   selected: "#db2777",
   outline: "#ffffff",
+  badge: "#f59e0b",
 } as const;
 
 export const CLUSTER_LAYER_ID = "clusters";
@@ -20,6 +22,12 @@ const active: ExpressionSpecification = [
   "boolean",
   ["feature-state", "active"],
   false,
+];
+// to-number with a fallback: a cached payload from before this field existed must not break the paint.
+const hasOpportunities: ExpressionSpecification = [
+  ">",
+  ["to-number", ["get", "opps"], 0],
+  0,
 ];
 const selected: ExpressionSpecification = [
   "boolean",
@@ -58,8 +66,28 @@ export const pointLayer: Omit<CircleLayerSpecification, "source"> = {
   paint: {
     "circle-color": ["case", selected, COLORS.selected, COLORS.point],
     "circle-radius": ["case", ["any", active, selected], 11, 7],
-    "circle-stroke-width": 2,
-    "circle-stroke-color": COLORS.outline,
+    // A thicker amber ring marks entries that have live opportunities.
+    "circle-stroke-width": ["case", hasOpportunities, 4, 2],
+    "circle-stroke-color": [
+      "case",
+      hasOpportunities,
+      COLORS.badge,
+      COLORS.outline,
+    ],
+  },
+};
+
+export const ARC_LAYER_ID = "connection-arcs";
+
+// One line layer for every arc of the selected entry; it sits under the pins.
+export const arcLayer: Omit<LineLayerSpecification, "source"> = {
+  id: ARC_LAYER_ID,
+  type: "line",
+  layout: { "line-cap": "round", "line-join": "round" },
+  paint: {
+    "line-color": COLORS.selected,
+    "line-width": 2,
+    "line-opacity": 0.7,
   },
 };
 
