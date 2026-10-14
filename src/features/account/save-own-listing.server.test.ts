@@ -118,6 +118,37 @@ describe.skipIf(!temp)("saveOwnListing", () => {
     expect(jobs.filter((j) => j.type === "translate")).toHaveLength(1);
   });
 
+  it("detects the source language from the text, but keeps a language the owner just changed", async () => {
+    const { owner, row } = await setup();
+    const croatian = richTextFromPlain(
+      "Vodimo radionice za mlade dizajnere i objavljujemo godišnji časopis o lokalnom obrtu.",
+    );
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues({ description: croatian, sourceLocale: "en" })),
+    });
+    expect((await reload(row.id)).sourceLocale).toBe("hr");
+
+    // The select was moved away from the stored value in this save: a deliberate choice.
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues({ description: croatian, sourceLocale: "en" })),
+    });
+    expect((await reload(row.id)).sourceLocale).toBe("en");
+  });
+
+  it("keeps the chosen language when the text is too short to detect", async () => {
+    const { owner, row } = await setup();
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues({ sourceLocale: "hr" })),
+    });
+    expect((await reload(row.id)).sourceLocale).toBe("hr");
+  });
+
   it("does nothing and queues no translation when nothing changed", async () => {
     const { owner, row } = await setup();
     const values = parse(formValues());

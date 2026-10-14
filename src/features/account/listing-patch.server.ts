@@ -1,7 +1,9 @@
 import { SOCIAL_PLATFORMS } from "@/constants/account";
 import type { EntryKind } from "@/constants/entry";
+import type { AppLocale } from "@/constants/locales";
 import type { entry } from "@/db/schema";
 import { applyPersonOffset } from "@/features/location/person-offset-fn.server";
+import { sourceLocaleOnSave } from "@/lib/translation/detect-locale";
 import { normalizeHttpUrl } from "@/utils/http-url";
 
 import { hasLegalStatus } from "./listing-rules";
@@ -49,6 +51,7 @@ type PatchRow = Pick<
   EntryRow,
   | "id"
   | "kind"
+  | "sourceLocale"
   | "extra"
   | "lat"
   | "lng"
@@ -103,7 +106,13 @@ export function buildListingPatch(
 
   return {
     name: input.name,
-    sourceLocale: input.sourceLocale,
+    sourceLocale: sourceLocaleOnSave(
+      [input.description.text, input.offeringText, input.seekingText].join(
+        "\n",
+      ),
+      input.sourceLocale,
+      row.sourceLocale as AppLocale,
+    ),
     description: input.description.doc,
     descriptionText: input.description.text,
     offeringText: input.offeringText,

@@ -13,6 +13,7 @@ import { allocateSlug } from "@/features/entry/slug.server";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
+import { detectSourceLocale } from "@/lib/translation/detect-locale";
 import { NotFoundError } from "@/server/errors";
 
 import { applicationEntryFields } from "./apply-entry-fields";
@@ -129,7 +130,7 @@ export async function createApplication(
       id,
       slug: `${DRAFT_SLUG_PREFIX}${id}`,
       status: "draft",
-      sourceLocale: locale,
+      sourceLocale: detectSourceLocale(fields.descriptionText, locale),
       ...fields,
     });
     await writeChange(tx, {
@@ -174,6 +175,7 @@ export async function resubmitApplication(
       .update(entry)
       .set({
         ...fields,
+        sourceLocale: detectSourceLocale(fields.descriptionText, locale),
         slug,
         status: emailChanged ? "draft" : "pending",
       })

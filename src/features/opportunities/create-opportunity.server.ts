@@ -1,6 +1,7 @@
 import { db } from "@/db/client.server";
 import { opportunity, reviewItem } from "@/db/schema";
 import { writeChange } from "@/lib/change-log/write-change.server";
+import { sourceLocaleOnSave } from "@/lib/translation/detect-locale";
 import { enqueueTranslation } from "@/lib/translation/enqueue-translation.server";
 import { NotFoundError } from "@/server/errors";
 
@@ -60,7 +61,10 @@ export async function createOpportunity({
           title,
           body: values.body.doc,
           bodyText: values.body.text,
-          sourceLocale: values.sourceLocale,
+          sourceLocale: sourceLocaleOnSave(
+            `${title}\n${values.body.text}`,
+            values.sourceLocale,
+          ),
           remoteOk: values.remoteOk,
           deadline,
           expiresAt: periodEnd({ start: now, deadline }),

@@ -318,4 +318,26 @@ describe.skipIf(!temp)("managing a post", () => {
     ]);
     expect(results.filter((r) => r.status === "saved")).toHaveLength(1);
   });
+
+  it("detects the language of an edited post unless the owner changed it in this save", async () => {
+    const { owner, post } = await setup();
+    const croatian = {
+      body: richTextFromPlain(
+        "Vodimo radionice za mlade dizajnere i objavljujemo godišnji časopis o lokalnom obrtu.",
+      ),
+    };
+    await updateOpportunity({
+      id: post.id,
+      userId: owner.id,
+      values: values("Tražimo partnera", croatian),
+    });
+    expect((await reload(post.id)).sourceLocale).toBe("hr");
+
+    await updateOpportunity({
+      id: post.id,
+      userId: owner.id,
+      values: values("Tražimo partnera", { ...croatian, sourceLocale: "en" }),
+    });
+    expect((await reload(post.id)).sourceLocale).toBe("en");
+  });
 });

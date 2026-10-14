@@ -5,9 +5,11 @@ import {
   OPPORTUNITY_LIMITS as L,
   type OpportunityStatus,
 } from "@/constants/opportunities";
+import type { AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
 import { opportunity, reviewItem } from "@/db/schema";
 import { writeChange } from "@/lib/change-log/write-change.server";
+import { sourceLocaleOnSave } from "@/lib/translation/detect-locale";
 import { enqueueTranslation } from "@/lib/translation/enqueue-translation.server";
 
 import { afterOpportunityChange } from "./opportunity-effects.server";
@@ -84,7 +86,11 @@ export async function updateOpportunity({
         title,
         body: values.body.doc,
         bodyText: values.body.text,
-        sourceLocale: values.sourceLocale,
+        sourceLocale: sourceLocaleOnSave(
+          `${title}\n${values.body.text}`,
+          values.sourceLocale,
+          row.sourceLocale as AppLocale,
+        ),
         remoteOk: values.remoteOk,
         deadline,
         expiresAt: nextExpiry(row.expiresAt, deadline, now),
