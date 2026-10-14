@@ -11,8 +11,12 @@ import { listingSchema } from "../listing-schemas";
 import type { IOwnListing } from "../listing-types";
 import BasicsSection from "./basics-section";
 import ContactSection from "./contact-section";
+import DetailsSection from "./details-section";
 import ErrorSummary from "./error-summary";
+import ImagesSection from "./images-section";
 import LinksSection from "./links-section";
+import LocationSection from "./location-section";
+import TagsSection from "./tags-section";
 import UnsavedChangesDialog from "./unsaved-changes-dialog";
 
 interface IListingFormProps {
@@ -74,8 +78,12 @@ export default function ListingForm({ listing }: IListingFormProps) {
     >
       <ErrorSummary form={form} />
       <BasicsSection form={form} />
+      <LocationSection form={form} kind={listing.kind} />
+      <ImagesSection form={form} kind={listing.kind} />
       <LinksSection form={form} />
       <ContactSection form={form} />
+      <TagsSection form={form} />
+      <DetailsSection form={form} kind={listing.kind} />
       <div aria-live="polite">
         {notice && (
           <Alert
