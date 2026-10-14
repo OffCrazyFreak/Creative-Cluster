@@ -136,6 +136,8 @@ export async function sendContactMessage(
   } catch (error) {
     if (error instanceof TurnstileError) return { status: "captcha" };
     if (error instanceof LimitError) return { status: "limited" };
+    // Unpublished, removed or bounced between page load and submit: retrying cannot help.
+    if (error instanceof NotFoundError) return { status: "unavailable" };
     throw error;
   }
 }

@@ -47,4 +47,6 @@ export const contactSchema = contactFieldsSchema.extend({
 export type ContactInput = z.infer<typeof contactSchema>;
 export type ContactResult =
   | { status: "sent"; kind: EntryKind | null }
-  | { status: "captcha" | "limited" };
+  | { status: "captcha" }
+  | { status: "limited" }
+  | { status: "unavailable" };

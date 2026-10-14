@@ -2,7 +2,6 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as schema from "@/db/schema";
-import { NotFoundError } from "@/server/errors";
 
 import { addEntry } from "../../../tests/helpers/fixture-data";
 import type { ContactInput } from "./contact-schemas";
@@ -130,17 +129,17 @@ describe("sendContactMessage", () => {
 
   it("refuses entries without an address or with a bounced one", async () => {
     const none = await recipient(null);
-    await expect(sendContactMessage(input(none.id))).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
+    expect(await sendContactMessage(input(none.id))).toEqual({
+      status: "unavailable",
+    });
     const bounced = await recipient();
     await db
       .update(schema.entry)
       .set({ contactEmailInvalid: true })
       .where(eq(schema.entry.id, bounced.id));
-    await expect(sendContactMessage(input(bounced.id))).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
+    expect(await sendContactMessage(input(bounced.id))).toEqual({
+      status: "unavailable",
+    });
   });
 });
 

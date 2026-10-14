@@ -6,7 +6,7 @@ export const CONTACT_MAX_LINKS = 1;
 export const CONTACT_NAME_MAX = 120;
 
 // Faster than this is a script, not a person writing a message.
-export const CONTACT_MIN_FILL_MS = 3000;
+export const CONTACT_MIN_FILL_MS = 2000;
 
 export const CONTACT_LIMITS = {
   perSenderPerHour: 3,
