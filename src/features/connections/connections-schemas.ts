@@ -128,3 +128,36 @@ export interface ILinkTarget {
   city: string | null;
   countryCode: string | null;
 }
+
+export const publicConnectionsInput = z.object({ entryId: z.uuid() });
+
+export interface IPublicRelation {
+  kind: LinkKind;
+  // From the page entry's point of view: "outgoing" means the page entry is the from end.
+  direction: LinkDirection;
+  year: number | null;
+  endYear: number | null;
+  project: string | null;
+}
+
+export interface IPublicPartner extends IPublicRelation {
+  linkId: string;
+  entryId: string;
+  slug: string;
+  name: string;
+  city: string | null;
+  countryCode: string | null;
+}
+
+// Outside partners nobody confirmed: shown on the proposer's page only, with their evidence.
+export interface IUnverifiedPartner extends IPublicRelation {
+  linkId: string;
+  name: string;
+  website: string | null;
+  evidence: string[];
+}
+
+export interface IPublicConnections {
+  partners: IPublicPartner[];
+  unverified: IUnverifiedPartner[];
+}

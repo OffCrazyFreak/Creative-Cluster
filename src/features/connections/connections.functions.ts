@@ -1,12 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { adminGuard, memberGuard } from "@/server/guards";
+import { adminGuard, memberGuard, publicGuard } from "@/server/guards";
 
 import {
   decideLinkInput,
   linkIdInput,
   proposeLinkInput,
+  publicConnectionsInput,
   searchTargetsInput,
 } from "./connections-schemas";
 import { decideLink, withdrawLink } from "./decide-link.server";
@@ -15,6 +16,7 @@ import {
   listMyConnections,
   listUnclaimedWaiting,
 } from "./list-links.server";
+import { loadPublicConnections } from "./public-connections.server";
 import { proposeLink } from "./propose-link.server";
 import { searchLinkTargets } from "./search-targets.server";
 
@@ -63,3 +65,8 @@ export const decideUnclaimedProposal = createServerFn({ method: "POST" })
   .handler(({ data, context }) =>
     decideLink(data, { userId: context.user.id, admin: true }),
   );
+
+export const getPublicConnections = createServerFn({ method: "GET" })
+  .middleware([publicGuard])
+  .inputValidator(publicConnectionsInput)
+  .handler(({ data }) => loadPublicConnections(data.entryId));

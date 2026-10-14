@@ -6,6 +6,7 @@ import { m } from "@/paraglide/messages";
 
 import type { IConnectionItem } from "../connections-schemas";
 import { formatMediumDate } from "../format-date";
+import { relationDetails } from "../relation-details";
 import { relationLabel } from "../relation-label";
 import ConnectionActions from "./connection-actions";
 
@@ -16,13 +17,6 @@ interface IConnectionItemProps {
   onBehalf?: boolean;
 }
 
-function yearsText(item: IConnectionItem): string | null {
-  if (item.year === null) return null;
-  return item.endYear === null
-    ? m.connections_years_since({ start: item.year })
-    : m.connections_years_range({ start: item.year, end: item.endYear });
-}
-
 export default function ConnectionItem({
   item,
   showSelf,
@@ -30,7 +24,7 @@ export default function ConnectionItem({
 }: IConnectionItemProps) {
   const { other } = item;
   const outside = other.kind === "outside_partner";
-  const details = [yearsText(item), item.project].filter(Boolean).join(" · ");
+  const details = relationDetails(item);
   const waiting = item.status === "proposed";
 
   return (
