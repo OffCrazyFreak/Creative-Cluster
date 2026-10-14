@@ -7,33 +7,10 @@ import { entry, tag } from "@/db/schema";
 import type { StagingFile, StagingOrganization } from "./import-schemas";
 import { assertStagingSite, existingLegacyIds } from "./legacy-ids.server";
 import type {
-  ImportDuplicateReason,
-  ImportWarningCode,
+  IImportDuplicate,
+  IImportPlan,
+  IImportWarning,
 } from "./import-plan-codes";
-
-export interface IImportWarning {
-  legacyId: string;
-  name: string;
-  code: ImportWarningCode;
-  // The tag slug for unknown_tag.
-  detail?: string;
-}
-
-export interface IImportDuplicate {
-  legacyId: string;
-  name: string;
-  reason: ImportDuplicateReason;
-  // The name of the existing listing, when there is one.
-  other?: string;
-}
-
-export interface IImportPlan {
-  total: number;
-  toCreate: string[];
-  alreadyImported: string[];
-  duplicates: IImportDuplicate[];
-  warnings: IImportWarning[];
-}
 
 function hostOf(url: string): string | null {
   try {

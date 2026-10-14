@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import PagePlaceholder from "@/components/custom/layout/page-placeholder";
+import ImportPage from "@/features/import/components/import-page";
 
 export const Route = createFileRoute("/admin/import")({
-  component: () => <PagePlaceholder title="Import" />,
+  component: ImportPage,
 });

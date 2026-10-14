@@ -32,3 +32,29 @@ export const DUPLICATE_TEXT: Record<ImportDuplicateReason, string> = {
   file_name: "same name earlier in this file",
   file_website: "same website earlier in this file",
 };
+
+export interface IImportWarning {
+  legacyId: string;
+  name: string;
+  code: ImportWarningCode;
+  // The tag slug for unknown_tag.
+  detail?: string;
+}
+
+export interface IImportDuplicate {
+  legacyId: string;
+  name: string;
+  reason: ImportDuplicateReason;
+  // The name of the existing listing, when there is one.
+  other?: string;
+}
+
+export interface IImportPlan {
+  total: number;
+  toCreate: string[];
+  alreadyImported: string[];
+  duplicates: IImportDuplicate[];
+  warnings: IImportWarning[];
+}
+
+export type ImportFileError = "invalid_json" | "invalid_file" | "wrong_site";
