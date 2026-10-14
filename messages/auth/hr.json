@@ -56,5 +56,12 @@
   "auth_claim_next": "Sada odaberi lozinku za svoj račun.",
   "auth_error_generic": "Nešto je pošlo po zlu. Pokušaj ponovno.",
   "auth_login_error_google": "Ovaj Google račun nema račun ovdje. Računi se otvaraju na poziv.",
-  "auth_claim_used_hint": "Unos je već preuzet? Prijavi se, a ako lozinka nije postavljena, zatraži poveznicu za novu lozinku."
+  "auth_claim_used_hint": "Unos je već preuzet? Prijavi se, a ako lozinka nije postavljena, zatraži poveznicu za novu lozinku.",
+  "auth_claim_remove_title": "Ukloni svoj unos",
+  "auth_claim_remove_intro": "Uklonit ćeš unos {entryName} iz imenika.",
+  "auth_claim_remove_effect": "Unos odmah nestaje sa stranice i više nećemo pisati na ovu adresu. Administrator ga i dalje može vratiti ako to zatražiš.",
+  "auth_claim_remove_submit": "Ukloni moj unos",
+  "auth_claim_remove_done": "Gotovo. Unos je uklonjen i više ti nećemo pisati.",
+  "auth_claim_remove_invalid": "Ova poveznica nije valjana ili je istekla. Ako i dalje želiš ukloniti unos, javi nam se i mi ćemo to napraviti.",
+  "auth_claim_remove_home": "Natrag na stranicu"
 }
