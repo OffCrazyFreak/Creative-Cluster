@@ -42,6 +42,8 @@ export const env = createEnv({
     CLOUDINARY_CLOUD_NAME: z.string().optional(),
     PSEUDONYM_SECRET: secret,
     SENTRY_DSN: z.string().optional(),
+    // Flip to "enforce" after two weeks of clean Report-Only data.
+    CSP_MODE: z.enum(["report-only", "enforce"]).default("report-only"),
     CLIENT_IP_HEADER: z.string().default("x-nf-client-connection-ip"),
   },
   runtimeEnv: process.env,
