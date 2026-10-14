@@ -37,8 +37,11 @@ async function isBreached(password: string): Promise<boolean> {
       "Have I Been Pwned is unreachable, password accepted without the breach check",
       error,
     );
+    // One fingerprint keeps an outage to a single Sentry issue.
     Sentry.captureMessage("Have I Been Pwned unreachable", {
       level: "warning",
+      fingerprint: ["hibp-unreachable"],
+      extra: { reason: String(error) },
     });
     return false;
   } finally {
