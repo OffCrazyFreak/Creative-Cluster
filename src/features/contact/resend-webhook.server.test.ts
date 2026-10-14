@@ -153,4 +153,54 @@ describe("resend webhook", () => {
     expect(res.status).toBe(200);
     expect(await invalid(id)).toBe(false);
   });
+
+  it("rejects missing headers and a body that differs from the signed one", async () => {
+    const id = await entryWith("tamper@example.org");
+    const ok = signed(event("email.complained", "other@example.org"));
+    const tampered = new Request(ok.url, {
+      method: "POST",
+      body: JSON.stringify(event("email.complained", "tamper@example.org")),
+      headers: ok.headers,
+    });
+    expect((await handleResendWebhook(tampered)).status).toBe(400);
+    const bare = new Request(ok.url, { method: "POST", body: "{}" });
+    expect((await handleResendWebhook(bare)).status).toBe(400);
+    expect(await invalid(id)).toBe(false);
+  });
+
+  it("answers 500 on a database failure so Resend retries", async () => {
+    await entryWith("retry@example.org");
+    const spy = vi
+      .spyOn(db, "transaction")
+      .mockRejectedValueOnce(new Error("down"));
+    const res = await handleResendWebhook(
+      signed(event("email.complained", "retry@example.org")),
+    );
+    spy.mockRestore();
+    expect(res.status).toBe(500);
+  });
+
+  it("drops a signed event of an unexpected shape with a 200", async () => {
+    const res = await handleResendWebhook(
+      signed({ type: "email.bounced", created_at: "x", data: { to: [] } }),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it("matches a bracketed address and ignores multi-recipient events", async () => {
+    const id = await entryWith("bracket@example.org");
+    const other = await entryWith("pair@example.org");
+    await handleResendWebhook(
+      signed(event("email.complained", "Name <Bracket@example.org>")),
+    );
+    await handleResendWebhook(
+      signed({
+        type: "email.complained",
+        created_at: "x",
+        data: { email_id: "e", to: ["pair@example.org", "x@example.org"] },
+      }),
+    );
+    expect(await invalid(id)).toBe(true);
+    expect(await invalid(other)).toBe(false);
+  });
 });

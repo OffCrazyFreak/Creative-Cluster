@@ -11,8 +11,8 @@ export interface IBadAddressEvent {
   reason: string;
 }
 
-// Entries still marked valid whose contact address matches; the lower() match follows the way
-// addresses are compared everywhere else, since mail systems ignore case in practice.
+// Entries still marked valid whose contact address matches, ignoring case (mail systems do).
+// Only a few thousand entries exist, so the scan needs no index.
 async function markInvalid(address: string, reason: string) {
   await db.transaction(async (tx) => {
     const rows = await tx
@@ -24,8 +24,8 @@ async function markInvalid(address: string, reason: string) {
           eq(entry.contactEmailInvalid, false),
         ),
       )
-      .returning({ id: entry.id });
-    for (const { id } of rows) {
+      .returning({ id: entry.id, status: entry.status });
+    for (const { id, status } of rows) {
       await writeChange(tx, {
         entityType: "entry",
         entityId: id,
@@ -35,6 +35,8 @@ async function markInvalid(address: string, reason: string) {
         before: { contactEmailInvalid: false },
         after: { contactEmailInvalid: true },
       });
+      // The form only exists on published listings, so only those need an admin's attention.
+      if (status !== "published") continue;
       await tx.insert(reviewItem).values({
         type: "report",
         entityType: "entry",
