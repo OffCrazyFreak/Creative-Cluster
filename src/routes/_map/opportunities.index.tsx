@@ -7,6 +7,7 @@ import {
   hasOpportunityFilters,
   opportunitySearchSchema,
 } from "@/features/opportunities/opportunity-search";
+import { hasActiveFilters } from "@/features/map/map-search";
 import { pageHead } from "@/lib/seo/page-head";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
@@ -32,17 +33,20 @@ export const Route = createFileRoute("/_map/opportunities/")({
       ),
     ),
   head: ({ match }) => {
+    // Filtered and viewport variants of the board are duplicates: noindex, links still count.
+    const variant =
+      hasOpportunityFilters(match.search) ||
+      hasActiveFilters(match.search) ||
+      Boolean(match.search.v);
     const head = pageHead({
       path: "/opportunities",
       title: m.opportunities_board_title(),
       description: m.opportunities_board_meta_description({ site: site.name }),
+      noindex: variant,
     });
-    // Filtered variants are duplicates of the board: noindex, links still count.
-    if (!hasOpportunityFilters(match.search)) return head;
-    return {
-      meta: [...head.meta, { name: "robots", content: "noindex, follow" }],
-      links: [canonicalLink("/opportunities")],
-    };
+    return variant
+      ? { ...head, links: [canonicalLink("/opportunities")] }
+      : head;
   },
   component: OpportunitiesBoard,
 });

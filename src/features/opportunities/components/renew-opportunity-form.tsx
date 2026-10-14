@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -18,6 +18,7 @@ export default function RenewOpportunityForm({
   onRenew,
 }: IRenewOpportunityFormProps) {
   const [deadline, setDeadline] = useState("");
+  const inputId = useId();
 
   if (!hasDeadline) {
     return (
@@ -40,11 +41,11 @@ export default function RenewOpportunityForm({
       }}
     >
       <Field className="w-auto">
-        <FieldLabel htmlFor="renew-deadline">
+        <FieldLabel htmlFor={inputId}>
           {m.opportunities_renew_deadline()}
         </FieldLabel>
         <Input
-          id="renew-deadline"
+          id={inputId}
           type="date"
           required
           value={deadline}

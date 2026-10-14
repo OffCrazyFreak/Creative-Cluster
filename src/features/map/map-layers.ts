@@ -22,7 +22,12 @@ const active: ExpressionSpecification = [
   ["feature-state", "active"],
   false,
 ];
-const hasOpportunities: ExpressionSpecification = [">", ["get", "opps"], 0];
+// to-number with a fallback: a cached payload from before this field existed must not break the paint.
+const hasOpportunities: ExpressionSpecification = [
+  ">",
+  ["to-number", ["get", "opps"], 0],
+  0,
+];
 const selected: ExpressionSpecification = [
   "boolean",
   ["feature-state", "selected"],

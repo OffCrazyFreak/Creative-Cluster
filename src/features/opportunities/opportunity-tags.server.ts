@@ -29,6 +29,19 @@ export async function currentTagSlugs(tx: Tx, opportunityId: string) {
   return rows.map((row) => row.slug).sort();
 }
 
+export async function insertTags(
+  tx: Tx,
+  opportunityId: string,
+  tagIds: string[],
+) {
+  const unique = [...new Set(tagIds)];
+  if (unique.length > 0) {
+    await tx
+      .insert(opportunityTag)
+      .values(unique.map((tagId) => ({ opportunityId, tagId })));
+  }
+}
+
 export async function replaceTags(
   tx: Tx,
   opportunityId: string,
@@ -37,10 +50,5 @@ export async function replaceTags(
   await tx
     .delete(opportunityTag)
     .where(eq(opportunityTag.opportunityId, opportunityId));
-  const unique = [...new Set(tagIds)];
-  if (unique.length > 0) {
-    await tx
-      .insert(opportunityTag)
-      .values(unique.map((tagId) => ({ opportunityId, tagId })));
-  }
+  await insertTags(tx, opportunityId, tagIds);
 }

@@ -1,16 +1,18 @@
 import { and, eq, gt, or, sql, type SQL } from "drizzle-orm";
 
-import { OPPORTUNITY_LIMITS as L } from "@/constants/opportunities";
+import {
+  OPPORTUNITY_FILLED_REASON,
+  OPPORTUNITY_LIMITS as L,
+} from "@/constants/opportunities";
 import { opportunity } from "@/db/schema";
 import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 
-import { FILLED_REASON } from "./close-opportunity.server";
 import { activeOpportunityCondition } from "./opportunity-conditions.server";
 
 function filledRecently(): SQL {
   return and(
     eq(opportunity.status, "closed"),
-    eq(opportunity.closedReason, FILLED_REASON),
+    eq(opportunity.closedReason, OPPORTUNITY_FILLED_REASON),
     gt(
       opportunity.closedAt,
       sql`now() - make_interval(days => ${L.filledLabelDays})`,

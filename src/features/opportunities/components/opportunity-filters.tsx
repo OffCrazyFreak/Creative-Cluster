@@ -34,6 +34,11 @@ export default function OpportunityFilters({
   const navigate = useNavigate({ from: "/opportunities/" });
   const locale = getLocale();
   const any = { ...ANY, label: m.opportunities_filter_any() };
+  const selectedTags = search.tags.split(",").filter(Boolean);
+  // Sorted in the reader's language; the server list is not.
+  const tagOptions = facets.tags
+    .map((item) => ({ value: item.slug, label: tagLabel(item, locale) }))
+    .sort((a, b) => a.label.localeCompare(b.label, locale));
 
   function set(patch: Record<string, string | boolean | undefined>) {
     void navigate({
@@ -84,7 +89,7 @@ export default function OpportunityFilters({
       <MapFilterSelect
         id="opp-country"
         label={m.opportunities_filter_country()}
-        value={search.country}
+        value={search.country.toUpperCase()}
         options={[
           any,
           ...facets.countries.map((code) => ({
@@ -97,13 +102,21 @@ export default function OpportunityFilters({
       <MapFilterSelect
         id="opp-tag"
         label={m.opportunities_filter_tag()}
-        value={search.tags.split(",")[0] ?? ""}
+        value={search.tags}
         options={[
           any,
-          ...facets.tags.map((item) => ({
-            value: item.slug,
-            label: tagLabel(item, locale),
-          })),
+          // Tags set on the map's filter menu can be several; they stay selected until this changes them.
+          ...(selectedTags.length > 1
+            ? [
+                {
+                  value: search.tags,
+                  label: m.opportunities_filter_tags_several({
+                    count: selectedTags.length,
+                  }),
+                },
+              ]
+            : []),
+          ...tagOptions,
         ]}
         onChange={(value) => set({ tags: value })}
       />

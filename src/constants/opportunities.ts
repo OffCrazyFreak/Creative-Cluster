@@ -34,7 +34,9 @@ export const OPPORTUNITY_LIMITS = {
 } as const;
 
 export const OPPORTUNITY_TAG_MAX = 5;
-export const OPPORTUNITY_REPORT_MESSAGE_MAX = 500;
+
+// closed_reason of a post its owner marked as filled.
+export const OPPORTUNITY_FILLED_REASON = "filled";
 
 // Why a rule refused a post. The service returns these; the UI maps each to a message.
 export const OPPORTUNITY_RULE_CODES = [
