@@ -21,9 +21,6 @@ export const NOTE_REQUIRED_REASON_CODES: readonly ReasonCode[] = ["other"];
 
 export const REVIEW_AGE_FILTERS = ["all", "stale", "fresh"] as const;
 export type ReviewAgeFilter = (typeof REVIEW_AGE_FILTERS)[number];
-<<<<<<< HEAD
-
-export { REASON_CODES };
 
 export const CHANGES_PAGE_SIZE = 30;
 export const REVERT_REASON_MAX = 500;
@@ -38,5 +35,3 @@ export const CHANGE_LOG_PERSONAL_FIELDS = [
   "lng",
   "ownerUserId",
 ] as const;
-=======
->>>>>>> feat/apply-review-2

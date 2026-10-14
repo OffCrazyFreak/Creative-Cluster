@@ -17,12 +17,18 @@ function groupLabel(group: string, locale: AppLocale): string {
   if (group === "name") return m.moderation_email_edit_group_name({}, options);
   if (group === "description")
     return m.moderation_email_edit_group_description({}, options);
-  if (group === "offering") return m.moderation_email_edit_group_offering({}, options);
-  if (group === "website") return m.moderation_email_edit_group_website({}, options);
-  if (group === "contact") return m.moderation_email_edit_group_contact({}, options);
-  if (group === "visibility") return m.moderation_email_edit_group_visibility({}, options);
-  if (group === "images") return m.moderation_email_edit_group_images({}, options);
-  if (group === "location") return m.moderation_email_edit_group_location({}, options);
+  if (group === "offering")
+    return m.moderation_email_edit_group_offering({}, options);
+  if (group === "website")
+    return m.moderation_email_edit_group_website({}, options);
+  if (group === "contact")
+    return m.moderation_email_edit_group_contact({}, options);
+  if (group === "visibility")
+    return m.moderation_email_edit_group_visibility({}, options);
+  if (group === "images")
+    return m.moderation_email_edit_group_images({}, options);
+  if (group === "location")
+    return m.moderation_email_edit_group_location({}, options);
   return m.moderation_email_edit_group_other({}, options);
 }
 
