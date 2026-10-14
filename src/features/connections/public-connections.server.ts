@@ -1,7 +1,8 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db/client.server";
-import { entry, link, linkEvidence } from "@/db/schema";
+import { entry, link } from "@/db/schema";
+import { loadEvidenceByLink } from "./link-evidence.server";
 import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 
 import type {
@@ -9,6 +10,9 @@ import type {
   IPublicPartner,
   IUnverifiedPartner,
 } from "./connections-schemas";
+
+// A hub entry could have thousands of links; the page needs a readable list, not all of them.
+const MAX_PUBLIC_LINKS = 200;
 
 // The other end of each link, whichever column it is stored in.
 function otherEnd(entryId: string) {
@@ -40,7 +44,8 @@ async function loadPartners(entryId: string): Promise<IPublicPartner[]> {
         publicEntryCondition(),
       ),
     )
-    .orderBy(desc(link.decidedAt), link.id);
+    .orderBy(sql`${link.decidedAt} desc nulls last`, link.id)
+    .limit(MAX_PUBLIC_LINKS);
   return rows.map(({ fromId, ...row }) => ({
     ...row,
     direction: fromId === entryId ? "outgoing" : "incoming",
@@ -68,22 +73,16 @@ async function loadUnverified(entryId: string): Promise<IUnverifiedPartner[]> {
         eq(entry.kind, "outside_partner"),
       ),
     )
-    .orderBy(desc(link.createdAt), link.id);
-  const evidence = rows.length
-    ? await db
-        .select({ linkId: linkEvidence.linkId, url: linkEvidence.url })
-        .from(linkEvidence)
-        .where(
-          inArray(
-            linkEvidence.linkId,
-            rows.map((row) => row.linkId),
-          ),
-        )
-    : [];
+    .orderBy(sql`${link.createdAt} desc`, link.id)
+    .limit(MAX_PUBLIC_LINKS);
+  const evidence = await loadEvidenceByLink(
+    db,
+    rows.map((row) => row.linkId),
+  );
   return rows.map(({ fromId, ...row }) => ({
     ...row,
     direction: fromId === entryId ? "outgoing" : "incoming",
-    evidence: evidence.filter((e) => e.linkId === row.linkId).map((e) => e.url),
+    evidence: evidence.get(row.linkId) ?? [],
   }));
 }
 

@@ -29,21 +29,24 @@ export const Route = createFileRoute("/_map/e/$slug")({
         params: { slug: result.slug },
         statusCode: 301,
       });
-    const translation =
+    // Connections are prefetched so the list is in the server-rendered HTML; they load alongside
+    // the translation instead of after it.
+    const [translation] = await Promise.all([
       result.status === "found" && result.entry.sourceLocale !== getLocale()
-        ? await context.queryClient.fetchQuery(
+        ? context.queryClient.fetchQuery(
             entryTranslationQueryOptions(
               result.entry.id,
               getLocale(),
               context.viewer?.id ?? null,
             ),
           )
-        : null;
-    // Prefetched so the connections list and the graph are in the server-rendered HTML.
-    if (result.status === "found")
-      await context.queryClient.prefetchQuery(
-        publicConnectionsQuery(result.entry.id),
-      );
+        : null,
+      result.status === "found"
+        ? context.queryClient.prefetchQuery(
+            publicConnectionsQuery(result.entry.id),
+          )
+        : null,
+    ]);
     return { ...result, translation };
   },
   head: ({ loaderData, params }) => {

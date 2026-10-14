@@ -27,6 +27,7 @@ const { proposeLink } = await import("./propose-link.server");
 const { decideLink, withdrawLink } = await import("./decide-link.server");
 const { listMyConnections, countPendingProposals } =
   await import("./list-links.server");
+const { loadPublicConnections } = await import("./public-connections.server");
 const { withdrawStaleProposals } = await import("./expire-links.server");
 const { enforceLimits } = await import("@/lib/limits/check-limit.server");
 
@@ -236,6 +237,86 @@ describe.skipIf(!client.temp)("connections flow", () => {
     expect(await propose("b", "c", { kind: "mentor" })).toEqual({
       ok: false,
       error: "limit",
+    });
+  });
+
+  describe("public connections", () => {
+    const db = client.db as ITempDatabase["db"];
+
+    async function link2(
+      a: string,
+      b: string,
+      status: "proposed" | "confirmed" | "withdrawn",
+      kind: "collaborated" | "eu_partner" = "collaborated",
+    ) {
+      const [fromId, toId] = [a, b].sort();
+      await db.insert(link).values({
+        fromId,
+        toId,
+        kind,
+        symmetric: true,
+        status,
+        decidedAt: status === "confirmed" ? new Date() : null,
+      });
+    }
+
+    it("shows confirmed links to public entries only", async () => {
+      const hub = (await addEntry(db, "pub hub")).id;
+      const shown = (await addEntry(db, "pub shown")).id;
+      const proposed = (await addEntry(db, "pub proposed")).id;
+      const withdrawn = (await addEntry(db, "pub withdrawn")).id;
+      const suspended = (
+        await addEntry(db, "pub suspended", {}, { status: "suspended" })
+      ).id;
+      const archived = (
+        await addEntry(db, "pub archived", {}, { status: "archived" })
+      ).id;
+      await link2(hub, shown, "confirmed");
+      await link2(hub, proposed, "proposed");
+      await link2(hub, withdrawn, "withdrawn");
+      await link2(hub, suspended, "confirmed");
+      await link2(hub, archived, "confirmed");
+
+      const result = await loadPublicConnections(hub);
+      expect(result.partners.map((p) => p.name)).toEqual(["pub shown"]);
+    });
+
+    it("shows an outside partner only on the proposer's page", async () => {
+      const proposer = (await addEntry(db, "pub proposer")).id;
+      const other = (await addEntry(db, "pub other")).id;
+      const [stub] = await db
+        .insert(entry)
+        .values({
+          slug: "pub-stub",
+          kind: "outside_partner",
+          status: "draft",
+          name: "Pub Stub",
+          sourceLocale: "en",
+        })
+        .returning();
+      await db.insert(link).values({
+        fromId: proposer,
+        toId: stub.id,
+        kind: "member_of",
+        symmetric: false,
+        status: "confirmed",
+        proposedByEntryId: proposer,
+      });
+      const mine = await loadPublicConnections(proposer);
+      expect(mine.unverified.map((p) => p.name)).toEqual(["Pub Stub"]);
+      expect(mine.partners).toEqual([]);
+      expect((await loadPublicConnections(other)).unverified).toEqual([]);
+    });
+
+    it("returns nothing for an entry that is not public", async () => {
+      const hidden = (await addEntry(db, "pub hidden", {}, { status: "draft" }))
+        .id;
+      const friend = (await addEntry(db, "pub friend")).id;
+      await link2(hidden, friend, "confirmed");
+      expect(await loadPublicConnections(hidden)).toEqual({
+        partners: [],
+        unverified: [],
+      });
     });
   });
 });

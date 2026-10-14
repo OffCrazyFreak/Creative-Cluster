@@ -3,20 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { m } from "@/paraglide/messages";
 
 import type { IPublicRelation } from "../connections-schemas";
+import { relationDetails } from "../relation-details";
 import { relationLabel } from "../relation-label";
-
-export function relationDetails(relation: IPublicRelation): string {
-  const years =
-    relation.year === null
-      ? null
-      : relation.endYear === null
-        ? m.connections_years_since({ start: relation.year })
-        : m.connections_years_range({
-            start: relation.year,
-            end: relation.endYear,
-          });
-  return [years, relation.project].filter(Boolean).join(" · ");
-}
 
 interface IPublicPartnerItemProps {
   relation: IPublicRelation;
