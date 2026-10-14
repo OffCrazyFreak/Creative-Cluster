@@ -230,9 +230,8 @@ describe.skipIf(!temp)("saveOwnListing", () => {
       .select()
       .from(schema.reviewItem)
       .where(eq(schema.reviewItem.entityId, row.id));
-    expect(items).toMatchObject([
-      { status: "dismissed", decidedAt: expect.any(Date) },
-    ]);
+    expect(items.map((item) => item.status)).toEqual(["dismissed"]);
+    expect(items[0].decidedAt).toBeInstanceOf(Date);
     expect((await findOwnListing(owner.id))?.hasPendingEdit).toBe(false);
     expect((await reload(row.id)).name).toBe(live.name);
     expect(await db.select().from(schema.changeLog)).toHaveLength(
