@@ -45,7 +45,7 @@ function noticeText(notice: Notice): string {
 
 export default function ListingForm({ listing }: IListingFormProps) {
   const [notice, setNotice] = useState<Notice | null>(null);
-  const save = useSaveListing(listing);
+  const save = useSaveListing(listing.id);
   // Moves only with the owner's own saves: a refetch must not replace what the owner is looking at.
   const [initial, setInitial] = useState(() =>
     withDefaultCountry(listing.values),
@@ -61,10 +61,7 @@ export default function ListingForm({ listing }: IListingFormProps) {
     onSubmit: async ({ value, formApi }) => {
       setNotice(null);
       try {
-        const result = await save.mutateAsync({
-          values: value,
-          baseline: initial,
-        });
+        const result = await save.mutateAsync(value);
         // The server may have replaced the language with the one it detected.
         const saved = { ...value, sourceLocale: result.sourceLocale };
         // The form re-applies its default values on every render, so they must follow the save.
