@@ -15,7 +15,8 @@ import { tagOptionColumns, usableTagCondition } from "./tag-visibility.server";
 
 // Caps what one account can leave in the review queue at a time.
 export const MAX_OPEN_SUGGESTIONS = 10;
-const SUGGESTIONS_PER_HOUR = 10;
+// Above the open-suggestion cap so repeat clicks on an existing label do not lock a user out.
+const SUGGESTIONS_PER_HOUR = 30;
 
 type SuggestionValues = Pick<
   typeof tag.$inferInsert,

@@ -52,7 +52,9 @@ export default function ListingSummary({ listing }: IListingSummaryProps) {
           </dd>
           {listing.hasPendingEdit && (
             <>
-              <dt className="min-w-0 break-words">{m.account_home_pending()}</dt>
+              <dt className="min-w-0 break-words">
+                {m.account_home_pending()}
+              </dt>
               <dd className="min-w-0 break-words">
                 {m.account_home_pending_value()}
               </dd>

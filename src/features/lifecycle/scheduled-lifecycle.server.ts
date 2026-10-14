@@ -95,9 +95,10 @@ export async function purgeExpiredApplications(): Promise<number> {
   return purged;
 }
 
-// Set-password links (invites, claims, approvals) are dropped 90 days after they were issued, expired or not.
-export async function purgeOldInviteTokens(): Promise<void> {
-  await db
+// Set-password links (invites, claims, approvals and plain resets share one identifier shape) are
+// dropped 90 days after issue; keep every link's TTL below that.
+export async function purgeOldInviteTokens(): Promise<number> {
+  const removed = await db
     .delete(verification)
     .where(
       and(
@@ -107,7 +108,9 @@ export async function purgeOldInviteTokens(): Promise<void> {
           sql`now() - make_interval(days => ${INVITE_RETENTION_DAYS})`,
         ),
       ),
-    );
+    )
+    .returning({ id: verification.id });
+  return removed.length;
 }
 
 // Deletes accounts whose 14 day grace period is over. The admin rule is checked and the data purged first:

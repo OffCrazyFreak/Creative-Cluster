@@ -15,6 +15,6 @@ describe("zod locale fallback", () => {
 
   it("follows the request language", () => {
     expect(issue("en")).not.toEqual(issue("hr"));
-    expect(issue("hr")).toMatch(/[a-zčćšđž]/i);
+    expect(issue("hr")).toMatch(/^Premalo/);
   });
 });
