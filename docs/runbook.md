@@ -145,7 +145,7 @@ When credits run out, all projects on the team are paused until the next monthly
 
 ## Claim emails need the owner's go-ahead
 
-Imported listings can be claimed through a one-time link (`/claim/<token>`, tokens stored as hashes, 30 days, created by `pnpm claims:prepare`). The email that carries the link must not be sent to imported contacts until the project owner says so: the plan is one email plus one reminder about 10 days later, business addresses only, with the Art. 14 notice and a one-click removal. Sending is a deliberate manual step: `pnpm claims:send` refuses to run without `CLAIMS_SENDING_APPROVED=yes`, `--confirm`, a batch of 500 or fewer and a final import source text.
+Imported listings can be claimed through a one-time link (`/claim/<token>`, tokens stored as hashes, 30 days, created by `pnpm claims:prepare`). The email that carries the link must not be sent to imported contacts until the project owner says so: the plan is one email plus one reminder about 10 days later, business addresses only, with the Art. 14 notice and a one-click removal. Sending is a deliberate manual step (`--dry-run` previews a batch and always wins over `--confirm`): `pnpm claims:send` refuses to run without `CLAIMS_SENDING_APPROVED=yes`, `--confirm`, a batch of 500 or fewer and a final import source text.
 
 ## Everyday tasks
 
