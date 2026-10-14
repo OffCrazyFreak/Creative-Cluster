@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
+import PageContainer from "@/components/custom/layout/page-container";
 import { m } from "@/paraglide/messages";
 
 import { adminTagsQuery } from "../tag-queries";
@@ -15,7 +16,7 @@ export default function AdminTagsPage() {
   const [merging, setMerging] = useState<IAdminTagRow | null>(null);
 
   return (
-    <section className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-8">
+    <PageContainer size="wide">
       <h1 className="text-2xl font-semibold">{m.tags_admin_title()}</h1>
       {isError && <p role="alert">{m.tags_admin_error()}</p>}
       {data && (
@@ -36,6 +37,6 @@ export default function AdminTagsPage() {
           onClose={() => setMerging(null)}
         />
       )}
-    </section>
+    </PageContainer>
   );
 }

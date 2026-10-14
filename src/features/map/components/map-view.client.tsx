@@ -158,7 +158,7 @@ export default function MapView(props: IMapViewProps) {
       ref={containerRef}
       role="region"
       aria-label={m.map_region_label()}
-      className="size-full max-md:[&_.maplibregl-ctrl-top-left]:top-32 max-md:[&_.maplibregl-ctrl-top-right]:top-32"
+      className="size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-top-left]:top-32! max-md:[&_.maplibregl-ctrl-top-right]:top-32!"
     >
       <Map
         key={mapKey}

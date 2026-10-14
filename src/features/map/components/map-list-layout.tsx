@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import PageContainer from "@/components/custom/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { m } from "@/paraglide/messages";
 
@@ -23,7 +24,7 @@ export default function MapListLayout({
   children,
 }: IMapListLayoutProps) {
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
+    <PageContainer as="div" size="prose">
       <MapSearchBar />
       <MapFilterChips />
       <MapStatusNotice status={status} />
@@ -33,6 +34,6 @@ export default function MapListLayout({
         </Button>
       ) : null}
       <div id="results-panel">{children}</div>
-    </div>
+    </PageContainer>
   );
 }

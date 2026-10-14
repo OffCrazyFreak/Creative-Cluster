@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import PageContainer from "@/components/custom/layout/page-container";
+
 import MarkdownContent from "./markdown-content";
 
 interface ILegalPageProps {
@@ -9,9 +11,9 @@ interface ILegalPageProps {
 
 export default function LegalPage({ source, children }: ILegalPageProps) {
   return (
-    <article className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-8">
+    <PageContainer as="article" size="prose">
       <MarkdownContent source={source} />
       {children}
-    </article>
+    </PageContainer>
   );
 }

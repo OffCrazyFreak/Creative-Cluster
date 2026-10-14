@@ -36,7 +36,7 @@ export default function MapOverlayLayout({
   return (
     <div
       ref={frameRef}
-      className="relative h-[calc(100dvh-4.5rem)] min-h-[28rem] overflow-hidden max-md:h-[calc(100dvh-11rem)]"
+      className="relative h-[calc(100dvh-var(--site-header-height,3.0625rem))] min-h-[28rem] overflow-hidden max-md:h-[calc(100dvh-var(--site-header-height,5.5625rem))]"
     >
       <MapSkipLink />
       <div className="absolute inset-0">{map}</div>
