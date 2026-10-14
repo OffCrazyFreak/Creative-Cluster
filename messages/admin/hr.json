@@ -72,5 +72,9 @@
   "admin_entries_actions_for": "Radnje za {name}",
   "admin_entries_action_open": "Otvori detalje",
   "admin_entries_action_trust": "Označi kao pouzdan",
-  "admin_entries_action_untrust": "Označi kao nepouzdan"
+  "admin_entries_action_untrust": "Označi kao nepouzdan",
+  "admin_entries_prev": "Prethodna",
+  "admin_entries_next": "Sljedeća",
+  "admin_entries_page": "Stranica {page} od {pages}",
+  "admin_entries_first_page": "Natrag na prvu stranicu"
 }

@@ -72,5 +72,9 @@
   "admin_entries_actions_for": "Actions for {name}",
   "admin_entries_action_open": "Open details",
   "admin_entries_action_trust": "Mark as trusted",
-  "admin_entries_action_untrust": "Mark as not trusted"
+  "admin_entries_action_untrust": "Mark as not trusted",
+  "admin_entries_prev": "Previous",
+  "admin_entries_next": "Next",
+  "admin_entries_page": "Page {page} of {pages}",
+  "admin_entries_first_page": "Back to the first page"
 }
