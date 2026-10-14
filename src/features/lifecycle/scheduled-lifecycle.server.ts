@@ -4,15 +4,22 @@ import {
   APPLY_VERIFY_TTL_SECONDS,
   REJECTED_APPLICATION_RETENTION_DAYS,
 } from "@/constants/apply";
-import { IMPORT_ARCHIVE_MONTHS } from "@/constants/lifecycle";
+import {
+  ERASURE_GRACE_DAYS,
+  ERASURE_MARKER_PREFIX,
+  IMPORT_ARCHIVE_MONTHS,
+} from "@/constants/lifecycle";
 import { db } from "@/db/client.server";
-import { entry, verification } from "@/db/schema";
+import { entry, user, verification } from "@/db/schema";
+import { auth } from "@/lib/auth/auth.server";
+import { assertAdminsRemain } from "@/lib/auth/min-admins.server";
 import { invalidateMapDirectory } from "@/features/directory/map-directory.server";
 
 import { NotFoundError } from "@/server/errors";
 
 import { transitionEntry } from "./entry-transitions.server";
 import { purgeEntry } from "./purge-entry.server";
+import { purgeErasedUser } from "./purge-erased-user.server";
 
 // A first-year import cohort goes stale on one day; the rest is picked up by the following daily runs.
 const PURGE_BATCH_SIZE = 500;
@@ -85,4 +92,47 @@ export async function purgeExpiredApplications(): Promise<number> {
       ),
     );
   return purged;
+}
+
+// Deletes accounts whose 14 day grace period is over. The admin rule is checked and the data purged first:
+// better-auth removes sessions and credentials before its delete hook runs, so a refusal there would lock the person out.
+export async function deleteDueErasedAccounts(): Promise<number> {
+  const due = await db
+    .select({ identifier: verification.identifier })
+    .from(verification)
+    .where(
+      and(
+        like(verification.identifier, `${ERASURE_MARKER_PREFIX}%`),
+        lt(
+          verification.createdAt,
+          sql`now() - make_interval(days => ${ERASURE_GRACE_DAYS})`,
+        ),
+      ),
+    );
+  const context = await auth.$context;
+  let deleted = 0;
+  for (const { identifier } of due) {
+    const userId = identifier.slice(ERASURE_MARKER_PREFIX.length);
+    try {
+      const [account] = await db
+        .select({ id: user.id, email: user.email, locale: user.locale })
+        .from(user)
+        .where(eq(user.id, userId))
+        .limit(1);
+      if (account) {
+        await assertAdminsRemain(userId);
+        // Not due by the app clock yet (it may lag the database): leave the marker for the next run.
+        if (!(await purgeErasedUser(account))) continue;
+        await context.internalAdapter.deleteUser(userId);
+      }
+      await db
+        .delete(verification)
+        .where(eq(verification.identifier, identifier));
+      deleted += 1;
+    } catch (error) {
+      // The last admins, or a transient failure: the marker stays and the next daily run retries.
+      console.error("erasure of an account failed", userId, error);
+    }
+  }
+  return deleted;
 }

@@ -1,10 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { enforceLimits } from "@/lib/limits/check-limit.server";
 import { NotFoundError } from "@/server/errors";
 import { adminGuard, memberGuard } from "@/server/guards";
 import { runInBackground } from "@/lib/auth/background-task.server";
 import { triggerDrain } from "@/lib/jobs/trigger-drain.server";
+import { exportUserData } from "./export-data.server";
+import {
+  cancelErasure,
+  getErasureState,
+  requestErasure,
+} from "./erasure.server";
 
 import {
   archiveEntryAsAdmin,
@@ -112,3 +119,33 @@ export const confirmOwnListingFn = createServerFn({ method: "POST" })
   .middleware([memberGuard])
   .inputValidator(z.void())
   .handler(({ context }) => attempt(() => confirmOwnListing(context.user.id)));
+
+// JSON travels as text so the browser can offer it as a file without a second endpoint.
+export const exportMyDataFn = createServerFn({ method: "POST" })
+  .middleware([memberGuard])
+  .inputValidator(z.void())
+  .handler(async ({ context }) => {
+    await enforceLimits([
+      { key: `export:${context.user.id}`, max: 10, windowSeconds: 3600 },
+    ]);
+    return JSON.stringify(await exportUserData(context.user.id), null, 2);
+  });
+
+export const getErasureStateFn = createServerFn({ method: "GET" })
+  .middleware([memberGuard])
+  .inputValidator(z.void())
+  .handler(({ context }) => getErasureState(context.user.id));
+
+export const requestErasureFn = createServerFn({ method: "POST" })
+  .middleware([memberGuard])
+  .inputValidator(z.void())
+  .handler(async ({ context }) => {
+    const state = await requestErasure(context.user.id);
+    runInBackground(triggerDrain());
+    return state;
+  });
+
+export const cancelErasureFn = createServerFn({ method: "POST" })
+  .middleware([memberGuard])
+  .inputValidator(z.void())
+  .handler(({ context }) => attempt(() => cancelErasure(context.user.id)));

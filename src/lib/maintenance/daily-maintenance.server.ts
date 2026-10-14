@@ -1,6 +1,7 @@
 import { stripOldChangeLog } from "@/features/changes/strip-change-log.server";
 import {
   archiveStaleImports,
+  deleteDueErasedAccounts,
   purgeExpiredApplications,
 } from "@/features/lifecycle/scheduled-lifecycle.server";
 import { queueReviewDigests } from "@/features/review/review-digest.server";
@@ -12,6 +13,7 @@ type Task = { name: string; run: () => Promise<unknown> };
 const TASKS: Task[] = [
   { name: "review-digests", run: () => queueReviewDigests() },
   { name: "strip-change-log", run: () => stripOldChangeLog() },
+  { name: "delete-erased-accounts", run: () => deleteDueErasedAccounts() },
   { name: "archive-stale-imports", run: () => archiveStaleImports() },
   { name: "purge-expired-applications", run: () => purgeExpiredApplications() },
 ];

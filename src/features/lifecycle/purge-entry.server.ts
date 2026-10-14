@@ -1,4 +1,4 @@
-import { and, eq, inArray, notExists, or, type SQL } from "drizzle-orm";
+import { and, eq, inArray, notExists, or, sql, type SQL } from "drizzle-orm";
 
 import type { Tx } from "@/db/client.server";
 import {
@@ -8,15 +8,44 @@ import {
   opportunity,
   reviewItem,
   translation,
+  user,
 } from "@/db/schema";
 import { stripEntityChangeLog } from "@/features/changes/strip-change-log.server";
+
+// Mail already sent to an address no longer needs it; queued mail still does. A listing's contact address may
+// also be a member's login address, and that member's mail history stays.
+export async function scrubSentEmails(
+  tx: Tx,
+  address: string,
+  keepMembers = false,
+) {
+  const lowered = address.toLowerCase();
+  if (keepMembers) {
+    const [member] = await tx
+      .select({ id: user.id })
+      .from(user)
+      .where(sql`lower(${user.email}) = ${lowered}`)
+      .limit(1);
+    if (member) return;
+  }
+  await tx.execute(sql`
+    update job
+    set payload = jsonb_build_object('template', payload -> 'template', 'scrubbed', true)
+    where status in ('done', 'failed')
+      and type = 'email'
+      and lower(payload ->> 'to') = ${lowered}`);
+}
 
 // Deletes a listing for good: its text, translations, posts, connections, queue items and images that
 // nothing else uses. Change log rows stay for the audit trail but lose their identifiers.
 // `onlyIf` is re-checked under the row lock, so a listing that changed since it was picked is left alone.
 export async function purgeEntry(tx: Tx, entryId: string, onlyIf?: SQL) {
   const [row] = await tx
-    .select({ logo: entry.logoImageId, cover: entry.coverImageId })
+    .select({
+      logo: entry.logoImageId,
+      cover: entry.coverImageId,
+      contactEmail: entry.contactEmail,
+    })
     .from(entry)
     .where(and(eq(entry.id, entryId), onlyIf))
     .limit(1)
@@ -52,6 +81,7 @@ export async function purgeEntry(tx: Tx, entryId: string, onlyIf?: SQL) {
           : undefined,
       ),
     );
+  if (row.contactEmail) await scrubSentEmails(tx, row.contactEmail, true);
   const related = [entryId, ...posts, ...links];
   await tx.delete(reviewItem).where(inArray(reviewItem.entityId, related));
   for (const id of related) await stripEntityChangeLog(tx, id);
