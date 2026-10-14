@@ -2,6 +2,8 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
+import { startClientMonitoring } from "@/lib/monitoring/start-client-monitoring";
+import { getRequestNonce } from "@/lib/csp/request-nonce";
 import { deLocalizeUrl, localizeUrl } from "@/paraglide/runtime";
 
 import { routeTree } from "./routeTree.gen";
@@ -18,12 +20,14 @@ export function getRouter() {
       input: ({ url }) => deLocalizeUrl(url),
       output: ({ url }) => localizeUrl(url),
     },
+    ssr: { nonce: import.meta.env.SSR ? getRequestNonce() : undefined },
     scrollRestoration: true,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
   });
 
   setupRouterSsrQueryIntegration({ router, queryClient });
+  if (!router.isServer) startClientMonitoring(router);
 
   return router;
 }
