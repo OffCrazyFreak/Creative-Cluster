@@ -39,7 +39,7 @@ Never:
 ## Layout
 
 - `src/routes/`: file routes only. A route file wires loaders and renders one feature component.
-- `src/features/<area>/`: `<area>.functions.ts` (server functions), `*.server.ts` (server-only services and queries), `<area>-schemas.ts` (Zod schemas and types), `components/`, `hooks/`, `<area>-queries.ts` (TanStack Query options).
+- `src/features/<area>/`: `<area>.functions.ts` (server functions), `*.server.ts` (server-only services and queries), `<area>-schemas.ts` (Zod schemas and types; server function inputs only when they import heavy parsers), `<area>-fields.ts` (constants, types and pure helpers that client code may import without pulling those schemas), `components/`, `hooks/`, `<area>-queries.ts` (TanStack Query options).
 - `src/db/`: Drizzle schema (`schema/`), client (`client.server.ts`), column helpers.
 - `src/lib/<adapter>/`: adapters behind small interfaces (auth, email, geocoding, translation, images, analytics, turnstile, limits).
 - `src/server/`: guards, errors, request helpers. `src/sites/`: per-site config. `src/constants/`, `src/utils/`, `src/typings/`, `src/hooks/`: shared code.

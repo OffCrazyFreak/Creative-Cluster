@@ -71,6 +71,13 @@ export default [
     gzip: true,
     limit: `${limitKb} kB`,
   })),
+  // Fetched right after hydration on entries that have connections.
+  {
+    name: "Connection graph chunk (entries with connections)",
+    path: [join(clientDir, "assets/connection-graph-*.js")],
+    gzip: true,
+    limit: "58 kB",
+  },
   // Spec: about 430 kB gzip, loaded on idle on map routes only.
   {
     name: "Map library chunks (idle, map routes only)",

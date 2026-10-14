@@ -2,7 +2,7 @@ import type { AppLocale } from "@/constants/locales";
 import type { TranslationOrigin } from "@/constants/translations";
 import type { RichTextDoc } from "@/typings/rich-text";
 
-// Kept apart from translation-schemas.ts: the zod schemas there pull the ProseMirror parser (about 115 KB gzip) into every page that imports a constant from here.
+// Client code imports from this file, never from translation-schemas.ts: those zod schemas pull the ProseMirror parser (about 115 KB gzip) into the page.
 export const TRANSLATED_FIELDS = [
   "description",
   "offering",
