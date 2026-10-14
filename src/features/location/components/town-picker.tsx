@@ -43,6 +43,17 @@ export default function TownPicker({
     enabled: Boolean(countryCode),
   });
   const matches = searchTowns(towns, text);
+  // The chosen town is the controlled value, so Base UI keeps its label in the input when the popup closes.
+  const selected: ITown | null =
+    value.lat !== null && value.lng !== null && value.city
+      ? {
+          name: value.city,
+          lat: value.lat,
+          lng: value.lng,
+          population: value.townPopulation ?? 0,
+          countryCode: value.countryCode ?? "",
+        }
+      : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -74,7 +85,7 @@ export default function TownPicker({
         <Combobox
           items={matches}
           filter={null}
-          value={null as ITown | null}
+          value={selected}
           inputValue={text}
           onInputValueChange={(next) => {
             setText(next);
