@@ -56,5 +56,12 @@
   "auth_claim_next": "Now choose a password for your account.",
   "auth_error_generic": "Something went wrong. Please try again.",
   "auth_login_error_google": "This Google account has no account here. Accounts are created by invitation.",
-  "auth_claim_used_hint": "Already claimed it? Log in, or reset your password if you did not finish choosing one."
+  "auth_claim_used_hint": "Already claimed it? Log in, or reset your password if you did not finish choosing one.",
+  "auth_claim_remove_title": "Remove your listing",
+  "auth_claim_remove_intro": "You are about to remove the listing {entryName} from the directory.",
+  "auth_claim_remove_effect": "The listing disappears from the site at once and we will not write to this address again. An administrator can still restore it if you ask.",
+  "auth_claim_remove_submit": "Remove my listing",
+  "auth_claim_remove_done": "Done. The listing is removed and we will not write to you again.",
+  "auth_claim_remove_invalid": "This link is not valid or has expired. If you still want the listing removed, write to us and we will do it.",
+  "auth_claim_remove_home": "Back to the site"
 }

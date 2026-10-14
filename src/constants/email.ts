@@ -4,6 +4,7 @@ export const EMAIL_PRIORITY = { urgent: 1, normal: 5 } as const;
 export const EMAIL_TEMPLATE_NAMES = [
   "invite",
   "claim",
+  "claim_reminder",
   "verify",
   "reset",
   "change",
@@ -33,6 +34,7 @@ export const EMAIL_TEMPLATE_PRIORITY: Record<
 > = {
   invite: "urgent",
   claim: "normal",
+  claim_reminder: "normal",
   verify: "urgent",
   reset: "urgent",
   change: "urgent",
