@@ -214,9 +214,10 @@ describe.skipIf(!temp)("opportunity decisions", () => {
   it("keeps the period of a post that was approved before", async () => {
     const { admin, post } = await setup();
     const kept = new Date(Date.now() + 5 * 86_400_000);
+    const first = new Date(Date.now() - 86_400_000);
     await db
       .update(schema.opportunity)
-      .set({ publishedAt: new Date(Date.now() - 86_400_000), expiresAt: kept })
+      .set({ publishedAt: first, expiresAt: kept })
       .where(eq(schema.opportunity.id, post.id));
     await db.transaction((tx) =>
       decideOpportunity(tx, { id: post.id, approve: true, adminId: admin.id }),
@@ -224,6 +225,7 @@ describe.skipIf(!temp)("opportunity decisions", () => {
     const row = await reload(post.id);
     expect(row.status).toBe("published");
     expect(row.expiresAt.getTime()).toBe(kept.getTime());
+    expect(row.publishedAt?.getTime()).toBe(first.getTime());
   });
 
   it("will not re-approve a previously approved post that ran out", async () => {

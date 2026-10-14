@@ -84,7 +84,11 @@ export async function decideOpportunity(
       throw new OpportunityLimitError();
     await tx
       .update(opportunity)
-      .set({ status: "published", publishedAt: now, expiresAt })
+      .set({
+        status: "published",
+        publishedAt: row.publishedAt ?? now,
+        expiresAt,
+      })
       .where(eq(opportunity.id, id));
     await writeChange(tx, {
       entityType: "opportunity",
