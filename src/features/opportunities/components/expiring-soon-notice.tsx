@@ -4,17 +4,21 @@ import { Link } from "@tanstack/react-router";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { m } from "@/paraglide/messages";
 
+import { pageGoneAt } from "../opportunity-expiry";
 import { myOpportunitiesQuery } from "../opportunity-queries";
 
 // Shown on /account: no email goes out in v1, so this is the only reminder before a post ends.
 export default function ExpiringSoonNotice() {
   const { data } = useQuery(myOpportunitiesQuery());
-  // Expired posts count while they can still be renewed: after expiry this is the only reminder.
+  // Expired posts count while they can still be renewed and their public page still exists: after expiry this is the only reminder.
+  const now = new Date();
   const count =
     data?.items.filter(
       (item) =>
         item.state === "expiring_soon" ||
-        (item.state === "expired" && item.canRenew),
+        (item.state === "expired" &&
+          item.canRenew &&
+          now < pageGoneAt(new Date(item.expiresAt))),
     ).length ?? 0;
   if (count === 0) return null;
   return (

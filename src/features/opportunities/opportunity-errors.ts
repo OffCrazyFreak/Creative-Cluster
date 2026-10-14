@@ -13,3 +13,11 @@ export class OpportunityDeadlinePassedError extends Error {
     this.name = "OpportunityDeadlinePassedError";
   }
 }
+
+// The entry already has the most open posts; this one was not counted while it waited past its expiry.
+export class OpportunityLimitError extends Error {
+  constructor() {
+    super("The entry has too many open opportunities to publish this one");
+    this.name = "OpportunityLimitError";
+  }
+}

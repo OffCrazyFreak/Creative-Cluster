@@ -249,4 +249,25 @@ describe.skipIf(!temp)("change log services", () => {
       status: "not_revertible",
     });
   });
+
+  it("treats a field missing from the after values as edited since", async () => {
+    const { admin, listing } = await setup();
+    const lopsided = await writeChange(db, {
+      entityType: "entry",
+      entityId: listing.id,
+      userId: admin.id,
+      source: "owner",
+      action: "update",
+      before: { name: "Older Name" },
+      after: {},
+    });
+    expect(await revertChange(lopsided.id, "x", admin.id)).toEqual({
+      status: "not_revertible",
+    });
+    const [kept] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, listing.id));
+    expect(kept.name).toBe("Vandalised");
+  });
 });

@@ -15,7 +15,8 @@ const { temp } = await vi.hoisted(async () => {
 });
 vi.mock("@/db/client.server", () => ({ db: temp?.db }));
 const { decideOpportunity } = await import("./decide-opportunity.server");
-const { OpportunityDeadlinePassedError } = await import("./opportunity-errors");
+const { OpportunityDeadlinePassedError, OpportunityLimitError } =
+  await import("./opportunity-errors");
 const { removeOpportunity } = await import("./remove-opportunity.server");
 
 describe.skipIf(!temp)("opportunity decisions", () => {
@@ -208,6 +209,67 @@ describe.skipIf(!temp)("opportunity decisions", () => {
       ),
     ).rejects.toBeInstanceOf(OpportunityDeadlinePassedError);
     expect((await reload(post.id)).status).toBe("pending");
+  });
+
+  it("keeps the period of a post that was approved before", async () => {
+    const { admin, post } = await setup();
+    const kept = new Date(Date.now() + 5 * 86_400_000);
+    await db
+      .update(schema.opportunity)
+      .set({ publishedAt: new Date(Date.now() - 86_400_000), expiresAt: kept })
+      .where(eq(schema.opportunity.id, post.id));
+    await db.transaction((tx) =>
+      decideOpportunity(tx, { id: post.id, approve: true, adminId: admin.id }),
+    );
+    const row = await reload(post.id);
+    expect(row.status).toBe("published");
+    expect(row.expiresAt.getTime()).toBe(kept.getTime());
+  });
+
+  it("will not re-approve a previously approved post that ran out", async () => {
+    const { admin, post } = await setup();
+    await db
+      .update(schema.opportunity)
+      .set({
+        publishedAt: new Date(Date.now() - 20 * 86_400_000),
+        expiresAt: new Date(Date.now() - 86_400_000),
+      })
+      .where(eq(schema.opportunity.id, post.id));
+    await expect(
+      db.transaction((tx) =>
+        decideOpportunity(tx, {
+          id: post.id,
+          approve: true,
+          adminId: admin.id,
+        }),
+      ),
+    ).rejects.toBeInstanceOf(OpportunityDeadlinePassedError);
+  });
+
+  it("will not publish a lapsed waiting post over the entry cap", async () => {
+    const owner = await addUser(db, "capowner");
+    const admin = await addUser(db, "capadmin", "admin");
+    const row = await addEntry(db, "Capped", {}, { ownerUserId: owner.id });
+    for (let i = 0; i < 3; i++)
+      await addOpportunity(db, row.id, {
+        status: "published",
+        publishedAt: new Date(),
+        title: `Live ${i}`,
+      });
+    const lapsed = await addOpportunity(db, row.id, {
+      expiresAt: new Date(Date.now() - 1000),
+      title: "Lapsed",
+    });
+    await expect(
+      db.transaction((tx) =>
+        decideOpportunity(tx, {
+          id: lapsed.id,
+          approve: true,
+          adminId: admin.id,
+        }),
+      ),
+    ).rejects.toBeInstanceOf(OpportunityLimitError);
+    expect((await reload(lapsed.id)).status).toBe("pending");
   });
 
   it("tells the owner the last open day, not the day after", async () => {

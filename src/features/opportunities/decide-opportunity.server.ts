@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 
+import { OPPORTUNITY_LIMITS as L } from "@/constants/opportunities";
 import type { ReasonCode } from "@/constants/moderation";
 import type { Tx } from "@/db/client.server";
 import { opportunity, reviewItem } from "@/db/schema";
@@ -13,8 +14,10 @@ import { absoluteUrl } from "@/utils/seo-links";
 import {
   OpportunityDecisionError,
   OpportunityDeadlinePassedError,
+  OpportunityLimitError,
 } from "./opportunity-errors";
 import { periodEnd } from "./opportunity-expiry";
+import { countOpenPosts } from "./opportunity-limits.server";
 import { lockOpportunityWithOwner } from "./opportunity-owner.server";
 
 export interface IDecideOpportunity {
@@ -67,9 +70,18 @@ export async function decideOpportunity(
     .where(openItems(id));
 
   if (approve) {
-    const expiresAt = periodEnd({ start: now, deadline: row.deadline });
-    // A post whose deadline passed while it waited would be published already expired: reject it instead.
+    // A post approved before keeps its period: editing never extends a post, and only renewing counts toward maxRenewals.
+    const expiresAt = row.publishedAt
+      ? row.expiresAt
+      : periodEnd({ start: now, deadline: row.deadline });
+    // A post whose period ran out while it waited would be published already expired: reject it instead.
     if (expiresAt <= now) throw new OpportunityDeadlinePassedError();
+    // A waiting post past its expiry is not counted as open, so publishing it must respect the cap.
+    if (
+      row.expiresAt <= now &&
+      (await countOpenPosts(tx, row.entryId, id)) >= L.activePerEntry
+    )
+      throw new OpportunityLimitError();
     await tx
       .update(opportunity)
       .set({ status: "published", publishedAt: now, expiresAt })
