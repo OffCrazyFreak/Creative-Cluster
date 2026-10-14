@@ -19,7 +19,10 @@ import {
   stateLabel,
   typeLabel,
 } from "../opportunity-labels";
-import type { IOwnOpportunity } from "../opportunity-types";
+import type {
+  IOwnOpportunity,
+  OwnOpportunityState,
+} from "../opportunity-types";
 import FillOpportunityDialog from "./fill-opportunity-dialog";
 import RenewOpportunityForm from "./renew-opportunity-form";
 
@@ -31,7 +34,16 @@ interface IOwnOpportunityCardProps {
   onFill: () => void;
 }
 
-const LIVE = ["active", "expiring_soon"];
+const LIVE: readonly OwnOpportunityState[] = ["active", "expiring_soon"];
+const CLOSED: readonly OwnOpportunityState[] = ["filled", "removed"];
+const HAS_PAGE: readonly OwnOpportunityState[] = [
+  "active",
+  "expiring_soon",
+  "expired",
+  "filled",
+];
+// The service lets the owner close any published post, expired ones included.
+const CAN_FILL: readonly OwnOpportunityState[] = [...LIVE, "expired"];
 
 export default function OwnOpportunityCard({
   item,
@@ -41,10 +53,8 @@ export default function OwnOpportunityCard({
   onFill,
 }: IOwnOpportunityCardProps) {
   const warn = item.state === "expiring_soon" || item.state === "expired";
-  const editable = !["filled", "removed"].includes(item.state);
-  const publicPage = ["active", "expiring_soon", "expired", "filled"].includes(
-    item.state,
-  );
+  const editable = !CLOSED.includes(item.state);
+  const publicPage = HAS_PAGE.includes(item.state);
 
   return (
     <Card>
@@ -108,7 +118,7 @@ export default function OwnOpportunityCard({
             onRenew={onRenew}
           />
         ) : null}
-        {item.state === "active" || item.state === "expiring_soon" ? (
+        {CAN_FILL.includes(item.state) ? (
           <FillOpportunityDialog disabled={busy} onConfirm={onFill} />
         ) : null}
       </CardFooter>

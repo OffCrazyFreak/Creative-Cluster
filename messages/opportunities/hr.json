@@ -4,10 +4,10 @@
   "opportunities_error_body": "Opiši priliku.",
   "opportunities_error_deadline": "Odaberi ispravan datum.",
   "opportunities_title": "Moje prilike",
-  "opportunities_intro": "Objavi što tvoj unos nudi ili traži: partnera, vještinu, prostor, uslugu ili partnerstvo za natječaj. Objave su javne i po zadanome traju 60 dana.",
+  "opportunities_intro": "Objavi što tvoj unos nudi ili traži: partnera, vještinu, prostor, uslugu ili partnerstvo za natječaj. Objave su javne i po zadanome traju {days} dana.",
   "opportunities_no_entry": "Prilike objavljuju vlasnici objavljenog unosa. Još nemaš takav unos.",
   "opportunities_entry_not_published": "Tvoj unos nije objavljen pa trenutno ne možeš objavljivati prilike.",
-  "opportunities_review_note": "Prvu priliku pregledava administrator prije nego postane javna. Sljedeće se objavljuju odmah.",
+  "opportunities_review_note": "Administrator pregledava tvoju sljedeću priliku prije nego postane javna.",
   "opportunities_open_count": "Iskorišteno {count} od {max} otvorenih objava.",
   "opportunities_limit_reached": "Dosegnuto je ograničenje od {max} otvorenih objava. Označi jednu kao popunjenu ili pričekaj da istekne.",
   "opportunities_new": "Nova prilika",
@@ -22,7 +22,7 @@
   "opportunities_field_source_locale": "Jezik teksta",
   "opportunities_field_remote": "Može se raditi na daljinu",
   "opportunities_field_deadline": "Rok (neobavezno)",
-  "opportunities_field_deadline_hint": "Objava se zatvara dan nakon roka. Bez roka traje 60 dana. Najviše 180 dana od danas.",
+  "opportunities_field_deadline_hint": "Objava se zatvara dan nakon roka. Bez roka traje {days} dana. Najviše {max} dana od danas.",
   "opportunities_field_tags": "Oznake",
   "opportunities_field_tags_hint": "Do {max} oznaka da prave osobe pronađu objavu.",
   "opportunities_type_seeking": "Tražimo",
@@ -61,7 +61,7 @@
   "opportunities_renew_deadline": "Novi rok",
   "opportunities_renew_confirm": "Obnovi za sljedeće razdoblje",
   "opportunities_fill_title": "Označiti ovu priliku kao popunjenu?",
-  "opportunities_fill_body": "Ostaje vidljiva s oznakom Popunjeno još 7 dana, a zatim nestaje s ploče. Ovo se ne može poništiti.",
+  "opportunities_fill_body": "Ostaje vidljiva s oznakom Popunjeno još {days} dana, a zatim nestaje s ploče. Ovo se ne može poništiti.",
   "opportunities_notice_published": "Tvoja prilika je objavljena.",
   "opportunities_notice_pending": "Hvala. Administrator će pregledati tvoju prvu priliku prije nego postane javna.",
   "opportunities_notice_saved": "Spremljeno.",
@@ -70,9 +70,9 @@
   "opportunities_notice_failed": "Nešto je pošlo po zlu. Pokušaj ponovno.",
   "opportunities_refused_entry_not_published": "Tvoj unos nije objavljen.",
   "opportunities_refused_limit_active": "Već imaš najveći dopušteni broj otvorenih objava.",
-  "opportunities_refused_limit_daily": "Možeš objaviti 3 nove prilike dnevno. Pokušaj sutra.",
+  "opportunities_refused_limit_daily": "Dosegnuto je dnevno ograničenje novih objava ({max}). Pokušaj sutra.",
   "opportunities_refused_duplicate": "Već imaš otvorenu objavu s ovim naslovom.",
-  "opportunities_refused_bad_deadline": "Rok mora biti od danas do 180 dana unaprijed, a za obnovu treba biti kasniji.",
+  "opportunities_refused_bad_deadline": "Rok mora biti od danas do {max} dana unaprijed, a za obnovu treba biti kasniji.",
   "opportunities_refused_invalid_tags": "Jedna od oznaka nije dostupna. Ponovno odaberi oznake.",
   "opportunities_refused_not_renewable": "Ovu objavu trenutno nije moguće obnoviti.",
   "opportunities_refused_not_editable": "Ovu objavu više nije moguće uređivati.",
@@ -81,11 +81,12 @@
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=one": "{count} tvoja prilika uskoro istječe.",
-        "countPlural=few": "{count} tvoje prilike uskoro ističu.",
-        "countPlural=other": "{count} tvojih prilika uskoro ističe."
+        "countPlural=one": "{count} tvoja prilika uskoro istječe ili je istekla.",
+        "countPlural=few": "{count} tvoje prilike uskoro ističu ili su istekle.",
+        "countPlural=other": "{count} tvojih prilika uskoro ističe ili je isteklo."
       }
     }
   ],
-  "opportunities_expiring_link": "Obnovi ili zatvori"
+  "opportunities_expiring_link": "Obnovi ili zatvori",
+  "opportunities_review_note_none": "Tvoja sljedeća prilika objavljuje se odmah."
 }

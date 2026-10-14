@@ -1,7 +1,7 @@
 import { and, count, eq, gt, sql } from "drizzle-orm";
 
 import { OPPORTUNITY_LIMITS as L } from "@/constants/opportunities";
-import type { Tx } from "@/db/client.server";
+import type { DbOrTx, Tx } from "@/db/client.server";
 import { entry, opportunity } from "@/db/schema";
 
 import { openOpportunityCondition } from "./opportunity-conditions.server";
@@ -54,7 +54,11 @@ export async function newPostRefusal(
 }
 
 // The admin can force review for one entry; otherwise only an entry with no approved post yet.
-export async function needsReview(tx: Tx, entryId: string, trusted: boolean) {
+export async function needsReview(
+  tx: DbOrTx,
+  entryId: string,
+  trusted: boolean,
+) {
   if (!trusted) return true;
   const [approved] = await tx
     .select({ id: opportunity.id })

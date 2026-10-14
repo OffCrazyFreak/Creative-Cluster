@@ -10,7 +10,7 @@ import { opportunityKeys } from "../opportunity-queries";
 import type { OpportunityFormValues } from "../opportunity-schemas";
 
 // Every action changes the owner's list, so each one refreshes it when it settles.
-export function useOpportunityActions(entryId: string) {
+export function useOpportunityActions() {
   const queryClient = useQueryClient();
   function onSettled() {
     return queryClient.invalidateQueries({ queryKey: opportunityKeys.all });
@@ -19,7 +19,7 @@ export function useOpportunityActions(entryId: string) {
   const create = useMutation({
     mutationFn: (values: OpportunityFormValues) =>
       createMyOpportunity({
-        data: { entryId, values },
+        data: { values },
       }),
     onSettled,
   });

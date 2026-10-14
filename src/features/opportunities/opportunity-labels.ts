@@ -1,7 +1,8 @@
-import type {
-  OpportunityCategory,
-  OpportunityRuleCode,
-  OpportunityType,
+import {
+  OPPORTUNITY_LIMITS as L,
+  type OpportunityCategory,
+  type OpportunityRuleCode,
+  type OpportunityType,
 } from "@/constants/opportunities";
 import { m } from "@/paraglide/messages";
 
@@ -34,9 +35,11 @@ const STATE: Record<OwnOpportunityState, () => string> = {
 const REFUSED: Record<OpportunityRuleCode, () => string> = {
   entry_not_published: () => m.opportunities_refused_entry_not_published(),
   limit_active: () => m.opportunities_refused_limit_active(),
-  limit_daily: () => m.opportunities_refused_limit_daily(),
+  limit_daily: () =>
+    m.opportunities_refused_limit_daily({ max: L.newPerOwnerPerDay }),
   duplicate: () => m.opportunities_refused_duplicate(),
-  bad_deadline: () => m.opportunities_refused_bad_deadline(),
+  bad_deadline: () =>
+    m.opportunities_refused_bad_deadline({ max: L.maxLifetimeDays }),
   invalid_tags: () => m.opportunities_refused_invalid_tags(),
   not_renewable: () => m.opportunities_refused_not_renewable(),
   not_editable: () => m.opportunities_refused_not_editable(),

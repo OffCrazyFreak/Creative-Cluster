@@ -36,6 +36,8 @@ export interface IOwnOpportunities {
   // Posts that count toward the per-entry cap, and how many more fit today.
   openCount: number;
   canPost: boolean;
+  // Whether the owner's next post waits for an admin (first post, or the entry is set to review).
+  nextPostReviewed: boolean;
   items: IOwnOpportunity[];
 }
 
