@@ -42,6 +42,8 @@ export function hasContactChannel(row: {
 }
 
 function referencesOf(extra: Record<string, unknown>): JsonRichTextDoc | null {
+  // Skip the parse for the common empty case; the text column is written together with the document.
+  if (!extra.references_text) return null;
   const parsed = safeParseRichText(extra.references);
   return parsed && parsed.text.trim() ? (parsed.doc as JsonRichTextDoc) : null;
 }

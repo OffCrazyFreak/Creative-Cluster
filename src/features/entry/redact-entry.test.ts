@@ -149,7 +149,11 @@ describe("redactEntry references", () => {
   };
 
   it("passes a valid references document through to visitors", () => {
-    const result = redactEntry(row({ extra: { references: doc } }), [], false);
+    const result = redactEntry(
+      row({ extra: { references: doc, references_text: "Funded by X" } }),
+      [],
+      false,
+    );
     expect(result.references).toEqual(doc);
   });
 

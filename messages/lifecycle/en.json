@@ -41,7 +41,7 @@
   "lifecycle_archive_done": "Your listing is hidden.",
   "lifecycle_unarchive_button": "Show my listing again",
   "lifecycle_unarchive_done": "Your listing is public again.",
-  "lifecycle_unarchive_consent": "I agree that my full name, description, town and other details are published in the public registry and can be found by search engines. I am 16 or older.",
+  "lifecycle_unarchive_consent": "I agree that my full name, description, town and other details are published in the public registry and can be found by search engines. I am 16 or older. A photo, if I add one, is delivered through Cloudinary, which stores images in the United States (EU-US Data Privacy Framework and standard contractual clauses).",
   "lifecycle_unarchive_unavailable": "Your listing cannot be shown right now. If a deletion is scheduled, cancel it first.",
   "lifecycle_withdraw_button": "Withdraw my consent",
   "lifecycle_withdraw_hint": "Your listing is hidden at once. Copies that search engines already stored can stay until they refresh.",
