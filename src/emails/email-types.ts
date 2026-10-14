@@ -38,6 +38,30 @@ export interface IChangeEmailProps extends IBaseEmailProps {
   expiry: EmailExpiry;
 }
 
+export interface IOpportunityApprovedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  opportunityTitle: string;
+  expiresAt: string;
+  // False when an admin made this entry's posts go through review, so the promise below would be wrong.
+  publishedAtOnce: boolean;
+  link: string;
+}
+
+export interface IOpportunityRejectedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  opportunityTitle: string;
+  reasonCode: ReasonCode;
+  note: string | null;
+  link: string;
+}
+
+export interface IOpportunityRemovedEmailProps extends IBaseEmailProps {
+  opportunityTitle: string;
+  reasonCode: ReasonCode;
+  note: string | null;
+  link: string;
+}
+
 export interface IApplicationReceivedEmailProps extends IBaseEmailProps {
   entryName: string;
 }
@@ -138,6 +162,9 @@ export interface IEmailPropsMap {
   verify: IVerifyEmailProps;
   reset: IResetEmailProps;
   change: IChangeEmailProps;
+  opportunity_approved: IOpportunityApprovedEmailProps;
+  opportunity_rejected: IOpportunityRejectedEmailProps;
+  opportunity_removed: IOpportunityRemovedEmailProps;
   application_received: IApplicationReceivedEmailProps;
   approved: IApprovedEmailProps;
   rejected: IRejectedEmailProps;
