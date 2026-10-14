@@ -10,11 +10,11 @@ Unos mogu tražiti osobe (inovatori) i organizacije s poveznicom na Dubrovačko-
 
 ## 2. Točnost podataka
 
-Moraš unijeti točne, aktualne i nezavaravajuće podatke i ispraviti ih kad se promijene. Gumb "Potvrdi da je moj unos aktualan" pokazuje da je provjera obavljena. Ne provjeravamo svaki unos. Registar nije službeni registar, ne jamči identitet, kvalifikacije ili uspješnost nikoga na popisu. Prije suradnje sam provjeri druge stranke.
+Moraš unijeti točne, aktualne i nezavaravajuće podatke i ispraviti ih kad se promijene. Gumb "Potvrdi da je moj unos aktualan" pokazuje da je provjera obavljena. Ne provjeravamo svaki unos. Registar nije službeni registar, ne jamči identitet, kvalifikacije ili uspješnost nikoga na popisu. Prije suradnje provjeri druge stranke.
 
 ## 3. Tvoji sadržaji i tvoja prava
 
-Ti ostaješ vlasnik svojih tekstova, logotipa i fotografija. Unosom jamčiš da:
+Tvoji tekstovi, logotipi i fotografije ostaju tvoje vlasništvo. Unosom jamčiš da:
 
 - su tvoje vlastito djelo ili imaš sva potrebna prava i dopuštenja za objavu (uključujući prava fotografa i prava prikazanih osoba);
 - objava ne povređuje ničija prava ni zakon;
@@ -46,7 +46,7 @@ Prilike (npr. natječaji, pozivi, ponude suradnje, poslovi) mogu objavljivati sa
 
 ## 8. Osobni unosi (inovatori kao osobe)
 
-Unos osobe objavljuje ime, opis i druge podatke koje sami odabereš, na temelju tvoje zasebne privole. Privolu možeš povući u svakom trenutku u računu: unos se tada odmah skida s javnog prikaza. Fotografije osoba tretiraju se kao logotipi (točka 3 i 4). Pojedinosti o obradi su u Pravilima privatnosti.
+Unos osobe objavljuje ime, opis i druge podatke koje odabereš, na temelju tvoje zasebne privole. Privolu možeš povući u svakom trenutku u računu: unos se tada odmah skida s javnog prikaza. Fotografije osoba tretiraju se kao logotipi (točka 3 i 4). Pojedinosti o obradi su u Pravilima privatnosti.
 
 ## 9. Veze između unosa
 

@@ -66,7 +66,7 @@
   "review_prev": "Prethodna",
   "review_next": "Sljedeća",
   "review_report_title": "Prijavi unos {name}",
-  "review_report_body": "Reci nam što nije u redu. Administrator čita svaku prijavu. Ništa se ne skriva automatski, a unosu ne govorimo tko je prijavio.",
+  "review_report_body": "Reci nam što nije u redu. Administrator čita svaku prijavu. Ništa se ne skriva automatski, a unosu ne otkrivamo tko ga je prijavio.",
   "review_report_reason": "Što je problem?",
   "review_report_reason_inaccurate": "Pogrešni ili zastarjeli podaci",
   "review_report_reason_spam": "Neželjeni sadržaj ili reklama",

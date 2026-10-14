@@ -10,11 +10,11 @@ Unos mogu tražiti organizacije i osobe iz kulturnog i kreativnog područja koje
 
 ## 2. Točnost podataka
 
-Moraš unijeti točne, aktualne i nezavaravajuće podatke i ispraviti ih kad se promijene. Gumb „Potvrdi da je moj unos aktualan” pokazuje da je provjera obavljena. Ne provjeravamo svaki unos. Objava unosa nije preporuka udruge, partnera na projektu ni Europske unije i ne dokazuje ničiji identitet, kvalifikacije ili uspjeh. Prije suradnje sam provjeri druge stranke.
+Moraš unijeti točne, aktualne i nezavaravajuće podatke i ispraviti ih kad se promijene. Gumb „Potvrdi da je moj unos aktualan” pokazuje da je provjera obavljena. Ne provjeravamo svaki unos. Objava unosa nije preporuka udruge, partnera na projektu ni Europske unije i ne dokazuje ničiji identitet, kvalifikacije ili uspjeh. Prije suradnje provjeri druge stranke.
 
 ## 3. Tvoji sadržaji i tvoja prava
 
-Ti ostaješ vlasnik svojih tekstova, logotipa i fotografija. Unosom jamčiš da:
+Tvoji tekstovi, logotipi i fotografije ostaju tvoje vlasništvo. Unosom jamčiš da:
 
 - su tvoje vlastito djelo ili imaš sva potrebna prava i dopuštenja za objavu (uključujući prava fotografa i prava prikazanih osoba);
 - objava ne povređuje ničija prava ni zakon;

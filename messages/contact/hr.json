@@ -2,7 +2,7 @@
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "contact_email_subject": "Nova poruka za {entryName} putem {siteName}",
   "contact_email_preheader": "Odgovori izravno na ovu poruku. Odgovor ide pošiljatelju.",
-  "contact_email_intro": "posjetitelj stranice {siteName} poslao je poruku za {entryName}.",
+  "contact_email_intro": "putem stranice {siteName} stigla je poruka za {entryName}.",
   "contact_email_sender": "Pošiljatelj: {senderName} ({senderEmail})",
   "contact_email_reply_note": "Ako odgovoriš na ovu poruku, odgovor ide izravno pošiljatelju, i tada će vidjeti tvoju adresu. Ne moraš odgovoriti. Poruku ne čuvamo na stranici.",
   "contact_email_report_prompt": "Sumnjaš na neželjenu ili zlonamjernu poruku?",

@@ -22,7 +22,7 @@ Službenika za zaštitu podataka nemamo jer nam ga zakon ne nalaže. [[GAP: potv
 
 **Obrazac za prijavu.** Ako se prijaviš, obrađujemo podatke koje upišeš (kao u unosima gore), provjeravamo e-adresu poveznicom i dodjeljujemo pregled urednika. Odbijene prijave možeš urediti i ponovno poslati, a brišemo ih nakon 90 dana.
 
-**Obrazac za kontakt.** Poruku koju pošalješ unosu prosljeđujemo e-poštom (Resend) vlasniku unosa, s tvojom e-adresom kao adresom za odgovor. **Same poruke ne spremamo.** Spremamo samo jednosmjerni otisak (hash) pošiljatelja i vrijeme, 30 dana, da bismo ograničili zlouporabu (npr. najviše tri poruke po pošiljatelju na sat). Primatelj vidi tvoje ime i e-adresu koje upišeš i poruku. Dalje s njima postupa sam, kao voditelj obrade za svoje potrebe.
+**Obrazac za kontakt.** Poruku koju pošalješ unosu prosljeđujemo e-poštom (Resend) vlasniku unosa, s tvojom e-adresom kao adresom za odgovor. **Same poruke ne spremamo.** Spremamo samo jednosmjerni otisak (hash) pošiljatelja i vrijeme, 30 dana, da bismo ograničili zlouporabu (npr. najviše tri poruke po pošiljatelju na sat). Primatelj vidi tvoje ime i e-adresu koje upišeš i poruku. Dalje s njima postupa samostalno, kao voditelj obrade za svoje potrebe.
 
 **Prilike (oglasna ploča).** Objave koje vlasnici unosa postave (naslov, opis, rok, oznake) javne su dok su aktivne. Kontakt ide samo preko obrasca.
 
@@ -38,7 +38,7 @@ Službenika za zaštitu podataka nemamo jer nam ga zakon ne nalaže. [[GAP: potv
 
 **Je li davanje podataka obvezno?** Ništa ne moraš davati, ali bez imena, opisa, jednog kontakta i lokacije (države i grada) unos ne možemo objaviti. Bez privole ne možemo objaviti osobu. Bez e-adrese ne možemo otvoriti račun.
 
-Ne koristimo automatizirano donošenje odluka ni profiliranje koje bi imalo pravne ili slične učinke na tebe. Oznake i preporuke "slično tebi" računa jednostavno podudaranje oznaka koje sami odabereš, a isključiti ga možeš u računu.
+Ne koristimo automatizirano donošenje odluka ni profiliranje koje bi imalo pravne ili slične učinke na tebe. Oznake i preporuke "slično tebi" računa jednostavno podudaranje oznaka koje odabereš, a isključiti ga možeš u računu.
 
 ## 3. Pravne osnove
 
@@ -84,7 +84,7 @@ Većina podataka ostaje u EU (Neon u Frankfurtu, PostHog i Sentry u EU, Geoapify
 
 ## 7. Tvoja prava
 
-Imaš pravo na pristup, ispravak, brisanje, ograničenje obrade, prenosivost i prigovor, te pravo povući privolu. Većinu možeš obaviti sami:
+Imaš pravo na pristup, ispravak, brisanje, ograničenje obrade, prenosivost i prigovor, te pravo povući privolu. Većinu možeš obaviti samostalno:
 
 - **Izvoz podataka (JSON) i brisanje računa i unosa:** prijavi se i otvori **/account/data**.
 - **Ispravak:** uredi svoj unos u računu.

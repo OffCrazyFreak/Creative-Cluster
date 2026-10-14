@@ -19,7 +19,7 @@ Stranicu vodi, i osobnim podacima na njoj upravlja:
 
 **Zaštita podataka.** Inovatori DNŽ su kontakt za zaštitu podataka na ovoj stranici. Pojedinosti su u [Pravilima privatnosti](/privacy). Pritužbu možeš podnijeti nadzornom tijelu u svojoj državi; u Hrvatskoj to je AZOP, azop.hr. [[GAP: pisani dogovor partnera o zajedničkoj odgovornosti i kako se ovdje opisuje]]
 
-**Prijava sadržaja.** Upotrijebiš poveznicu „Prijavi ovaj unos” na stranici unosa ili piši na adresu iznad. Pritužbe zbog autorskih prava: piši na istu adresu i navedi poveznicu na unos i što je sporno. Odgovaramo bez odgode.
+**Prijava sadržaja.** Upotrijebi poveznicu „Prijavi ovaj unos” na stranici unosa ili piši na adresu iznad. Pritužbe zbog autorskih prava: piši na istu adresu i navedi poveznicu na unos i što je sporno. Odgovaramo bez odgode.
 
 **Autorska prava na stranicu.** Zbirka podataka i dizajn stranice zaštićeni su. Sva prava pridržana. Vidi [Uvjete korištenja](/terms), točka 5.
 

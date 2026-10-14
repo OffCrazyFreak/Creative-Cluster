@@ -13,7 +13,7 @@
   "location_manual_city": "Grad ili mjesto",
   "location_manual_country": "Država",
   "location_country_placeholder": "Odaberi državu",
-  "location_degraded": "Usluga adresa trenutno ne odgovara. Upiši mjesto ručno ili sam postavi pin.",
+  "location_degraded": "Usluga adresa trenutno ne odgovara. Upiši mjesto ili postavi pin ručno.",
   "location_limit_reached": "Previše pretraga u kratko vrijeme. Pričekaj trenutak i pokušaj ponovno.",
   "location_precision_house": "Pronađena je zgrada.",
   "location_precision_street": "Pronađena je samo ulica. Provjeri pin.",
