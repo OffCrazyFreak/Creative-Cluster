@@ -79,5 +79,6 @@
   "connections_role_supplier_incoming": "The partner supplies my listing",
   "connections_role_mentor_outgoing": "My listing mentors the partner",
   "connections_role_mentor_incoming": "The partner mentors my listing",
-  "connections_unclaimed_listing": "Listing without an owner: {name}"
+  "connections_unclaimed_listing": "Listing without an owner: {name}",
+  "connections_err_too_long": "Use at most {max} characters."
 }

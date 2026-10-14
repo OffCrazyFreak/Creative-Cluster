@@ -79,5 +79,6 @@
   "connections_role_supplier_incoming": "Partner opskrbljuje moj unos",
   "connections_role_mentor_outgoing": "Moj unos mentorira partnera",
   "connections_role_mentor_incoming": "Partner mentorira moj unos",
-  "connections_unclaimed_listing": "Unos bez vlasnika: {name}"
+  "connections_unclaimed_listing": "Unos bez vlasnika: {name}",
+  "connections_err_too_long": "Upiši najviše {max} znakova."
 }
