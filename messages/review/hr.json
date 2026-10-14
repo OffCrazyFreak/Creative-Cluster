@@ -78,7 +78,7 @@
   "review_report_sent": "Hvala. Primili smo tvoju prijavu.",
   "review_report_error_captcha": "Sigurnosna provjera nije prošla. Pričekaj trenutak i pošalji ponovno.",
   "review_report_error_wait": "Sigurnosna provjera još traje. Pričekaj trenutak i pošalji ponovno.",
-  "review_report_error_limit": "Ovaj si unos već prijavio ili si poslao previše prijava. Pokušaj ponovno kasnije.",
+  "review_report_error_limit": "Ovo je već prijavljeno ili je poslano previše prijava. Pokušaj ponovno kasnije.",
   "review_report_error": "Prijava nije poslana. Pokušaj ponovno.",
   "review_changes_title": "Promjene",
   "review_changes_intro": "Svaka promjena unosa i drugih zapisa, od najnovije. Vraćanje vraća samo polja unosa, nikad oznake ni veze.",

@@ -78,7 +78,7 @@
   "review_report_sent": "Thank you. We received your report.",
   "review_report_error_captcha": "The security check did not pass. Wait a moment and send again.",
   "review_report_error_wait": "The security check is still running. Wait a moment and send again.",
-  "review_report_error_limit": "You already reported this listing or sent too many reports. Try again later.",
+  "review_report_error_limit": "You already reported this or sent too many reports. Try again later.",
   "review_report_error": "The report could not be sent. Please try again.",
   "review_changes_title": "Changes",
   "review_changes_intro": "Every change to listings and other records, newest first. Reverting restores the listing fields only, never tags or connections.",

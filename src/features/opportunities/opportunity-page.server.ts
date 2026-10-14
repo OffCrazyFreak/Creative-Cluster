@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import type { AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
 import { entry, image, opportunity, opportunityTag, tag } from "@/db/schema";
+import { hasContactChannel } from "@/features/entry/redact-entry";
 import { publicTagCondition } from "@/features/tags/tag-visibility.server";
 import { toSerializableDoc } from "@/features/translation/translation-schemas";
 import { EMPTY_RICH_TEXT } from "@/lib/rich-text/empty-rich-text";
@@ -25,8 +26,11 @@ export async function findOpportunityForPage(
   const [found] = await db
     .select({
       opp: opportunity,
+      entryId: entry.id,
       slug: entry.slug,
       name: entry.name,
+      contactEmail: entry.contactEmail,
+      contactEmailInvalid: entry.contactEmailInvalid,
       kind: entry.kind,
       entryStatus: entry.status,
       city: entry.city,
@@ -76,7 +80,9 @@ export async function findOpportunityForPage(
     deadline: opp.deadline,
     expiresAt: opp.expiresAt.toISOString(),
     entry: {
+      id: found.entryId,
       slug: found.slug,
+      hasContactChannel: hasContactChannel(found),
       name: found.name,
       city: found.city,
       country: found.country,

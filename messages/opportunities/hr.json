@@ -122,7 +122,7 @@
   "opportunities_detail_banner_filled": "Ova prilika je popunjena. Još neko vrijeme ostaje ovdje radi uvida.",
   "opportunities_detail_posted_by": "Objavio unos",
   "opportunities_detail_can_help": "Mogu pomoći",
-  "opportunities_detail_can_help_hint": "Otvori unos {name} i javi se u vezi s ovom objavom.",
+  "opportunities_detail_can_help_hint": "Pošalji poruku unosu {name} u vezi s ovom objavom.",
   "opportunities_detail_section_about": "O ovoj prilici",
   "opportunities_detail_remote": "Može se raditi na daljinu",
   "opportunities_detail_gone_title": "Ova prilika više nije dostupna",
@@ -131,14 +131,9 @@
   "opportunities_report_button": "Prijavi ovu priliku",
   "opportunities_report_title": "Prijavi ovu priliku",
   "opportunities_report_body": "Reci nam što nije u redu. Administrator čita svaku prijavu. Ništa se ne skriva dok administrator ne odluči.",
-  "opportunities_report_message": "Što nije u redu? (neobavezno)",
-  "opportunities_report_submit": "Pošalji prijavu",
-  "opportunities_report_sent": "Hvala. Zaprimili smo tvoju prijavu.",
-  "opportunities_report_error_wait": "Pričekaj da završi provjera pa pokušaj ponovno.",
-  "opportunities_report_error_captcha": "Provjera nije uspjela. Pokušaj ponovno.",
-  "opportunities_report_error_limit": "Previše prijava. Pokušaj kasnije.",
-  "opportunities_report_error": "Prijavu nije bilo moguće poslati. Pokušaj ponovno.",
   "opportunities_review_note_none": "Tvoja sljedeća prilika objavljuje se odmah.",
   "opportunities_filter_tags_several": "Oznaka: {count}",
-  "opportunities_board_truncated": "Prikazano je prvih {shown}. Filtrima sužavaš popis."
+  "opportunities_board_truncated": "Prikazano je prvih {shown}. Filtrima sužavaš popis.",
+  "opportunities_detail_view_listing": "Pogledaj unos",
+  "opportunities_detail_contact_prefill": "U vezi s tvojom objavom \"{title}\": "
 }

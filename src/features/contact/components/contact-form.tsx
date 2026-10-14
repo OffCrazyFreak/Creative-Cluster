@@ -14,10 +14,15 @@ import ContactHoneypot from "./contact-honeypot";
 
 interface IContactFormProps {
   entryId: string;
+  defaultMessage?: string;
   onSent: () => void;
 }
 
-export default function ContactForm({ entryId, onSent }: IContactFormProps) {
+export default function ContactForm({
+  entryId,
+  defaultMessage = "",
+  onSent,
+}: IContactFormProps) {
   const [openedAt] = useState(() => performance.now());
   const [token, setToken] = useState<string | null>(null);
   const [widgetKey, setWidgetKey] = useState(0);
@@ -32,7 +37,7 @@ export default function ContactForm({ entryId, onSent }: IContactFormProps) {
   }
 
   const form = useAppForm({
-    defaultValues: { name: "", email: "", message: "" },
+    defaultValues: { name: "", email: "", message: defaultMessage },
     validators: { onChange: contactFieldsSchema },
     onSubmit: async ({ value }) => {
       setError(null);

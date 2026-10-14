@@ -32,6 +32,14 @@ export interface IEntryRow extends ILocationRow {
   lastConfirmedAt: Date | null;
 }
 
+// The contact relay needs a stored address that has not bounced.
+export function hasContactChannel(row: {
+  contactEmail: string | null;
+  contactEmailInvalid: boolean;
+}): boolean {
+  return Boolean(row.contactEmail) && !row.contactEmailInvalid;
+}
+
 export function redactEntry(
   row: IEntryRow,
   tags: ITagRef[],
@@ -61,7 +69,7 @@ export function redactEntry(
     contactEmail,
     contactPhone,
     // The contact relay goes through the server, so it works even when the address is hidden.
-    hasContactChannel: Boolean(row.contactEmail) && !row.contactEmailInvalid,
+    hasContactChannel: hasContactChannel(row),
     legalStatus: typeof legalStatus === "string" ? legalStatus : null,
     location: publicLocation(row, isMember),
     tags,

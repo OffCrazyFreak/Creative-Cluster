@@ -14,7 +14,7 @@ import { clientIp } from "@/server/request.server";
 import type { reportOpportunityInput } from "./opportunity-page-schemas";
 import { pageStateOf } from "./opportunity-page-state";
 
-export type ReportResult = { status: "ok" | "captcha" | "limited" };
+export type ReportResult = { status: "sent" | "captcha" | "limited" };
 
 type ReportInput = z.output<typeof reportOpportunityInput>;
 
@@ -23,7 +23,7 @@ export async function reportOpportunity(
   input: ReportInput,
 ): Promise<ReportResult> {
   // A filled honeypot gets the same answer as success, so a bot learns nothing.
-  if (input.fax) return { status: "ok" };
+  if (input.fax) return { status: "sent" };
   try {
     await verifyTurnstile(input.turnstileToken);
   } catch (error) {
@@ -67,5 +67,5 @@ export async function reportOpportunity(
     entityId: row.id,
     payload: { message: input.message },
   });
-  return { status: "ok" };
+  return { status: "sent" };
 }
