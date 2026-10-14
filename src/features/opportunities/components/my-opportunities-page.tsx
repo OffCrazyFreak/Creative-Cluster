@@ -31,8 +31,12 @@ export default function MyOpportunitiesPage() {
   const { data } = useSuspenseQuery(myOpportunitiesQuery());
   const [editing, setEditing] = useState<Editing>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const actions = useOpportunityActions(data.entry?.id ?? "");
-  const busy = actions.renew.isPending || actions.fill.isPending;
+  const actions = useOpportunityActions();
+  const busy =
+    actions.create.isPending ||
+    actions.update.isPending ||
+    actions.renew.isPending ||
+    actions.fill.isPending;
 
   async function run(
     action: () => Promise<OpportunityResult | void>,
@@ -55,7 +59,11 @@ export default function MyOpportunitiesPage() {
   return (
     <PageContainer size="prose">
       <h1 className="text-2xl font-semibold">{m.opportunities_title()}</h1>
-      <p>{m.opportunities_intro()}</p>
+      <p>
+        {m.opportunities_intro({
+          days: OPPORTUNITY_LIMITS.defaultLifetimeDays,
+        })}
+      </p>
       {!data.entry ? (
         <p>{m.opportunities_no_entry()}</p>
       ) : data.entry.status !== "published" ? (
@@ -67,7 +75,9 @@ export default function MyOpportunitiesPage() {
               count: data.openCount,
               max: OPPORTUNITY_LIMITS.activePerEntry,
             })}{" "}
-            {data.items.length === 0 ? m.opportunities_review_note() : null}
+            {data.nextPostReviewed
+              ? m.opportunities_review_note()
+              : m.opportunities_review_note_none()}
           </p>
           <div aria-live="polite">
             {notice ? (
@@ -93,7 +103,13 @@ export default function MyOpportunitiesPage() {
               />
             </section>
           ) : canPost ? (
-            <Button className="self-start" onClick={() => setEditing("new")}>
+            <Button
+              className="self-start"
+              onClick={() => {
+                setNotice(null);
+                setEditing("new");
+              }}
+            >
               {m.opportunities_new()}
             </Button>
           ) : editing === null ? (
@@ -129,7 +145,10 @@ export default function MyOpportunitiesPage() {
                     <OwnOpportunityCard
                       item={item}
                       busy={busy}
-                      onEdit={() => setEditing(item.id)}
+                      onEdit={() => {
+                        setNotice(null);
+                        setEditing(item.id);
+                      }}
                       onRenew={(deadline) =>
                         void run(
                           () =>

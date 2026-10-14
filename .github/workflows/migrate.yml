@@ -36,9 +36,14 @@ jobs:
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Apply migrations
         env:
+          PRODUCTION_READY: ${{ vars.PRODUCTION_READY }}
           URL_RPCC: ${{ secrets.DATABASE_URL_UNPOOLED_RPCC }}
           URL_DNZ: ${{ secrets.DATABASE_URL_UNPOOLED_DNZ }}
         run: |
           export DATABASE_URL_UNPOOLED="$([ "${{ matrix.site }}" = rpcc ] && echo "$URL_RPCC" || echo "$URL_DNZ")"
-          if [ -z "$DATABASE_URL_UNPOOLED" ]; then echo "No database secret for ${{ matrix.site }} yet."; exit 0; fi
+          # Until the accounts exist (repository variable PRODUCTION_READY unset) a missing secret is a skip; after that it fails.
+          if [ -z "$DATABASE_URL_UNPOOLED" ]; then
+            if [ "$PRODUCTION_READY" = "true" ]; then echo "Missing database secret for ${{ matrix.site }}."; exit 1; fi
+            echo "No database secret for ${{ matrix.site }} yet."; exit 0
+          fi
           pnpm db:migrate

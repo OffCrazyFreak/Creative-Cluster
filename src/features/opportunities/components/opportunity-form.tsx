@@ -126,7 +126,10 @@ export default function OpportunityForm({
             <field.TextField
               type="date"
               label={m.opportunities_field_deadline()}
-              description={m.opportunities_field_deadline_hint()}
+              description={m.opportunities_field_deadline_hint({
+                days: OPPORTUNITY_LIMITS.defaultLifetimeDays,
+                max: OPPORTUNITY_LIMITS.maxLifetimeDays,
+              })}
             />
           )}
         </form.AppField>
@@ -138,6 +141,7 @@ export default function OpportunityForm({
                   locale={locale}
                   value={field.state.value}
                   onChange={field.handleChange}
+                  errors={field.state.meta.errors}
                 />
               )}
             </form.Field>

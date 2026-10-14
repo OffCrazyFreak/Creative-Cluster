@@ -10,6 +10,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { OPPORTUNITY_LIMITS } from "@/constants/opportunities";
 import { m } from "@/paraglide/messages";
 
 interface IFillOpportunityDialogProps {
@@ -32,7 +33,9 @@ export default function FillOpportunityDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>{m.opportunities_fill_title()}</AlertDialogTitle>
           <AlertDialogDescription>
-            {m.opportunities_fill_body()}
+            {m.opportunities_fill_body({
+              days: OPPORTUNITY_LIMITS.filledLabelDays,
+            })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

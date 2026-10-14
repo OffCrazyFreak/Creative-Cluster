@@ -7,6 +7,7 @@ import { EMPTY_RICH_TEXT } from "@/lib/rich-text/empty-rich-text";
 import { safeParseRichText } from "@/lib/rich-text/parse-rich-text";
 
 import { canRenew, isExpired, isExpiringSoon } from "./opportunity-expiry";
+import { needsReview } from "./opportunity-limits.server";
 import type {
   IOwnOpportunities,
   IOwnOpportunity,
@@ -60,12 +61,24 @@ export async function listOwnOpportunities(
   userId: string,
 ): Promise<IOwnOpportunities> {
   const [owned] = await db
-    .select({ id: entry.id, name: entry.name, status: entry.status })
+    .select({
+      id: entry.id,
+      name: entry.name,
+      status: entry.status,
+      trusted: entry.trusted,
+    })
     .from(entry)
     .where(and(eq(entry.ownerUserId, userId), isNull(entry.erasureRequestedAt)))
     .orderBy(desc(entry.createdAt))
     .limit(1);
-  if (!owned) return { entry: null, openCount: 0, canPost: false, items: [] };
+  if (!owned)
+    return {
+      entry: null,
+      openCount: 0,
+      canPost: false,
+      nextPostReviewed: true,
+      items: [],
+    };
 
   const rows = await db
     .select()
@@ -109,12 +122,15 @@ export async function listOwnOpportunities(
       now,
     ),
   );
-  const openCount = items.filter((item) =>
-    ["pending", "active", "expiring_soon"].includes(item.state),
+  // The same rule the posting service counts with, so the button never disagrees with the server.
+  const openCount = rows.filter(
+    (row) =>
+      ["pending", "published"].includes(row.status) && row.expiresAt > now,
   ).length;
   return {
-    entry: owned,
+    entry: { id: owned.id, name: owned.name, status: owned.status },
     openCount,
+    nextPostReviewed: await needsReview(db, owned.id, owned.trusted),
     canPost: owned.status === "published" && openCount < L.activePerEntry,
     items,
   };

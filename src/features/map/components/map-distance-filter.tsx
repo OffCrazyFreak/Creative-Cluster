@@ -31,6 +31,11 @@ export default function MapDistanceFilter() {
     setPoint(view ?? { lat, lng });
   }
   function pickMyLocation() {
+    // Missing in insecure contexts and some locked-down browsers.
+    if (!("geolocation" in navigator)) {
+      setDenied(true);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       ({ coords }) =>
         // About 1 km: the point ends up in the URL, history and logs.
@@ -39,6 +44,7 @@ export default function MapDistanceFilter() {
           lng: Math.round(coords.longitude * 100) / 100,
         }),
       () => setDenied(true),
+      { timeout: 10_000, maximumAge: 300_000 },
     );
   }
 
