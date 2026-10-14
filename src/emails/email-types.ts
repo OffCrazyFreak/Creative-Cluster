@@ -61,6 +61,70 @@ export interface IOpportunityRemovedEmailProps extends IBaseEmailProps {
   link: string;
 }
 
+export interface IApplicationReceivedEmailProps extends IBaseEmailProps {
+  entryName: string;
+}
+
+export interface IApprovedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  link: string;
+  expiry: EmailExpiry;
+  newAccount: boolean;
+  // True when the account has no password yet, whether it is new or was created another way.
+  needsPassword: boolean;
+}
+
+export interface IRejectedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  link: string;
+  reasonCode: ReasonCode;
+  note: string | null;
+}
+
+export interface IDigestItem {
+  name: string;
+  detail: string;
+  ageDays: number;
+}
+
+export interface IApplicationDigestEmailProps extends IBaseEmailProps {
+  count: number;
+  openTotal: number;
+  oldestAgeDays: number;
+  items: IDigestItem[];
+  link: string;
+}
+
+export interface IReportDigestEmailProps extends IBaseEmailProps {
+  count: number;
+  items: IDigestItem[];
+  link: string;
+}
+
+export interface IEditRevertedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  fieldGroups: string[];
+  reason: string;
+  link: string;
+}
+
+export interface ISuspendedEmailProps extends IBaseEmailProps {
+  entryName: string;
+  reason: string;
+  link: string;
+}
+
+export interface IErasureScheduledEmailProps extends IBaseEmailProps {
+  entryName: string | null;
+  // ISO timestamp; the template formats it for the recipient's language.
+  deleteDate: string;
+  link: string;
+}
+
+export interface IErasureDoneEmailProps extends IBaseEmailProps {
+  entryName: string | null;
+}
+
 export interface IEmailPropsMap {
   invite: IInviteEmailProps;
   claim: IClaimEmailProps;
@@ -70,6 +134,15 @@ export interface IEmailPropsMap {
   opportunity_approved: IOpportunityApprovedEmailProps;
   opportunity_rejected: IOpportunityRejectedEmailProps;
   opportunity_removed: IOpportunityRemovedEmailProps;
+  application_received: IApplicationReceivedEmailProps;
+  approved: IApprovedEmailProps;
+  rejected: IRejectedEmailProps;
+  application_digest: IApplicationDigestEmailProps;
+  report_digest: IReportDigestEmailProps;
+  edit_reverted: IEditRevertedEmailProps;
+  suspended: ISuspendedEmailProps;
+  erasure_scheduled: IErasureScheduledEmailProps;
+  erasure_done: IErasureDoneEmailProps;
 }
 
 export type EmailPropsOf<T extends EmailTemplateName> = IEmailPropsMap[T];

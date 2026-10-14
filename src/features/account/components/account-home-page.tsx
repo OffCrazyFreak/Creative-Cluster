@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 
 import { buttonVariants } from "@/components/ui/button";
 import ExpiringSoonNotice from "@/features/opportunities/components/expiring-soon-notice";
+import ListingStatusPanel from "@/features/lifecycle/components/listing-status-panel";
 import { m } from "@/paraglide/messages";
 
 import { mySummaryQuery } from "../account-queries";
@@ -38,6 +39,7 @@ export default function AccountHomePage() {
           className="flex flex-col gap-4 empty:hidden"
         >
           <ListingSummary listing={summary} />
+          <ListingStatusPanel />
         </div>
       ) : (
         !summary && <p>{m.account_home_no_listing()}</p>
