@@ -9,11 +9,11 @@ export function isHttpUrl(value: unknown): value is string {
   }
 }
 
-// Adds https:// when the user typed a bare domain; any other scheme stays and fails isHttpUrl.
+// Adds https:// when the user typed a bare domain (also host:port); any other scheme fails isHttpUrl.
 export function normalizeHttpUrl(value: string): string | null {
   const trimmed = value.trim();
   if (trimmed === "") return null;
-  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(trimmed)
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)
     ? trimmed
     : `https://${trimmed}`;
   return isHttpUrl(withScheme) ? withScheme : null;
