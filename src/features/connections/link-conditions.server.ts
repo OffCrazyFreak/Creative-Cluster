@@ -1,7 +1,8 @@
 import { and, eq, gt, or, sql, type SQL } from "drizzle-orm";
 
 import { LINK_LIMITS } from "@/constants/links";
-import { link } from "@/db/schema";
+import { entry, link } from "@/db/schema";
+import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 
 export const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -23,3 +24,11 @@ export function isLiveLink(now = new Date()): SQL {
 
 // The entry that has to decide: the end that did not propose.
 export const recipientEntryId = sql`case when ${link.proposedByEntryId} = ${link.fromId} then ${link.toId} else ${link.fromId} end`;
+
+// A proposal stays actionable only while both listings are public, as when it was made.
+export function linkEndsPublic(): SQL {
+  return and(
+    sql`exists (select 1 from ${entry} where ${entry.id} = ${link.fromId} and ${publicEntryCondition()})`,
+    sql`exists (select 1 from ${entry} where ${entry.id} = ${link.toId} and ${publicEntryCondition()})`,
+  ) as SQL;
+}

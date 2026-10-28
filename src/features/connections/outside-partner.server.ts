@@ -20,7 +20,7 @@ export async function findOrCreateOutsidePartner(
   userId: string,
 ): Promise<string> {
   const [existing] = await tx
-    .select({ id: entry.id })
+    .select({ id: entry.id, website: entry.website })
     .from(entry)
     .innerJoin(link, or(eq(link.fromId, entry.id), eq(link.toId, entry.id)))
     .where(
@@ -31,6 +31,22 @@ export async function findOrCreateOutsidePartner(
       ),
     )
     .limit(1);
+  // The proposer's latest website wins, otherwise a mistyped URL could never be corrected.
+  if (existing && existing.website !== input.website) {
+    await tx
+      .update(entry)
+      .set({ website: input.website })
+      .where(eq(entry.id, existing.id));
+    await writeChange(tx, {
+      entityType: "entry",
+      entityId: existing.id,
+      userId,
+      source: "owner",
+      action: "update",
+      before: { website: existing.website },
+      after: { website: input.website },
+    });
+  }
   if (existing) return existing.id;
 
   const [row] = await tx

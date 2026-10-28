@@ -10,7 +10,7 @@ import {
   type AdminLinksSearch,
   type IAdminLinksPage,
 } from "./admin-links-schemas";
-import { DAY_MS, isLiveLink } from "./link-conditions.server";
+import { DAY_MS, isLiveLink, linkEndsPublic } from "./link-conditions.server";
 import {
   fromEntry,
   recipientOwnerId,
@@ -19,7 +19,11 @@ import {
 } from "./list-links.server";
 
 function filters(input: AdminLinksSearch): SQL {
-  const conditions: SQL[] = [eq(link.status, "proposed"), isLiveLink()];
+  const conditions: SQL[] = [
+    eq(link.status, "proposed"),
+    isLiveLink(),
+    linkEndsPublic(),
+  ];
   if (input.kind) conditions.push(eq(link.kind, input.kind));
   if (input.unclaimed) conditions.push(sql`${recipientOwnerId} is null`);
   if (input.q) {

@@ -209,6 +209,26 @@ describe.skipIf(!client.temp)("connections flow", () => {
     expect(stubs).toHaveLength(1);
   });
 
+  it("takes a corrected website when reusing an outside partner stub", async () => {
+    const result = await propose("a", "b", {
+      target: {
+        type: "outside" as const,
+        name: "Studio Elsewhere",
+        website: "https://fixed.example",
+      },
+      kind: "collaborated",
+      evidenceUrl: "https://fixed.example/work",
+    });
+    expect(result.ok).toBe(true);
+    const stubs = await db
+      .select()
+      .from(entry)
+      .where(eq(entry.kind, "outside_partner"));
+    expect(stubs.map((stub) => stub.website)).toEqual([
+      "https://fixed.example",
+    ]);
+  });
+
   it("shows a link on the owner's side even when their own entry is suspended", async () => {
     const owner = (await addUser(db, "suspended-owner")).id;
     const mine = await addEntry(
@@ -274,6 +294,31 @@ describe.skipIf(!client.temp)("connections flow", () => {
     expect(rows[0]).toContain("unverified,evidence_urls");
     expect(csv).toContain("true");
     expect(csv).toContain("https://elsewhere.example/members");
+  });
+
+  it("drops a proposal from every list and from decisions once either listing is hidden", async () => {
+    for (const name of ["p", "q"]) {
+      users[name] = (await addUser(db, name)).id;
+      ids[name] = (
+        await addEntry(db, name, {}, { ownerUserId: users[name] })
+      ).id;
+    }
+    const result = await propose("p", "q");
+    if (!result.ok) throw new Error("proposal failed");
+    expect(await countPendingProposals(users.q)).toBe(1);
+    await db
+      .update(entry)
+      .set({ status: "suspended" })
+      .where(eq(entry.id, ids.p));
+    expect(await countPendingProposals(users.q)).toBe(0);
+    const { items } = await listMyConnections(users.q);
+    expect(items.find((item) => item.id === result.linkId)).toBeUndefined();
+    await expect(
+      decideLink(
+        { linkId: result.linkId, decision: "confirm" },
+        { userId: users.q, admin: false },
+      ),
+    ).rejects.toThrow("Not found");
   });
 
   describe("public connections", () => {

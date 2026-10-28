@@ -99,6 +99,17 @@ async function insertLink(tx: Tx, input: ProposeLinkInput, userId: string) {
     ),
   );
   await assertLinkFree(tx, input.kind, oriented);
+  // Counted in the transaction so a refused or failed attempt does not use up the day's proposals.
+  await enforceLimits(
+    [
+      {
+        key: `link-propose:${userId}`,
+        max: LINK_LIMITS.proposalsPerOwnerPerDay,
+        windowSeconds: DAY_SECONDS,
+      },
+    ],
+    tx,
+  );
 
   const [created] = await tx
     .insert(link)
@@ -146,12 +157,12 @@ async function insertLink(tx: Tx, input: ProposeLinkInput, userId: string) {
   return created.id;
 }
 
-function isUniqueViolation(error: unknown): boolean {
-  const { code, cause } = error as {
-    code?: string;
-    cause?: { code?: string };
-  };
-  return code === "23505" || cause?.code === "23505";
+// Only link_live_unique means "exists"; a slug race on a new stub entry is a plain failure.
+function isLinkTaken(error: unknown): boolean {
+  const { cause } = error as { cause?: { code?: string; constraint?: string } };
+  return [error as typeof cause, cause].some(
+    (item) => item?.code === "23505" && item.constraint === "link_live_unique",
+  );
 }
 
 export async function proposeLink(
@@ -159,13 +170,6 @@ export async function proposeLink(
   userId: string,
 ): Promise<ProposeLinkResult> {
   try {
-    await enforceLimits([
-      {
-        key: `link-propose:${userId}`,
-        max: LINK_LIMITS.proposalsPerOwnerPerDay,
-        windowSeconds: DAY_SECONDS,
-      },
-    ]);
     const linkId = await db.transaction((tx) => insertLink(tx, input, userId));
     await triggerDrain();
     return { ok: true, linkId };
@@ -174,7 +178,7 @@ export async function proposeLink(
     if (error instanceof ProposeRefused)
       return { ok: false, error: error.code };
     // Two requests racing past assertLinkFree meet link_live_unique.
-    if (isUniqueViolation(error)) return { ok: false, error: "exists" };
+    if (isLinkTaken(error)) return { ok: false, error: "exists" };
     throw error;
   }
 }
