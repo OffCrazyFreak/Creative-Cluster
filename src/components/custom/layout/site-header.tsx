@@ -14,7 +14,11 @@ export default function SiteHeader() {
   useHeaderHeight(headerRef);
 
   return (
-    <header ref={headerRef} className="border-b">
+    // The phone map brings its own floating bar; CSS rather than a hook, so SSR already matches.
+    <header
+      ref={headerRef}
+      className="border-b max-md:[:root:has([data-map-bar])_&]:hidden"
+    >
       <div className="mx-auto flex w-full max-w-6xl items-center gap-x-6 px-4 py-1 sm:px-8">
         <Link to="/" className="min-w-0 truncate py-2 font-semibold">
           {site.name}

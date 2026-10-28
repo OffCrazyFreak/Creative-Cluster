@@ -6,8 +6,10 @@ import {
   type RefObject,
 } from "react";
 
+import MobileMenu from "@/components/custom/layout/mobile-menu";
 import { Card, CardContent } from "@/components/ui/card";
 
+import MapAccountButton from "./map-account-button";
 import MapFilterChips from "./map-filter-chips";
 import MapSearchBar from "./map-search-bar";
 import MapSkipLink from "./map-skip-link";
@@ -46,7 +48,7 @@ export default function MapOverlayLayout({
     <div
       ref={frameRef}
       style={{ "--map-sheet-covered": sheetCovered } as CSSProperties}
-      className="relative h-[calc(100dvh-var(--site-header-height,3.0625rem))] min-h-[28rem] overflow-hidden"
+      className="relative h-[calc(100dvh-var(--site-header-height,3.0625rem))] min-h-[28rem] overflow-hidden max-md:h-dvh"
     >
       <MapSkipLink />
       <div className="absolute inset-0">{map}</div>
@@ -70,7 +72,16 @@ export default function MapOverlayLayout({
             ref={panelRef}
             className="absolute inset-x-2 top-2 z-10 flex flex-col gap-2"
           >
-            <MapSearchBar />
+            <div
+              data-map-bar=""
+              className="flex items-center gap-2 rounded-xl border bg-background p-1"
+            >
+              <MobileMenu />
+              <div className="min-w-0 flex-1">
+                <MapSearchBar />
+              </div>
+              <MapAccountButton />
+            </div>
             <MapFilterChips />
           </div>
           <Suspense fallback={<div id="results-panel">{children}</div>}>
