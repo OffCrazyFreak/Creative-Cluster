@@ -43,6 +43,13 @@
       "when": 1793176748503,
       "tag": "0005_min_admins_need_password",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793186294645,
+      "tag": "0006_public_swarm",
+      "breakpoints": true
     }
   ]
 }

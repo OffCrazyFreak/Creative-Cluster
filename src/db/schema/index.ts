@@ -8,5 +8,6 @@ export * from "./links";
 export * from "./moderation";
 export * from "./opportunities";
 export * from "./relations";
+export * from "./saved";
 export * from "./tags";
 export * from "./translations";

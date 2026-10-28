@@ -63,5 +63,7 @@
         "countPlural=other": "{count} entries at this spot"
       }
     }
-  ]
+  ],
+  "map_saved_failed": "Your saved entries could not be changed. Try again.",
+  "map_saved_limit": "You can save up to {max} entries."
 }

@@ -16,7 +16,7 @@ Službenika za zaštitu podataka nemamo jer nam ga zakon ne nalaže. [[GAP: potv
 
 **Unosi organizacija.** Za organizacije objavljujemo ono što organizacija sama navede ili što je javno dostupno: naziv, opis, što nudi i što traži, mrežnu stranicu, društvene mreže, lokaciju (adresa ili samo grad), logotip, oznake, pravni oblik i reference. Mogu se pojaviti i imena kontaktnih osoba ako ih organizacija objavi. Kontakt e-adresa i telefon vidljivi su samo ako ih vlasnik unosa učini javnima; inače ih koristimo samo za prosljeđivanje poruka i za komunikaciju s tobom.
 
-**Računi.** Računi se otvaraju samo pozivnicom, prihvaćanjem prijave ili preuzimanjem postojećeg unosa. Za račun čuvamo e-adresu, ime, jezik, lozinku (samo u obliku hasha, nikad otvoreno), podatke o prijavama i, ako se prijavljuješ putem Googlea, Googleov identifikator računa. Račun postoji da možeš uređivati svoj unos, objavljivati prilike i potvrđivati veze.
+**Računi.** Računi se otvaraju samo pozivnicom, prihvaćanjem prijave ili preuzimanjem postojećeg unosa. Za račun čuvamo e-adresu, ime, jezik, lozinku (samo u obliku hasha, nikad otvoreno), podatke o prijavama i, ako se prijavljuješ putem Googlea, Googleov identifikator računa. Račun postoji da možeš uređivati svoj unos, objavljivati prilike i potvrđivati veze. Ako na karti spremiš unose (najviše 10), taj popis čuvamo uz tvoj račun; nalazi se u izvozu tvojih podataka i briše se zajedno s računom.
 
 **Obrazac za prijavu.** Ako se prijaviš, obrađujemo podatke koje upišeš (kao u unosima gore), provjeravamo e-adresu poveznicom i dodjeljujemo pregled urednika. Odbijene prijave možeš urediti i ponovno poslati, a brišemo ih nakon 90 dana.
 

@@ -174,9 +174,20 @@ describe.skipIf(!temp)("erasure and export", () => {
       status: "done",
     });
 
+    await db
+      .insert(schema.savedEntry)
+      .values({ userId: account.id, entryId: other.id, position: 0 });
+
     await erasure.requestErasure(account.id);
     await backdate(account.id, 15);
     expect(await scheduled.deleteDueErasedAccounts()).toBe(1);
+
+    expect(
+      await db
+        .select()
+        .from(schema.savedEntry)
+        .where(eq(schema.savedEntry.userId, account.id)),
+    ).toHaveLength(0);
 
     expect(await entryOf(listing.id)).toBeUndefined();
     expect(
@@ -338,5 +349,27 @@ describe.skipIf(!temp)("erasure and export", () => {
     expect(text).not.toContain("their note");
     expect(text).toContain("Open Partner");
     expect(text).toContain("my note");
+  });
+
+  it("exports saved entries, naming only listings visitors can see", async () => {
+    const member = await addUser(db, "Saver");
+    const open = await addEntry(db, "Saved Open");
+    const hidden = await addEntry(
+      db,
+      "Saved Hidden",
+      {},
+      { status: "suspended" },
+    );
+    await db.insert(schema.savedEntry).values([
+      { userId: member.id, entryId: open.id, position: 0 },
+      { userId: member.id, entryId: hidden.id, position: 1 },
+    ]);
+    const data = await exporter.exportUserData(member.id);
+    expect(data.saved).toHaveLength(2);
+    expect(data.saved[0]).toMatchObject({
+      name: "Saved Open",
+      slug: open.slug,
+    });
+    expect(data.saved[1]).toMatchObject({ name: null, slug: null });
   });
 });
