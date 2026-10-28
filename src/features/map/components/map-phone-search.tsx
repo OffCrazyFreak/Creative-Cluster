@@ -59,6 +59,8 @@ export default function MapPhoneSearch({
       onKeyDown={(event) => {
         if (event.key !== "Escape" || !open) return;
         event.stopPropagation();
+        // A search input's own Escape would clear the query along with closing.
+        event.preventDefault();
         close(true);
       }}
     >

@@ -109,8 +109,15 @@ describe("MapPhoneSearch", () => {
     act(() => field.focus());
     expect(host.textContent).toContain("entry list");
 
-    fire(field, new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    const escape = new KeyboardEvent("keydown", {
+      key: "Escape",
+      bubbles: true,
+      cancelable: true,
+    });
+    fire(field, escape);
 
+    // Left to the browser, Escape in a search field also clears the query.
+    expect(escape.defaultPrevented).toBe(true);
     expect(onOuterEscape).not.toHaveBeenCalled();
     expect(host.textContent).not.toContain("entry list");
     expect(document.activeElement).toBe(field);
