@@ -2,10 +2,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import {
   AttributionControl,
-  Layer,
   Map,
   NavigationControl,
-  Source,
   type MapLayerMouseEvent,
   type MapRef,
   type ViewStateChangeEvent,
@@ -26,20 +24,14 @@ import {
 import { useMapCamera } from "../hooks/use-map-camera";
 import { useViewReport } from "../hooks/use-view-report";
 import { handleMapClick } from "../map-click";
-import { buildGeoJson, buildSlugIds, SOURCE_ID } from "../map-geojson";
-import {
-  CLUSTER_LAYER_ID,
-  CLUSTER_MAX_ZOOM,
-  CLUSTER_RADIUS,
-  POINT_LAYER_ID,
-  clusterLayer,
-  pointLayer,
-} from "../map-layers";
+import { buildGeoJson, buildSlugIds } from "../map-geojson";
+import { CLUSTER_LAYER_ID, POINT_LAYER_ID } from "../map-layers";
 import type { IMapPadding } from "../map-padding";
 import type { IViewport } from "../map-search";
 import { useMapRecovery } from "../use-map-recovery";
 import type { IViewArea } from "../view-area";
 import MapConnectionArcs from "./map-connection-arcs";
+import MapEntryPins from "./map-entry-pins";
 
 export interface IMapViewProps {
   // Every published entry, for stable numeric ids.
@@ -197,18 +189,7 @@ export default function MapView(props: IMapViewProps) {
           compact={!wide}
         />
         <MapConnectionArcs allEntries={allEntries} selectedSlug={focusSlug} />
-        <Source
-          id={SOURCE_ID}
-          type="geojson"
-          data={geoJson}
-          cluster
-          clusterRadius={CLUSTER_RADIUS}
-          clusterMaxZoom={CLUSTER_MAX_ZOOM}
-          promoteId="n"
-        >
-          <Layer {...clusterLayer} />
-          <Layer {...pointLayer} />
-        </Source>
+        <MapEntryPins data={geoJson} />
       </Map>
     </div>
   );
