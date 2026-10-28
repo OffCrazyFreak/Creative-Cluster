@@ -73,5 +73,14 @@
   "map_near_me_approximate": "Showing entries by your approximate location. Turn on location on your device for a more exact order.",
   "map_near_me_denied": "Location access is blocked. Allow it in your browser settings or search by town.",
   "map_near_me_unavailable": "Your location isn't available right now. Search by town or address.",
-  "map_near_me_timeout": "Your location can't be determined. Check that location is turned on on your device, or search by town."
+  "map_near_me_timeout": "Your location can't be determined. Check that location is turned on on your device, or search by town.",
+  "map_pan_group": "Move the map",
+  "map_pan_up": "Move map up",
+  "map_pan_down": "Move map down",
+  "map_pan_left": "Move map left",
+  "map_pan_right": "Move map right",
+  "map_recent_label": "Recent searches",
+  "map_recent_clear": "Clear",
+  "map_recent_clear_label": "Clear recent searches",
+  "map_recent_cleared": "Recent searches cleared."
 }

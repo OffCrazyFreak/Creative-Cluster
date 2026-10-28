@@ -7,6 +7,7 @@ import type {
   IDirectoryEntry,
   IDirectoryTag,
 } from "@/features/directory/directory-schemas";
+import ShareEntryButton from "@/features/entry/components/share-entry-button";
 import EntryImage from "@/features/images/components/entry-image";
 import { tagLabel } from "@/features/directory/tag-label";
 import SaveEntryButton from "@/features/saved/components/save-entry-button";
@@ -71,6 +72,7 @@ function MapResultItem({ entry, tags, nested, distance }: IMapResultItemProps) {
         </Heading>
         <p className="text-sm">
           {[kind, place, distance].filter(Boolean).join(" · ")}
+          <ShareEntryButton entry={entry} />
           <SaveEntryButton entry={{ slug: entry.slug, name: entry.name }} />
         </p>
         {entry.blurb ? <p className="text-sm">{entry.blurb}</p> : null}

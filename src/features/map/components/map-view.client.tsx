@@ -34,11 +34,13 @@ import {
 import type { IMapOrigin } from "../map-origin";
 import type { IMapPadding } from "../map-padding";
 import type { IViewport } from "../map-search";
+import { foldAttributionLater } from "../attribution";
 import { useMapRecovery } from "../use-map-recovery";
 import type { IViewArea } from "../view-area";
 import MapConnectionArcs from "./map-connection-arcs";
 import MapEntryPins from "./map-entry-pins";
 import MapLocateButton from "./map-locate-button";
+import MapPanControls from "./map-pan-controls";
 import MapSameSpotPopover from "./map-same-spot-popover";
 import MapSavedStars from "./map-saved-stars";
 import MapSelectedFrame from "./map-selected-frame";
@@ -157,9 +159,10 @@ export default function MapView(props: IMapViewProps) {
       ref={containerRef}
       role="region"
       aria-label={m.map_region_label()}
-      className="relative size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-right]:bottom-[min(var(--map-sheet-covered,50dvh),50dvh)]! [&_.maplibregl-ctrl-top-right]:top-12! max-md:[&_.maplibregl-ctrl-top-right]:top-44!"
+      className="relative size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-left]:bottom-[min(var(--map-sheet-covered,50dvh),50dvh)]! md:[&_.maplibregl-ctrl-bottom-left]:right-40 md:[&_.maplibregl-ctrl-bottom-left]:left-[25.5rem]! [&_.maplibregl-ctrl-top-right]:top-12! max-md:[&_.maplibregl-ctrl-top-right]:top-44!"
     >
       <MapLocateButton status={nearMe.status} onLocate={nearMe.locate} />
+      <MapPanControls getMap={getMap} duration={duration} />
       <Map
         key={mapKey}
         ref={mapRef}
@@ -187,19 +190,23 @@ export default function MapView(props: IMapViewProps) {
           OPPORTUNITY_LAYER_ID,
         ]}
         cursor={cursor}
-        onLoad={() => setReady(true)}
+        onLoad={(event) => {
+          setReady(true);
+          foldAttributionLater(event.target);
+        }}
         onMoveEnd={onMoveEnd}
         onClick={(event) => void clicks.onClick(event)}
         onMouseEnter={() => setCursor("pointer")}
         onMouseLeave={() => setCursor("")}
       >
-        <NavigationControl position="top-right" showCompass={false} />
-        {/* On phones the control collapses to an info button that rides above the results sheet. */}
-        <AttributionControl
+        {/* Desktop shares the bottom line: credits beside the panel, then pan arrows, then zoom. */}
+        <NavigationControl
           key={String(wide)}
-          position="bottom-right"
-          compact={!wide}
+          position={wide ? "bottom-right" : "top-right"}
+          showCompass={false}
         />
+        {/* On phones the credits ride above the results sheet. */}
+        <AttributionControl position="bottom-left" compact />
         <MapConnectionArcs allEntries={allEntries} selectedSlug={focusSlug} />
         <MapEntryPins data={geoJson} />
         <MapSelectedFrame

@@ -25,5 +25,9 @@
   "entry_report_button": "Prijavi ovaj unos",
   "entry_gone_title": "Ovaj unos više nije dostupan",
   "entry_gone_body": "Uklonjen je iz imenika.",
-  "entry_meta_description": "{name}: {kind}, {place}."
+  "entry_meta_description": "{name}: {kind}, {place}.",
+  "entry_share": "Podijeli",
+  "entry_share_label": "Podijeli {name}",
+  "entry_share_copied": "Poveznica je kopirana.",
+  "entry_share_failed": "Poveznicu nije moguće podijeliti ni kopirati."
 }

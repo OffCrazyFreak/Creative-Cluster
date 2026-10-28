@@ -17,6 +17,7 @@ import EntryLogo from "./entry-logo";
 import EntryLocation, { placeLine } from "./entry-location";
 import EntryReferences from "./entry-references";
 import EntryReportSlot from "./entry-report-slot";
+import ShareEntryButton from "./share-entry-button";
 import EntryTags from "./entry-tags";
 
 interface IEntryDetailProps {
@@ -49,6 +50,7 @@ export default function EntryDetail({ entry, translation }: IEntryDetailProps) {
             {[kindLabels[entry.kind](), place, entry.legalStatus]
               .filter(Boolean)
               .join(" · ")}
+            <ShareEntryButton entry={entry} />
             <SaveEntryButton
               entry={{ id: entry.id, slug: entry.slug, name: entry.name }}
             />
