@@ -1,5 +1,6 @@
 import { useRef } from "react";
 
+import { useSavedEntries } from "@/features/saved/hooks/use-saved-entries";
 import { m } from "@/paraglide/messages";
 
 import { useHeldView } from "../hooks/use-held-view";
@@ -14,13 +15,20 @@ export default function MapResultsList() {
   const tags = directory?.tags ?? [];
   const view = useHeldView(viewArea);
   const listRef = useRef<HTMLDivElement>(null);
-  const { onMap, elsewhere } = splitByView(pins, view.applied);
+  const { isSaved } = useSavedEntries();
+  const saved = pins.filter((entry) => isSaved(entry.slug));
+  const rest = pins.filter((entry) => !isSaved(entry.slug));
+  const { onMap, elsewhere } = splitByView(rest, view.applied);
+  const savedOnMap = splitByView(saved, view.applied).onMap.length;
   const groups = listGroups({
+    saved,
     onMap,
     elsewhere,
     labels: {
+      saved: (count) => m.map_group_saved({ count }),
       onMap: (count) => m.map_group_on_map({ count }),
       elsewhere: (count) => m.map_group_elsewhere({ count }),
+      others: (count) => m.map_group_others({ count }),
     },
   });
 
@@ -36,7 +44,9 @@ export default function MapResultsList() {
         {m.common_entry_count({ count: pins.length })}
       </h2>
       <p role="status" className="sr-only">
-        {view.applied ? m.map_on_map_live({ count: onMap.length }) : null}
+        {view.applied
+          ? m.map_on_map_live({ count: onMap.length + savedOnMap })
+          : null}
       </p>
       {pins.length === 0 ? (
         <p>{m.map_empty()}</p>

@@ -22,6 +22,8 @@
   "map_chip_text": "Search: {text}",
   "map_chip_near": "Within {km} km",
   "map_popular_tags": "Popular tags",
+  "map_group_saved": "Saved · {count}",
+  "map_group_others": "Other entries · {count}",
   "map_group_on_map": "On the map · {count}",
   "map_group_elsewhere": "Elsewhere · {count}",
   "map_view_pending": "Update the list for this map view",
@@ -64,5 +66,7 @@
     }
   ],
   "map_saved_failed": "Your saved entries could not be changed. Try again.",
-  "map_saved_limit": "You can save up to {max} entries."
+  "map_saved_limit": "You can save up to {max} entries.",
+  "map_save": "Save {name}",
+  "map_unsave": "Remove {name} from saved"
 }

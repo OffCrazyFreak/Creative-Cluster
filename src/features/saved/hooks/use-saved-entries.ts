@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { MAX_SAVED_ENTRIES } from "@/constants/saved";
@@ -12,8 +12,8 @@ import { useReplaceSavedEntries } from "./use-replace-saved-entries";
 
 // The member's saved entries, and a toggle that sends a guest to sign in.
 export function useSavedEntries() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  // Read at click time: subscribing to the location re-renders every star on each map pan.
+  const router = useRouter();
   const viewer = useQuery(viewerQueryOptions()).data;
   const query = useQuery({ ...savedEntriesQuery(), enabled: Boolean(viewer) });
   const save = useReplaceSavedEntries();
@@ -25,7 +25,10 @@ export function useSavedEntries() {
 
   function toggle(target: ISavedEntry) {
     if (!viewer) {
-      void navigate({ to: "/login", search: { redirect: location.href } });
+      void router.navigate({
+        to: "/login",
+        search: { redirect: router.state.location.href },
+      });
       return;
     }
     // Every save replaces the whole list, so one built before the list arrived would erase it.

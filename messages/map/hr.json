@@ -22,6 +22,8 @@
   "map_chip_text": "Pretraga: {text}",
   "map_chip_near": "Unutar {km} km",
   "map_popular_tags": "Popularne oznake",
+  "map_group_saved": "Spremljeno · {count}",
+  "map_group_others": "Ostali unosi · {count}",
   "map_group_on_map": "Na karti · {count}",
   "map_group_elsewhere": "Drugdje · {count}",
   "map_view_pending": "Osvježi popis za ovaj prikaz karte",
@@ -67,5 +69,7 @@
     }
   ],
   "map_saved_failed": "Spremljene unose nismo uspjeli promijeniti. Pokušaj ponovno.",
-  "map_saved_limit": "Možeš spremiti najviše {max} unosa."
+  "map_saved_limit": "Možeš spremiti najviše {max} unosa.",
+  "map_save": "Spremi {name}",
+  "map_unsave": "Ukloni {name} iz spremljenih"
 }

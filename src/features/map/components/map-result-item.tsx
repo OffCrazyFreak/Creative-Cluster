@@ -9,6 +9,7 @@ import type {
 } from "@/features/directory/directory-schemas";
 import EntryImage from "@/features/images/components/entry-image";
 import { tagLabel } from "@/features/directory/tag-label";
+import SaveEntryButton from "@/features/saved/components/save-entry-button";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
@@ -66,7 +67,10 @@ function MapResultItem({ entry, tags, nested }: IMapResultItemProps) {
             {entry.name}
           </Link>
         </Heading>
-        <p className="text-sm">{[kind, place].filter(Boolean).join(" · ")}</p>
+        <p className="text-sm">
+          {[kind, place].filter(Boolean).join(" · ")}
+          <SaveEntryButton entry={{ slug: entry.slug, name: entry.name }} />
+        </p>
         {entry.blurb ? <p className="text-sm">{entry.blurb}</p> : null}
         {entry.tags.length > 0 ? (
           <ul className="flex flex-wrap gap-1">
