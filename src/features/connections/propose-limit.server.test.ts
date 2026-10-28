@@ -32,7 +32,7 @@ const { assertLinkFree } = await import("./assert-link-free.server");
 const { allocateSlug } = await import("@/features/entry/slug.server");
 
 describe.skipIf(!temp)("proposal limits and errors", () => {
-  const { db } = temp as ITempDatabase;
+  const db = temp?.db as ITempDatabase["db"];
   let userId = "";
   let mine = "";
   let target = "";
