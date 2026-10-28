@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { afterAll, describe, expect, it, vi } from "vitest";
 
-import { LOCAL_DRAIN_MS } from "@/constants/jobs";
+import { SLOW_DRAIN_MS } from "@/constants/jobs";
 import * as schema from "@/db/schema";
 import type { RichTextDoc } from "@/typings/rich-text";
 
@@ -390,7 +390,7 @@ describe.skipIf(!temp)("runTranslation", () => {
       fakeAdapter(answers, calls),
       { entityType: "entry", entityId: id },
       new Date(),
-      { deadline: Date.now() + LOCAL_DRAIN_MS },
+      { deadline: Date.now() + SLOW_DRAIN_MS },
     );
     expect(result).toBeUndefined();
     expect(calls).toHaveLength(2);

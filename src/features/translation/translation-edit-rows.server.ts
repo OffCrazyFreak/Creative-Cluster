@@ -24,6 +24,7 @@ export function valueFor(input: SaveInput, field: TranslatedField) {
 interface IExisting {
   text: string;
   origin: "machine" | "human";
+  sourceHash: string;
 }
 
 // The owner's version is a human row: the machine job never touches it again.
@@ -49,7 +50,9 @@ export async function applyOwnerEdit(
       .where(and(match, eq(translation.origin, "human")));
     return "removed";
   }
-  if (existing?.text === value) return "unchanged";
+  // Re-saving the same text over a changed original is the owner confirming it still fits.
+  if (existing?.text === value && existing.sourceHash === sourceHash)
+    return "unchanged";
   await tx
     .insert(translation)
     .values({

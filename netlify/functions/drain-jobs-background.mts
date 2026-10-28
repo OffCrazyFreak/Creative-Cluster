@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 
 import type { Config } from "@netlify/functions";
 
+import { SLOW_DRAIN_MS } from "../../src/constants/jobs";
 import {
   DRAIN_HEADER,
   drainToken,
@@ -22,7 +23,7 @@ export default async (request: Request) => {
     );
     return;
   }
-  const result = await drainJobs(5 * 60 * 1000);
+  const result = await drainJobs(SLOW_DRAIN_MS);
   console.info("drain-jobs-background", result);
 };
 

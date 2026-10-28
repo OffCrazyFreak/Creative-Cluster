@@ -33,8 +33,8 @@ export interface ITranslatedText {
   // Only the description is rich text: a validated RichTextDoc.
   doc: SerializableDoc | null;
   origin: TranslationOrigin;
-  // The original changed after this text was saved. Only the owner's own version stays shown
-  // then (the owner decided it is kept); a machine one is replaced by the next job.
+  // The original changed after this text was saved. The owner's own version is kept for good (the
+  // owner's choice); a machine one shows, with the note, only until the queued job replaces it.
   outdated: boolean;
 }
 
@@ -47,4 +47,11 @@ export interface ITranslationView {
   // Fields that have original text, translated or not.
   sourceFields: TranslatedField[];
   canEdit: boolean;
+}
+
+export function outdatedOwnFields(view: ITranslationView): TranslatedField[] {
+  return view.sourceFields.filter((field) => {
+    const text = view.texts[field];
+    return text?.origin === "human" && text.outdated;
+  });
 }

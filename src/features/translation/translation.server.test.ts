@@ -182,6 +182,13 @@ describe.skipIf(!temp)("entry translation view and owner edit", () => {
       origin: "human",
       outdated: true,
     });
+
+    await saveOwnerTranslation(
+      owner.id,
+      saveTranslationInputSchema.parse({ entryId: entry.id, offering: "Moj." }),
+    );
+    const confirmed = await loadEntryTranslation(entry.id, "hr", null);
+    expect(confirmed?.texts.offering).toMatchObject({ outdated: false });
   });
 
   it("ignores rows of fields whose original text is gone", async () => {

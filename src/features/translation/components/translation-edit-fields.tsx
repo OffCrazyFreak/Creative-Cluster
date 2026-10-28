@@ -7,6 +7,7 @@ import type { RichTextDoc } from "@/typings/rich-text";
 import {
   DESCRIPTION_MAX_CHARS,
   SHORT_TEXT_MAX_CHARS,
+  outdatedOwnFields,
   type ITranslationView,
   type TranslatedField,
 } from "../translation-fields";
@@ -34,8 +35,9 @@ export default function TranslationEditFields({
   values,
   onChange,
 }: ITranslationEditFieldsProps) {
+  const outdated = outdatedOwnFields(view);
   function outdatedNote(field: TranslatedField) {
-    return view.texts[field]?.outdated ? (
+    return outdated.includes(field) ? (
       <FieldDescription>{m.translation_edit_outdated()}</FieldDescription>
     ) : null;
   }
