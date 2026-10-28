@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { measurePadding } from "./map-padding";
+import {
+  measureCovered,
+  measurePadding,
+  sheetCoveredPixels,
+} from "./map-padding";
 
 function rect(x: number, y: number, width: number, height: number) {
   return {
@@ -42,5 +46,22 @@ describe("measurePadding", () => {
     expect(padding.top).toBe(120);
     expect(padding.bottom).toBe(112);
     expect(padding.left).toBe(16);
+  });
+});
+
+describe("measureCovered", () => {
+  it("reports what the panels hide, without margin or clamp", () => {
+    const phone = rect(0, 0, 390, 700);
+    expect(measureCovered(phone, rect(8, 8, 374, 96), 70, false)).toEqual({
+      top: 104,
+      right: 0,
+      bottom: 630,
+      left: 0,
+    });
+  });
+
+  it("reads the sheet's settled height from its snap length", () => {
+    expect(sheetCoveredPixels("50dvh", 800)).toBe(400);
+    expect(sheetCoveredPixels("96px", 800)).toBe(96);
   });
 });

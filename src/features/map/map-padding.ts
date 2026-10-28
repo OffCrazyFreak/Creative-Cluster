@@ -13,20 +13,43 @@ function clamp(value: number, size: number) {
   return Math.max(MARGIN, Math.min(value, size * MAX_SHARE));
 }
 
-// Measured from the live panel (desktop: left side panel, phones: search block on top and the sheet below).
+// How much of the map the floating panels hide (desktop: left side panel, phones: search block on
+// top and the sheet below, whose top edge is passed in).
+export function measureCovered(
+  frame: DOMRect,
+  panel: DOMRect | null,
+  sheetTop: number | null,
+  wide: boolean,
+): IMapPadding {
+  return {
+    top: !wide && panel ? Math.max(0, panel.bottom - frame.top) : 0,
+    right: 0,
+    bottom:
+      !wide && sheetTop !== null ? Math.max(0, frame.bottom - sheetTop) : 0,
+    left: wide && panel ? Math.max(0, panel.right - frame.left) : 0,
+  };
+}
+
 export function measurePadding(
   frame: DOMRect,
   panel: DOMRect | null,
   sheet: DOMRect | null,
   wide: boolean,
 ): IMapPadding {
-  const left = wide && panel ? panel.right - frame.left + MARGIN : MARGIN;
-  const top = !wide && panel ? panel.bottom - frame.top + MARGIN : MARGIN;
-  const bottom = !wide && sheet ? frame.bottom - sheet.top + MARGIN : MARGIN;
+  const covered = measureCovered(frame, panel, sheet?.top ?? null, wide);
   return {
-    top: clamp(top, frame.height),
+    top: clamp(covered.top + MARGIN, frame.height),
     right: MARGIN,
-    bottom: clamp(bottom, frame.height),
-    left: clamp(left, frame.width),
+    bottom: clamp(covered.bottom + MARGIN, frame.height),
+    left: clamp(covered.left + MARGIN, frame.width),
   };
+}
+
+// The sheet animates between snap points, so its settled height comes from the snap, not its box.
+export function sheetCoveredPixels(
+  css: string,
+  viewportHeight: number,
+): number {
+  const value = Number.parseFloat(css);
+  return css.endsWith("dvh") ? (value / 100) * viewportHeight : value;
 }

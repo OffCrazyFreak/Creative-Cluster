@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import type { IDirectoryEntry } from "@/features/directory/directory-schemas";
 
-import { distanceKm, inBounds } from "./geo";
-import { filterEntries, limitToBounds } from "./map-filters";
+import { distanceKm } from "./geo";
+import { filterEntries } from "./map-filters";
 import {
   formatViewport,
   parsePoint,
@@ -111,19 +111,6 @@ describe("helpers", () => {
     expect(
       distanceKm({ lat: 45.815, lng: 15.98 }, { lat: 43.508, lng: 16.44 }),
     ).toBeCloseTo(259, -1);
-  });
-
-  it("limits to bounds, including across the antimeridian", () => {
-    const a = entry("a", { lat: 10, lng: 179 });
-    expect(
-      limitToBounds([a], { west: 170, south: 0, east: -170, north: 20 }),
-    ).toHaveLength(1);
-    expect(
-      inBounds(
-        { lat: 10, lng: 0 },
-        { west: 170, south: 0, east: -170, north: 20 },
-      ),
-    ).toBe(false);
   });
 
   it("parses and formats the viewport param and rejects junk", () => {

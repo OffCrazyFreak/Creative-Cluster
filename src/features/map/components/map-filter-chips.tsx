@@ -12,7 +12,7 @@ import MapRemovableChip from "./map-removable-chip";
 const POPULAR_TAGS = 6;
 
 export default function MapFilterChips() {
-  const { directory, filters, areaBounds, setAreaBounds } = useMapFrame();
+  const { directory, filters } = useMapFrame();
   const { tags } = useMapFacets(directory);
   const update = useUpdateMapSearch();
   const locale = getLocale();
@@ -90,14 +90,6 @@ export default function MapFilterChips() {
           <MapRemovableChip
             label={m.map_chip_near({ km: filters.radiusKm })}
             onRemove={() => void update({ near: "", radius: 0 })}
-          />
-        </li>
-      ) : null}
-      {areaBounds ? (
-        <li className="shrink-0">
-          <MapRemovableChip
-            label={m.map_chip_area()}
-            onRemove={() => setAreaBounds(null)}
           />
         </li>
       ) : null}

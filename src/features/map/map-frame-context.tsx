@@ -5,8 +5,8 @@ import type {
   IMapDirectory,
 } from "@/features/directory/directory-schemas";
 
-import type { IBounds } from "./geo";
 import type { IMapFilters, MapSearch } from "./map-search";
+import type { IViewArea } from "./view-area";
 
 export type MapStatus = "idle" | "active" | "unsupported" | "failed";
 
@@ -16,14 +16,14 @@ export interface IMapFrameValue {
   filters: IMapFilters;
   // Entries matching the filters: the pins on the map.
   pins: IDirectoryEntry[];
-  // Entries in the panel: pins narrowed by "search this area" or by a cluster click.
+  // Entries in the panel: the pins, or the ones at a clicked spot.
   listed: IDirectoryEntry[];
   mapStatus: MapStatus;
   requestMap: () => void;
   listOverride: string[] | null;
   setListOverride: (slugs: string[] | null) => void;
-  areaBounds: IBounds | null;
-  setAreaBounds: (bounds: IBounds | null) => void;
+  // The part of the map in sight, which the list groups its entries by; null without a map.
+  viewArea: IViewArea | null;
 }
 
 export const MapFrameContext = createContext<IMapFrameValue | null>(null);
