@@ -40,6 +40,8 @@ export default function MapEntrySheet({
   // Kept through the closing slide, which still shows the last entry.
   const [shown, setShown] = useState(entry);
   if (entry && entry !== shown) setShown(entry);
+  const [shownDistance, setShownDistance] = useState(distance);
+  if (entry && distance !== shownDistance) setShownDistance(distance);
   // State, not a ref: measuring starts once the portalled popup actually exists.
   const [popup, setPopup] = useState<HTMLDivElement | null>(null);
 
@@ -75,7 +77,11 @@ export default function MapEntrySheet({
             <DrawerTitle className="sr-only">{shown.name}</DrawerTitle>
             <div className="flex items-start gap-2">
               <ul className="min-w-0 flex-1">
-                <MapResultItem entry={shown} tags={tags} distance={distance} />
+                <MapResultItem
+                  entry={shown}
+                  tags={tags}
+                  distance={shownDistance}
+                />
               </ul>
               <DrawerClose
                 render={<Button variant="ghost" size="icon" />}
