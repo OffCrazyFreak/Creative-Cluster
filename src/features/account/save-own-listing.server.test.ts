@@ -308,6 +308,34 @@ describe.skipIf(!temp)("saveOwnListing", () => {
     expect(saved.locationDisplay).toBe("town");
   });
 
+  it("drops the pin of a person when the town and coordinates are not in the server's town list", async () => {
+    const owner = await addUser(db, "town-forger");
+    const row = await addEntry(db, "Cy", {}, { ownerUserId: owner.id });
+    await db
+      .update(schema.entry)
+      .set({ kind: "person" })
+      .where(eq(schema.entry.id, row.id));
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(
+        formValues({
+          location: {
+            ...emptyLocation("HR"),
+            city: "Split",
+            lat: 43.5,
+            lng: 16.4,
+            precision: "town",
+            source: "town_list",
+            display: "town",
+            townPopulation: 5_000_000,
+          },
+        }),
+      ),
+    });
+    expect((await reload(row.id)).lat).toBeNull();
+  });
+
   it("clears the invalid-email flag when the contact email changes", async () => {
     const { owner, row } = await setup();
     await db
@@ -499,8 +527,8 @@ describe.skipIf(!temp)("saveOwnListing", () => {
           location: {
             ...emptyLocation("HR"),
             city: "Dubrovnik",
-            lat: 42.65,
-            lng: 18.09,
+            lat: 42.6413,
+            lng: 18.1091,
             precision: "town",
             source: "town_list",
             display: "town",
@@ -513,8 +541,8 @@ describe.skipIf(!temp)("saveOwnListing", () => {
     const saved = await reload(row.id);
     expect(saved.addressText).toBeNull();
     expect(saved.locationDisplay).toBe("town");
-    expect(saved.lat).not.toBe(42.65);
-    expect(Math.abs((saved.lat ?? 0) - 42.65)).toBeLessThan(0.1);
+    expect(saved.lat).not.toBe(42.6413);
+    expect(Math.abs((saved.lat ?? 0) - 42.6413)).toBeLessThan(0.1);
     expect(saved.extra.legal_status).toBeUndefined();
     expect(saved.coverImageId).toBeNull();
   });

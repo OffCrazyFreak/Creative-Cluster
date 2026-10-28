@@ -17,7 +17,8 @@ export function startOfNextUtcDay(now: Date): Date {
   return next;
 }
 
-// Mail being sent by an overlapping drain counts too, or both would pass the cap check.
+// Mail being sent by an overlapping drain counts too, or both would pass the cap check. The rest of this
+// drain's batch shares this job's lock time and runs one by one after it, so it is not in flight yet.
 export async function countSentToday(
   now: Date,
   excludeJobId: string,
@@ -29,7 +30,13 @@ export async function countSentToday(
       and(
         eq(job.type, "email"),
         ne(job.id, excludeJobId),
-        or(eq(job.status, "running"), eq(job.status, "done")),
+        or(
+          and(
+            eq(job.status, "running"),
+            sql`${job.lockedAt} is distinct from (select locked_at from job where id = ${excludeJobId})`,
+          ),
+          eq(job.status, "done"),
+        ),
         gte(job.updatedAt, startOfUtcDay(now)),
       ),
     );

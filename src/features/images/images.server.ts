@@ -14,6 +14,7 @@ import type { IUploadedImage } from "@/typings/images";
 
 import { ImageError } from "./image-error";
 import { inspectImage } from "./inspect-image.server";
+import { stripMetadata } from "./strip-metadata.server";
 
 interface IStoreImageInput {
   userId: string;
@@ -37,8 +38,9 @@ export async function storeImage({
   if (file.size === 0 || file.size > IMAGE_MAX_BYTES) {
     throw new ImageError("image_too_big");
   }
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const { mime, width, height } = inspectImage(bytes, kind);
+  const upload = Buffer.from(await file.arrayBuffer());
+  const { mime, width, height } = inspectImage(upload, kind);
+  const bytes = stripMetadata(upload, mime);
   const hash = createHash("sha256").update(bytes).digest("hex");
 
   const [inserted] = await db

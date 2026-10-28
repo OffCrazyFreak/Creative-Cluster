@@ -95,6 +95,8 @@ export function createPhoton({
 
   return {
     id: "photon",
+    covers: (countryCode) =>
+      !!countryCode && Object.hasOwn(COUNTRY_BBOX, countryCode.toUpperCase()),
     suggest: forward,
     search: forward,
     async reverse({ lat, lng, signal }: IReverseQuery) {

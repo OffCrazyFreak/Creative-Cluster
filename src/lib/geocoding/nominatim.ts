@@ -56,7 +56,7 @@ export function parseNominatim(body: unknown): GeoHit[] {
 export interface INominatimOptions {
   fetcher?: FetchLike;
   userAgent: string;
-  // Waits for the global one-per-second slot; throws rate_limited if it cannot get one.
+  // Waits for the global one-per-second slot; throws busy if it cannot get one.
   acquire: () => Promise<void>;
 }
 

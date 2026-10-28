@@ -3,6 +3,8 @@ export const GEOCODE_ERROR_CODES = [
   "auth",
   "unavailable",
   "bad_request",
+  // Our own queue is full, not the provider: the chain moves on but the breaker stays closed.
+  "busy",
 ] as const;
 export type GeocodeErrorCode = (typeof GEOCODE_ERROR_CODES)[number];
 
