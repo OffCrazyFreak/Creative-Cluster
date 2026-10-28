@@ -16,6 +16,7 @@ export const MAP_SEARCH_DEFAULTS = {
   near: "",
   radius: 0,
   v: "",
+  entry: "",
 } as const;
 
 export const mapSearchSchema = z.object({
@@ -32,6 +33,8 @@ export const mapSearchSchema = z.object({
     .transform((value) => value ?? 0)
     .catch(0),
   v: text,
+  // The entry selected on a phone's map, shown in its sheet.
+  entry: text,
 });
 export type MapSearch = z.infer<typeof mapSearchSchema>;
 

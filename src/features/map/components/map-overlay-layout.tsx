@@ -2,6 +2,7 @@ import {
   lazy,
   Suspense,
   useState,
+  type CSSProperties,
   type ReactNode,
   type RefObject,
 } from "react";
@@ -15,7 +16,7 @@ import MapSkipLink from "./map-skip-link";
 import MapStatusNotice from "./map-status-notice";
 import type { MapStatus } from "../map-frame-context";
 
-// Phones only: the bar and search code stay out of the desktop and entry-page bundles.
+// Phones only: the bar, search and drawer code stay out of the desktop and entry-page bundles.
 const MapPhoneLayout = lazy(() => import("./map-phone-layout"));
 
 interface IMapOverlayLayoutProps {
@@ -23,7 +24,13 @@ interface IMapOverlayLayoutProps {
   status: MapStatus;
   frameRef: RefObject<HTMLDivElement | null>;
   panelRef: RefObject<HTMLDivElement | null>;
+  locateRef: RefObject<HTMLButtonElement | null>;
   map: ReactNode;
+  // Pixels of the screen's bottom the phone's entry sheet covers.
+  sheetCovered: number;
+  onSheetCoveredChange: (covered: number) => void;
+  selectedSlug: string | null;
+  onSelectedChange: (slug: string | null) => void;
   children: ReactNode;
 }
 
@@ -33,7 +40,12 @@ export default function MapOverlayLayout({
   status,
   frameRef,
   panelRef,
+  locateRef,
   map,
+  sheetCovered,
+  onSheetCoveredChange,
+  selectedSlug,
+  onSelectedChange,
   children,
 }: IMapOverlayLayoutProps) {
   // The phone's open search or entry page covers the map, which then leaves the tab order.
@@ -43,6 +55,7 @@ export default function MapOverlayLayout({
   return (
     <div
       ref={frameRef}
+      style={{ "--map-sheet-covered": `${sheetCovered}px` } as CSSProperties}
       className="relative h-[calc(100dvh-var(--site-header-height,3.0625rem))] min-h-[28rem] overflow-hidden max-md:h-dvh"
     >
       {wide ? <MapSkipLink /> : null}
@@ -52,7 +65,11 @@ export default function MapOverlayLayout({
             status={status}
             frameRef={frameRef}
             barRef={panelRef}
+            locateRef={locateRef}
             onCoveredChange={setCovered}
+            selectedSlug={selectedSlug}
+            onSelectedChange={onSelectedChange}
+            onSheetHeightChange={onSheetCoveredChange}
           >
             {children}
           </MapPhoneLayout>

@@ -1,5 +1,5 @@
 import { Loader2, LocateFixed } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Ref } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { m } from "@/paraglide/messages";
 import type { GeolocationStatus } from "../hooks/use-geolocation";
 
 interface IMapLocateButtonProps {
+  ref?: Ref<HTMLButtonElement>;
   status: GeolocationStatus;
   onLocate: () => void;
 }
@@ -22,6 +23,7 @@ const FAILURES: Partial<Record<GeolocationStatus, () => string>> = {
 
 // The map's near-me control, above the zoom buttons.
 export default function MapLocateButton({
+  ref,
   status,
   onLocate,
 }: IMapLocateButtonProps) {
@@ -44,6 +46,7 @@ export default function MapLocateButton({
 
   return (
     <Button
+      ref={ref}
       type="button"
       variant="outline"
       size="icon-lg"

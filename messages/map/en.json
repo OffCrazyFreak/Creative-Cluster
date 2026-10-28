@@ -42,6 +42,8 @@
   "map_skip_map": "Skip the map",
   "map_region_label": "Map of listings",
   "map_back_to_map": "Back to map",
+  "map_entry_sheet_label": "Selected listing",
+  "map_entry_full_page": "Open full page",
   "map_loading": "Loading the map",
   "map_webgl_unsupported": "This browser cannot draw the map (it needs WebGL 2). The list has all the same listings.",
   "map_load_failed": "The map could not be loaded. The list still works.",
