@@ -26,5 +26,11 @@ export interface ISiteConfig {
   contactEmail: string;
   legal: ISiteLegalIdentity;
   searchConsoleToken: string | null;
-  map: { center: [number, number]; zoom: number; style: MapStyleId };
+  map: {
+    center: [number, number];
+    zoom: number;
+    style: MapStyleId;
+    // [[west, south], [east, north]]: an IP guess outside this box is dropped.
+    ipBounds: [[number, number], [number, number]];
+  };
 }

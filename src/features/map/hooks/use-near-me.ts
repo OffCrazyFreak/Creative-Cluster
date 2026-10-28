@@ -1,6 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import type { Map as MaplibreMap } from "maplibre-gl";
 import { useEffect, useRef } from "react";
 
+import { ipGuessFn } from "@/features/location/ip-guess.functions";
+
+import type { IMapOrigin } from "../map-origin";
+import { resolveMapOrigin } from "../map-origin";
 import type { IMapPadding } from "../map-padding";
 import { useGeolocation } from "./use-geolocation";
 
@@ -15,12 +20,19 @@ interface IUseNearMeInput {
   hasInitialViewport: boolean;
   duration: number;
   getPadding: () => IMapPadding;
+  onOriginChange: (origin: IMapOrigin | null) => void;
 }
 
-// Moves the map to the visitor's position when a fix arrives.
+// Where the list sorts from (GPS, else the IP guess), and the map moves for a fix.
 export function useNearMe(input: IUseNearMeInput) {
-  const { getMap, ready, focusSlug } = input;
-  const geo = useGeolocation(null, true);
+  const { getMap, ready, focusSlug, onOriginChange } = input;
+  const { data: ip = null } = useQuery({
+    queryKey: ["ip-guess"],
+    queryFn: () => ipGuessFn(),
+    staleTime: Infinity,
+    retry: false,
+  });
+  const geo = useGeolocation(ip, true);
   const userMoved = useRef(false);
   const selected = useRef(false);
   const handled = useRef(0);
@@ -28,6 +40,10 @@ export function useNearMe(input: IUseNearMeInput) {
   useEffect(() => {
     if (focusSlug) selected.current = true;
   }, [focusSlug]);
+
+  useEffect(() => {
+    onOriginChange(resolveMapOrigin(geo.position, ip));
+  }, [geo.position, ip, onOriginChange]);
 
   useEffect(() => {
     const map = getMap();

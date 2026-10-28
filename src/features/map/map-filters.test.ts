@@ -97,6 +97,20 @@ describe("filterEntries", () => {
     });
     expect(out.map((e) => e.slug)).toEqual(["c", "a"]);
   });
+
+  it("sorts from the visitor's origin without filtering, unplaced entries last", () => {
+    const out = filterEntries({
+      ...base,
+      entries: [
+        entries[2],
+        entry("far", { lat: 46, lng: 15 }),
+        entry("close", { lat: 45.01, lng: 15 }),
+      ],
+      filters: noFilters,
+      origin: { lat: 45, lng: 15 },
+    });
+    expect(out.map((e) => e.slug)).toEqual(["close", "far", "c"]);
+  });
 });
 
 describe("helpers", () => {

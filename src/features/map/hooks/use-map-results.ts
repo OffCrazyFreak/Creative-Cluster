@@ -4,12 +4,13 @@ import type { IMapDirectory } from "@/features/directory/directory-schemas";
 
 import { createSearchIndex, searchSlugs } from "../directory-search";
 import { filterEntries } from "../map-filters";
-import { toFilters, type MapSearch } from "../map-search";
+import { toFilters, type IPoint, type MapSearch } from "../map-search";
 
 interface IUseMapResultsInput {
   directory: IMapDirectory | undefined;
   search: MapSearch;
   seed: number;
+  origin: IPoint | null;
 }
 
 // All filtering happens in the browser on the published directory.
@@ -17,6 +18,7 @@ export function useMapResults({
   directory,
   search,
   seed,
+  origin,
 }: IUseMapResultsInput) {
   // Filters depend on the filter fields only: the viewport param `v` changes on every pan.
   const { q, tags, country, legal, near, radius } = search;
@@ -40,8 +42,9 @@ export function useMapResults({
       filters,
       textMatches: filters.q && index ? searchSlugs(index, filters.q) : null,
       seed,
+      origin,
     });
-  }, [directory, index, filters, seed]);
+  }, [directory, index, filters, seed, origin]);
 
   return { filters, pins };
 }

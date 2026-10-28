@@ -5,6 +5,7 @@ import type {
   IMapDirectory,
 } from "@/features/directory/directory-schemas";
 
+import type { IMapOrigin } from "./map-origin";
 import type { IMapFilters, MapSearch } from "./map-search";
 import type { IViewArea } from "./view-area";
 
@@ -20,6 +21,7 @@ export interface IMapFrameValue {
   requestMap: () => void;
   // The part of the map in sight, which the list groups its entries by; null without a map.
   viewArea: IViewArea | null;
+  origin: IMapOrigin | null;
 }
 
 export const MapFrameContext = createContext<IMapFrameValue | null>(null);

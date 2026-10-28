@@ -4,7 +4,7 @@ import type {
 } from "@/features/directory/directory-schemas";
 
 import { distanceKm } from "./geo";
-import type { IMapFilters } from "./map-search";
+import type { IMapFilters, IPoint } from "./map-search";
 import { seededShuffle } from "./shuffle";
 
 interface IFilterInput {
@@ -14,6 +14,8 @@ interface IFilterInput {
   // Slugs ranked by text search, or null when there is no query.
   textMatches: string[] | null;
   seed: number;
+  // The visitor's position or IP guess: sorts by distance instead of the seeded order.
+  origin?: IPoint | null;
 }
 
 // Several selected tags widen the result (any of them), like the chips on a map app.
@@ -23,6 +25,7 @@ export function filterEntries({
   filters,
   textMatches,
   seed,
+  origin = null,
 }: IFilterInput): IDirectoryEntry[] {
   const selected = new Set(filters.tags);
   const matched = textMatches ? new Set(textMatches) : null;
@@ -52,14 +55,15 @@ export function filterEntries({
       (a, b) => (rank.get(a.slug) ?? 0) - (rank.get(b.slug) ?? 0),
     );
   }
-  if (filters.near) {
-    const origin = filters.near;
-    function away(e: IDirectoryEntry) {
+  // A chosen point wins over the visitor's own position.
+  const from = filters.near ?? origin;
+  if (from) {
+    function away(e: IDirectoryEntry, point: IPoint) {
       return e.lat === null || e.lng === null
         ? Infinity
-        : distanceKm(origin, { lat: e.lat, lng: e.lng });
+        : distanceKm(point, { lat: e.lat, lng: e.lng });
     }
-    return kept.sort((a, b) => away(a) - away(b));
+    return kept.sort((a, b) => away(a, from) - away(b, from));
   }
   return seededShuffle(kept, seed);
 }

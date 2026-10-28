@@ -20,12 +20,14 @@ interface IMapResultItemProps {
   tags: IDirectoryTag[];
   // Under an "on the map" or "elsewhere" heading, so one level deeper.
   nested?: boolean;
+  // From the visitor's position, when it is precise enough to show.
+  distance?: string | null;
 }
 
 const MAX_TAGS = 3;
 const LOGO_SIZE = 40;
 
-function MapResultItem({ entry, tags, nested }: IMapResultItemProps) {
+function MapResultItem({ entry, tags, nested, distance }: IMapResultItemProps) {
   const Heading = nested ? "h4" : "h3";
   const setHoveredSlug = useContext(SetHoveredSlugContext);
   const locale = getLocale();
@@ -68,7 +70,7 @@ function MapResultItem({ entry, tags, nested }: IMapResultItemProps) {
           </Link>
         </Heading>
         <p className="text-sm">
-          {[kind, place].filter(Boolean).join(" · ")}
+          {[kind, place, distance].filter(Boolean).join(" · ")}
           <SaveEntryButton entry={{ slug: entry.slug, name: entry.name }} />
         </p>
         {entry.blurb ? <p className="text-sm">{entry.blurb}</p> : null}
