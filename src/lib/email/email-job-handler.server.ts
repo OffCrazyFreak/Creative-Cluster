@@ -42,8 +42,10 @@ export async function handleEmailJob(
       payload.template === "claim_reminder" ||
       payload.template === "contact") &&
     (await isSuppressed(db, payload.to))
-  )
+  ) {
+    if (payload.template === "contact") await scrubContactJob(job.id);
     throw new PermanentJobError("Address is on the suppression list");
+  }
   const now = new Date();
   if (!maySend(job.priority, await countSentToday(now, job.id))) {
     return { deferUntil: startOfNextUtcDay(now) };

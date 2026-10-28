@@ -18,38 +18,48 @@ describe.skipIf(!temp)("two-admin rule", () => {
     await temp?.drop();
   });
 
-  async function admin(email: string, withPassword: boolean) {
+  async function admin(email: string, provider: string | null) {
     const [row] = await db
       .insert(schema.user)
       .values({ name: email, email, role: "admin", locale: "en" })
       .returning();
-    if (withPassword)
+    if (provider)
       await db.insert(schema.account).values({
         accountId: row.id,
-        providerId: "credential",
+        providerId: provider,
         userId: row.id,
-        password: "hash",
       });
     return row;
   }
 
-  it("does not count an invited admin who never set a password", async () => {
-    await admin("first@example.test", true);
-    const second = await admin("second@example.test", true);
-    const invited = await admin("invited@example.test", false);
+  function demote(userId: string) {
+    return db
+      .update(schema.user)
+      .set({ role: "member" })
+      .where(eq(schema.user.id, userId));
+  }
+
+  it("does not count an invited admin who never signed in", async () => {
+    await admin("first@example.test", "credential");
+    const second = await admin("second@example.test", "google");
+    const invited = await admin("invited@example.test", null);
 
     await expect(assertAdminsRemain(second.id)).rejects.toThrow(/at least/);
+    await expect(demote(second.id)).rejects.toThrow();
+    // better-auth removes the sign-in methods before the user row, so that step is guarded too.
     await expect(
-      db
-        .update(schema.user)
-        .set({ role: "member" })
-        .where(eq(schema.user.id, second.id)),
+      db.delete(schema.account).where(eq(schema.account.userId, second.id)),
     ).rejects.toThrow();
 
     await expect(assertAdminsRemain(invited.id)).resolves.toBeUndefined();
-    await db
-      .update(schema.user)
-      .set({ role: "member" })
-      .where(eq(schema.user.id, invited.id));
+    await demote(invited.id);
+    await db.delete(schema.user).where(eq(schema.user.id, invited.id));
+  });
+
+  it("still lets a counted admin go when two others remain", async () => {
+    const extra = await admin("third@example.test", "credential");
+    await expect(assertAdminsRemain(extra.id)).resolves.toBeUndefined();
+    await db.delete(schema.account).where(eq(schema.account.userId, extra.id));
+    await db.delete(schema.user).where(eq(schema.user.id, extra.id));
   });
 });

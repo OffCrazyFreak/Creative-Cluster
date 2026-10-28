@@ -284,7 +284,7 @@ describe.skipIf(!temp)("erasure and export", () => {
 
   it("refuses an erasure request from the last admins", async () => {
     const lone = await addUser(db, "Lone", "admin");
-    // Only an admin who chose a password counts, and asking for erasure needs a sign-in anyway.
+    // Only an admin with a sign-in method counts, and asking for erasure needs a sign-in anyway.
     await db.insert(schema.account).values({
       accountId: lone.id,
       providerId: "credential",

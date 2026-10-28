@@ -10,7 +10,7 @@ export const MIN_ADMINS_CODE = "MIN_ADMINS";
 // Gives the admin a clear message before better-auth writes. A row lock here could not span
 // that write, so migration 0003 (a trigger with an advisory lock) is what holds the rule when
 // two changes race, and it also covers any path that reaches the update without a known target.
-// Only admins who chose a password count: an invite to a wrong address must not stand in for a second admin.
+// Only admins with a sign-in method (password or Google) count: an unused invite must not stand in for a second admin.
 export async function assertAdminsRemain(targetUserId: string) {
   const admins = await db
     .select({ id: user.id })
@@ -23,12 +23,7 @@ export async function assertAdminsRemain(targetUserId: string) {
           db
             .select({ id: account.id })
             .from(account)
-            .where(
-              and(
-                eq(account.userId, user.id),
-                eq(account.providerId, "credential"),
-              ),
-            ),
+            .where(eq(account.userId, user.id)),
         ),
       ),
     );
