@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { afterAll, describe, expect, it, vi } from "vitest";
 
+import { SLOW_DRAIN_MS } from "@/constants/jobs";
 import * as schema from "@/db/schema";
 import type { RichTextDoc } from "@/typings/rich-text";
 
@@ -379,6 +380,20 @@ describe.skipIf(!temp)("runTranslation", () => {
     );
     expect(result).toHaveProperty("deferUntil");
     expect(calls).toHaveLength(0);
+  });
+
+  it("translates inside the budget of a local `pnpm jobs:drain`", async () => {
+    const id = await entryWithText();
+    const calls: ITranslateInput[] = [];
+    const result = await runTranslation(
+      db,
+      fakeAdapter(answers, calls),
+      { entityType: "entry", entityId: id },
+      new Date(),
+      { deadline: Date.now() + SLOW_DRAIN_MS },
+    );
+    expect(result).toBeUndefined();
+    expect(calls).toHaveLength(2);
   });
 
   it("defers to 00:05 UTC the next day on a quota error", async () => {

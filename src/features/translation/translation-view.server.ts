@@ -5,6 +5,7 @@ import { db } from "@/db/client.server";
 import { entry, translation } from "@/db/schema";
 import { publicEntryCondition } from "@/features/entry/public-entry-filter.server";
 import { safeParseRichText } from "@/lib/rich-text/parse-rich-text";
+import { loadTranslationSource } from "@/lib/translation/translation-source.server";
 import {
   TRANSLATED_FIELDS,
   type ITranslatedText,
@@ -20,9 +21,10 @@ function isTranslatedField(value: string): value is TranslatedField {
 function toText(
   field: TranslatedField,
   row: { text: string; origin: "machine" | "human" },
+  outdated: boolean,
 ): ITranslatedText | null {
   if (field !== "description") {
-    return { text: row.text, doc: null, origin: row.origin };
+    return { text: row.text, doc: null, origin: row.origin, outdated };
   }
   let json: unknown;
   try {
@@ -37,6 +39,7 @@ function toText(
     text: parsed.text,
     doc: toSerializableDoc(parsed.doc),
     origin: row.origin,
+    outdated,
   };
 }
 
@@ -61,16 +64,20 @@ export async function loadEntryTranslation(
     .limit(1);
   if (!row || row.sourceLocale === locale) return null;
 
-  const rows = await db
-    .select()
-    .from(translation)
-    .where(
-      and(
-        eq(translation.entityType, "entry"),
-        eq(translation.entityId, row.id),
-        eq(translation.locale, locale),
+  const [rows, source] = await Promise.all([
+    db
+      .select()
+      .from(translation)
+      .where(
+        and(
+          eq(translation.entityType, "entry"),
+          eq(translation.entityId, row.id),
+          eq(translation.locale, locale),
+        ),
       ),
-    );
+    loadTranslationSource(db, "entry", row.id),
+  ]);
+  const hashes = new Map(source?.fields.map((f) => [f.field, f.hash]));
 
   const original: Record<TranslatedField, string> = {
     description: row.descriptionText,
@@ -84,7 +91,8 @@ export async function loadEntryTranslation(
   for (const item of rows) {
     if (!isTranslatedField(item.field) || !item.text.trim()) continue;
     if (!sourceFields.includes(item.field)) continue;
-    const text = toText(item.field, item);
+    const outdated = item.sourceHash !== hashes.get(item.field);
+    const text = toText(item.field, item, outdated);
     if (text) texts[item.field] = text;
   }
   return {

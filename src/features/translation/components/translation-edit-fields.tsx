@@ -1,5 +1,5 @@
 import RichTextEditor from "@/components/custom/rich-text/rich-text-editor";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/paraglide/messages";
 import type { RichTextDoc } from "@/typings/rich-text";
@@ -7,6 +7,7 @@ import type { RichTextDoc } from "@/typings/rich-text";
 import {
   DESCRIPTION_MAX_CHARS,
   SHORT_TEXT_MAX_CHARS,
+  outdatedOwnFields,
   type ITranslationView,
   type TranslatedField,
 } from "../translation-fields";
@@ -34,11 +35,19 @@ export default function TranslationEditFields({
   values,
   onChange,
 }: ITranslationEditFieldsProps) {
+  const outdated = outdatedOwnFields(view);
+  function outdatedNote(field: TranslatedField) {
+    return outdated.includes(field) ? (
+      <FieldDescription>{m.translation_edit_outdated()}</FieldDescription>
+    ) : null;
+  }
+
   return (
     <>
       {view.sourceFields.includes("description") ? (
         <Field>
           <FieldLabel>{titles.description()}</FieldLabel>
+          {outdatedNote("description")}
           <RichTextEditor
             value={values.description}
             onChange={(doc) => onChange("description", doc)}
@@ -54,6 +63,7 @@ export default function TranslationEditFields({
             <FieldLabel htmlFor={`translation-${field}`}>
               {titles[field]()}
             </FieldLabel>
+            {outdatedNote(field)}
             <Textarea
               id={`translation-${field}`}
               value={values[field]}

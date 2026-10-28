@@ -12,6 +12,7 @@ import {
 } from "../translation-queries";
 import {
   fromSerializableDoc,
+  outdatedOwnFields,
   type ITranslationView,
   type TranslatedField,
 } from "../translation-fields";
@@ -33,8 +34,11 @@ export default function TranslationEditForm({
     offering: view.texts.offering?.text ?? "",
     seeking: view.texts.seeking?.text ?? "",
   });
-  // Only edited fields are sent: an untouched machine translation must stay machine.
-  const [touched, setTouched] = useState<Set<TranslatedField>>(new Set());
+  // Only edited fields are sent: an untouched machine translation must stay machine. The owner's
+  // outdated fields start touched so saving them unedited confirms they still fit the original.
+  const [touched, setTouched] = useState<Set<TranslatedField>>(
+    () => new Set(outdatedOwnFields(view)),
+  );
   const [saved, setSaved] = useState(false);
   const save = useMutation({
     ...saveTranslationMutationOptions(),
