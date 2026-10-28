@@ -4,6 +4,8 @@ export const MAP_COLORS = {
   selected: "#db2777",
   outline: "#ffffff",
   badge: "#f59e0b",
+  savedStar: "#f59e0b",
+  savedStarRim: "#d97706",
   // A dark rim keeps 3:1 contrast against any basemap colour (WCAG 1.4.11).
   tileRim: "#1f2937",
   tileFill: "#ffffff",

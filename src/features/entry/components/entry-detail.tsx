@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
+import SaveEntryButton from "@/features/saved/components/save-entry-button";
 import TranslatedSection from "@/features/translation/components/translated-section";
 import TranslationNotice from "@/features/translation/components/translation-notice";
 import type { ITranslationView } from "@/features/translation/translation-fields";
@@ -48,6 +49,9 @@ export default function EntryDetail({ entry, translation }: IEntryDetailProps) {
             {[kindLabels[entry.kind](), place, entry.legalStatus]
               .filter(Boolean)
               .join(" · ")}
+            <SaveEntryButton
+              entry={{ id: entry.id, slug: entry.slug, name: entry.name }}
+            />
           </p>
         </div>
       </header>

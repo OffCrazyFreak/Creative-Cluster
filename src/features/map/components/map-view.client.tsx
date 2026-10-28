@@ -37,6 +37,7 @@ import type { IViewArea } from "../view-area";
 import MapConnectionArcs from "./map-connection-arcs";
 import MapEntryPins from "./map-entry-pins";
 import MapSameSpotPopover from "./map-same-spot-popover";
+import MapSavedStars from "./map-saved-stars";
 import MapSelectedFrame from "./map-selected-frame";
 import MapStackMarkers from "./map-stack-markers";
 
@@ -191,6 +192,7 @@ export default function MapView(props: IMapViewProps) {
           allEntries={allEntries}
           selectedSlug={focusSlug}
         />
+        <MapSavedStars />
         <MapStackMarkers
           allEntries={allEntries}
           data={geoJson}
