@@ -71,5 +71,10 @@
   "map_saved_failed": "Spremljene unose nismo uspjeli promijeniti. Pokušaj ponovno.",
   "map_saved_limit": "Možeš spremiti najviše {max} unosa.",
   "map_save": "Spremi {name}",
-  "map_unsave": "Ukloni {name} iz spremljenih"
+  "map_unsave": "Ukloni {name} iz spremljenih",
+  "map_near_me": "Unosi blizu mene",
+  "map_near_me_approximate": "Prikazujemo unose prema približnoj lokaciji. Uključi lokaciju na uređaju za točniji redoslijed.",
+  "map_near_me_denied": "Pristup lokaciji je odbijen. Dopusti ga u postavkama preglednika ili pretraži po gradu.",
+  "map_near_me_unavailable": "Lokacija trenutačno nije dostupna. Pretraži po gradu ili adresi.",
+  "map_near_me_timeout": "Lokacija se ne može odrediti. Provjeri je li lokacija uključena na uređaju ili pretraži po gradu."
 }
