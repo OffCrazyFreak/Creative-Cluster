@@ -23,10 +23,11 @@ import {
 } from "../hooks/use-media-query";
 import { useMapCamera } from "../hooks/use-map-camera";
 import { useViewReport } from "../hooks/use-view-report";
-import { handleMapClick } from "../map-click";
+import { handleMapClick, openStack } from "../map-click";
 import { buildGeoJson, buildSlugIds } from "../map-geojson";
 import {
   CLUSTER_LAYER_ID,
+  CLUSTER_MAX_ZOOM,
   OPPORTUNITY_LAYER_ID,
   POINT_LAYER_ID,
 } from "../map-layers";
@@ -37,6 +38,7 @@ import type { IViewArea } from "../view-area";
 import MapConnectionArcs from "./map-connection-arcs";
 import MapEntryPins from "./map-entry-pins";
 import MapSelectedFrame from "./map-selected-frame";
+import MapStackMarkers from "./map-stack-markers";
 
 export interface IMapViewProps {
   // Every published entry, for stable numeric ids.
@@ -138,8 +140,21 @@ export default function MapView(props: IMapViewProps) {
       map,
       feature,
       screen: event.point,
+      covered: props.getCovered(),
       duration,
       onSelectSlug: props.onSelectSlug,
+      onListSlugs: props.onListSlugs,
+    });
+  }
+
+  function onStackClick(clusterId: number) {
+    const map = getMap();
+    if (!map) return;
+    void openStack({
+      map,
+      clusterId,
+      covered: props.getCovered(),
+      duration,
       onListSlugs: props.onListSlugs,
     });
   }
@@ -170,6 +185,7 @@ export default function MapView(props: IMapViewProps) {
         pitchWithRotate={false}
         touchPitch={false}
         maxPitch={0}
+        maxZoom={CLUSTER_MAX_ZOOM}
         // The opportunity dot sits past the tile edge, so it is a target of its own.
         interactiveLayerIds={[
           CLUSTER_LAYER_ID,
@@ -196,6 +212,11 @@ export default function MapView(props: IMapViewProps) {
           ready={ready}
           allEntries={allEntries}
           selectedSlug={focusSlug}
+        />
+        <MapStackMarkers
+          allEntries={allEntries}
+          data={geoJson}
+          onStackClick={onStackClick}
         />
       </Map>
     </div>

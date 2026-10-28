@@ -34,28 +34,13 @@ const ALWAYS_VISIBLE = {
   "icon-ignore-placement": true,
 } as const;
 
-// No DOM markers: clusters are circles that grow with their count, points are logo or initials tiles.
+// Stacks are HTML markers drawn over each cluster (map-stack-markers.tsx); this invisible circle
+// under them is what clicks and the selection frame find a cluster by.
 export const clusterLayer: Omit<CircleLayerSpecification, "source"> = {
   id: CLUSTER_LAYER_ID,
   type: "circle",
   filter: ["has", "point_count"],
-  paint: {
-    "circle-color": COLORS.cluster,
-    "circle-opacity": 0.85,
-    "circle-radius": [
-      "step",
-      ["get", "point_count"],
-      14,
-      5,
-      18,
-      15,
-      23,
-      40,
-      30,
-    ],
-    "circle-stroke-width": 2,
-    "circle-stroke-color": COLORS.outline,
-  },
+  paint: { "circle-radius": 24, "circle-opacity": 0 },
 };
 
 export const pointLayer: Omit<SymbolLayerSpecification, "source"> = {
@@ -103,5 +88,6 @@ export const arcLayer: Omit<LineLayerSpecification, "source"> = {
 };
 
 export const CLUSTER_RADIUS = 50;
-export const CLUSTER_MAX_ZOOM = 14;
+// The deepest zoom the map allows: entries within about 20 m never split, they open as a list.
+export const CLUSTER_MAX_ZOOM = 20;
 export { SOURCE_ID };
