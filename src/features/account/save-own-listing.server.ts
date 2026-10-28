@@ -136,7 +136,7 @@ export async function saveOwnListing({
         .for("update");
       if (!current) throw new NotFoundError();
 
-      const patch = buildListingPatch(current, values);
+      const patch = await buildListingPatch(current, values);
       const keys = changedKeys(current, patch);
       const sourceLocale = patch.sourceLocale as AppLocale;
       await assertImagesExist(tx, values);

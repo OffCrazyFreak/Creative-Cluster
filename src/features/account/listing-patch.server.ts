@@ -2,6 +2,7 @@ import { SOCIAL_PLATFORMS } from "@/constants/account";
 import type { EntryKind } from "@/constants/entry";
 import type { entry } from "@/db/schema";
 import { applyPersonOffset } from "@/features/location/person-offset-fn.server";
+import { findTown } from "@/features/location/town-lookup.server";
 import { sourceLocaleOnSave } from "@/lib/translation/detect-locale";
 import { normalizeHttpUrl } from "@/utils/http-url";
 
@@ -64,9 +65,17 @@ type PatchRow = Pick<
   | "locationDisplay"
 >;
 
+// The browser only names the town: its coordinates and population come from the server's own list.
+async function listedTown(input: ListingInput["location"]) {
+  const { source, city, countryCode, lat, lng } = input;
+  if (source !== "town_list" || !city || !countryCode) return null;
+  if (lat === null || lng === null) return null;
+  return findTown(countryCode, city, lat, lng);
+}
+
 // People are never stored exactly: a new pin must come from the town list (which carries the population
 // the offset needs); anything else keeps the stored pin or loses its coordinates.
-function personLocation(row: PatchRow, input: ListingInput["location"]) {
+async function personLocation(row: PatchRow, input: ListingInput["location"]) {
   if (input.onlineOnly) {
     return {
       onlineOnly: false,
@@ -82,12 +91,17 @@ function personLocation(row: PatchRow, input: ListingInput["location"]) {
     };
   }
   const moved = input.lat !== row.lat || input.lng !== row.lng;
-  const fresh = input.townPopulation != null && input.source === "town_list";
+  const town = moved ? await listedTown(input) : null;
   const location = applyPersonOffset(row.id, {
     ...input,
     onlineOnly: false,
     addressText: null,
-    ...(moved && !fresh ? { lat: null, lng: null, source: null } : {}),
+    townPopulation: town?.population ?? null,
+    ...(town
+      ? { city: town.name, countryCode: town.countryCode }
+      : moved
+        ? { lat: null, lng: null, source: null }
+        : {}),
   });
   return {
     ...location,
@@ -107,13 +121,13 @@ function detectionText(source: {
   );
 }
 
-export function buildListingPatch(
+export async function buildListingPatch(
   row: PatchRow,
   input: ListingInput,
-): ListingPatch {
+): Promise<ListingPatch> {
   const person = row.kind === "person";
   const location = person
-    ? personLocation(row, input.location)
+    ? await personLocation(row, input.location)
     : input.location;
 
   return {
