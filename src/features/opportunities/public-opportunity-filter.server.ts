@@ -1,4 +1,4 @@
-import { and, eq, gt, or, sql, type SQL } from "drizzle-orm";
+import { and, eq, gt, lt, or, sql, type SQL } from "drizzle-orm";
 
 import {
   OPPORTUNITY_FILLED_REASON,
@@ -17,6 +17,8 @@ function filledRecently(): SQL {
       opportunity.closedAt,
       sql`now() - make_interval(days => ${L.filledLabelDays})`,
     ),
+    // Filling a post that had already expired must not put it back on the board.
+    lt(opportunity.closedAt, opportunity.expiresAt),
   ) as SQL;
 }
 

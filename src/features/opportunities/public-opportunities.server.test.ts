@@ -82,6 +82,17 @@ describe.skipIf(!temp)("public opportunities", () => {
     expect(items.some((i) => i.title === "filled-old")).toBe(false);
   });
 
+  it("does not bring back a post that was filled after it expired", async () => {
+    const owner = await addEntry(db, "Late filler");
+    await live(owner.id, "filled-after-expiry", {
+      status: "closed",
+      closedReason: "filled",
+      expiresAt: new Date(Date.now() - 2 * DAY),
+      closedAt: new Date(Date.now() - DAY),
+    });
+    expect(await titles()).not.toContain("filled-after-expiry");
+  });
+
   it("sorts by deadline first, posts without one last, then newest", async () => {
     const owner = await addEntry(db, "Sorter");
     function day(n: number) {
@@ -177,6 +188,23 @@ describe.skipIf(!temp)("public opportunities", () => {
     const { items } = await listPublicOpportunities({ locale: "hr" });
     const item = items.find((i) => i.id === post.id);
     expect(item).toMatchObject({ title: "tr-prijevod", titleLang: "hr" });
+  });
+
+  it("shows the original when the viewer reads the post's own language", async () => {
+    const owner = await addEntry(db, "Same language");
+    const post = await live(owner.id, "sl-original", { sourceLocale: "hr" });
+    await db.insert(schema.translation).values({
+      entityType: "opportunity",
+      entityId: post.id,
+      field: "title",
+      locale: "hr",
+      text: "sl-stale",
+      origin: "human",
+      sourceHash: "x",
+    });
+    const { items } = await listPublicOpportunities({ locale: "hr" });
+    const item = items.find((i) => i.id === post.id);
+    expect(item).toMatchObject({ title: "sl-original", titleLang: "hr" });
   });
 
   it("counts live posts per entry for the map badge", async () => {

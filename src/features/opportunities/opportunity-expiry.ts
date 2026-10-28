@@ -16,13 +16,19 @@ interface IPeriod {
   deadline: string | null;
 }
 
-// Deadline + 1 day when set, otherwise 60 days; a period never runs past 180 days.
+// Deadline + 1 day when set, otherwise 60 days. The cap ends with UTC day 180, so a deadline on
+// that day (still allowed) stays open through it instead of closing mid-day.
 export function periodEnd({ start, deadline }: IPeriod): Date {
   const natural = deadline
     ? deadlineEnd(deadline)
     : addDays(start, L.defaultLifetimeDays);
-  const cap = addDays(start, L.maxLifetimeDays);
+  const cap = deadlineEnd(isoDay(addDays(start, L.maxLifetimeDays)));
   return natural < cap ? natural : cap;
+}
+
+// The stored end is the first moment after the last open day, so that day is one instant earlier.
+export function lastOpenDay(expiresAt: Date): Date {
+  return new Date(expiresAt.getTime() - 1);
 }
 
 // "YYYY-MM-DD" of the UTC day, the shape of the deadline column.

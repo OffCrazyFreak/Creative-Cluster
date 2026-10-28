@@ -70,7 +70,7 @@
   "opportunities_refused_limit_active": "Već imaš najveći dopušteni broj otvorenih objava.",
   "opportunities_refused_limit_daily": "Dosegnuto je dnevno ograničenje novih objava ({max}). Pokušaj sutra.",
   "opportunities_refused_duplicate": "Već imaš otvorenu objavu s ovim naslovom.",
-  "opportunities_refused_bad_deadline": "Rok mora biti od danas do {max} dana unaprijed, a za obnovu treba biti kasniji.",
+  "opportunities_refused_bad_deadline": "Rok mora biti od danas do {max} dana unaprijed. Izmjenom ga ne možeš pomaknuti iza datuma kad oglas završava, a za obnovu treba biti kasniji.",
   "opportunities_refused_invalid_tags": "Jedna od oznaka nije dostupna. Ponovno odaberi oznake.",
   "opportunities_refused_not_renewable": "Ovu objavu trenutno nije moguće obnoviti.",
   "opportunities_refused_not_editable": "Ovu objavu više nije moguće uređivati.",

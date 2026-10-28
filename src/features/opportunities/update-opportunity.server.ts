@@ -79,6 +79,14 @@ export async function updateOpportunity({
         return { status: "refused", code: "duplicate" };
 
       const deadline = values.deadline || null;
+      // A published post keeps its end, so a new deadline past it would show a date the post never reaches.
+      if (
+        row.publishedAt &&
+        deadline &&
+        deadline !== row.deadline &&
+        deadlineEnd(deadline) > row.expiresAt
+      )
+        return { status: "refused", code: "bad_deadline" };
       const patch = {
         type: values.type,
         category: values.category,

@@ -117,14 +117,25 @@ describe.skipIf(!temp)("managing a post", () => {
     ).rejects.toBeInstanceOf(NotFoundError);
   });
 
-  it("never lets an edit extend a post", async () => {
+  it("refuses an edited deadline the post would not live to see", async () => {
     const { owner, post } = await setup();
-    await updateOpportunity({
-      id: post.id,
-      userId: owner.id,
-      values: values("Need a partner", { deadline: isoDay(150) }),
-    });
-    expect((await reload(post.id)).expiresAt).toEqual(post.expiresAt);
+    expect(
+      await updateOpportunity({
+        id: post.id,
+        userId: owner.id,
+        values: values("Need a partner", { deadline: isoDay(150) }),
+      }),
+    ).toEqual({ status: "refused", code: "bad_deadline" });
+    const after = await reload(post.id);
+    expect(after.expiresAt).toEqual(post.expiresAt);
+    expect(after.deadline).toBeNull();
+    expect(
+      await updateOpportunity({
+        id: post.id,
+        userId: owner.id,
+        values: values("Need a partner", { deadline: isoDay(30) }),
+      }),
+    ).toEqual({ status: "saved" });
   });
 
   it("sends an edited rejected post back to review", async () => {

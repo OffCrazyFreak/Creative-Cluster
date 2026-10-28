@@ -4,6 +4,7 @@ import {
   canRenew,
   deadlineEnd,
   isDeadlineAllowed,
+  lastOpenDay,
   periodEnd,
 } from "./opportunity-expiry";
 
@@ -26,8 +27,24 @@ describe("periodEnd", () => {
     );
   });
 
-  it("never runs past 180 days", () => {
-    expect(periodEnd({ start: NOW, deadline: "2027-12-31" })).toEqual(day(180));
+  it("never runs past the end of day 180", () => {
+    expect(periodEnd({ start: NOW, deadline: "2027-12-31" })).toEqual(
+      deadlineEnd("2027-04-12"),
+    );
+  });
+
+  it("keeps the last allowed deadline open through its whole day", () => {
+    expect(periodEnd({ start: NOW, deadline: "2027-04-12" })).toEqual(
+      deadlineEnd("2027-04-12"),
+    );
+  });
+});
+
+describe("lastOpenDay", () => {
+  it("names the deadline, not the day after it", () => {
+    expect(lastOpenDay(deadlineEnd("2026-11-01")).toISOString()).toMatch(
+      /^2026-11-01T/,
+    );
   });
 });
 

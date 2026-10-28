@@ -13,6 +13,7 @@ import { OPPORTUNITY_LIMITS } from "@/constants/opportunities";
 import { m } from "@/paraglide/messages";
 import { formatDate } from "@/utils/format-date";
 
+import { lastOpenDay } from "../opportunity-expiry";
 import {
   categoryLabel,
   reasonLabel,
@@ -76,7 +77,9 @@ export default function OwnOpportunityCard({
           </p>
         ) : LIVE.includes(item.state) ? (
           <p>
-            {m.opportunities_open_until({ date: formatDate(item.expiresAt) })}
+            {m.opportunities_open_until({
+              date: formatDate(lastOpenDay(new Date(item.expiresAt))),
+            })}
           </p>
         ) : null}
         {item.deadline ? (
