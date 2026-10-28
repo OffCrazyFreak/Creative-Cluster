@@ -494,6 +494,86 @@ describe.skipIf(!temp)("tag services", () => {
         .where(eq(schema.changeLog.entityId, keep.id));
       expect(tagLogs).toHaveLength(1);
     });
+
+    it("refuses direct tag saves on an untrusted or erasure-pending listing", async () => {
+      const member = await addUser(db, "m6");
+      const t = await addTag(db, "direct-save");
+      const untrusted = await addEntry(
+        db,
+        "Untrusted",
+        {},
+        { ownerUserId: member.id },
+      );
+      await db
+        .update(schema.entry)
+        .set({ trusted: false })
+        .where(eq(schema.entry.id, untrusted.id));
+      const erasing = await addEntry(
+        db,
+        "Erasing",
+        {},
+        { ownerUserId: member.id },
+      );
+      await db
+        .update(schema.entry)
+        .set({ erasureRequestedAt: new Date() })
+        .where(eq(schema.entry.id, erasing.id));
+      for (const target of [untrusted, erasing]) {
+        await expect(
+          saveEntryTags({
+            entryId: target.id,
+            field: "topic",
+            tagIds: [t.id],
+            actor: { userId: member.id, isAdmin: false },
+          }),
+        ).rejects.toBeInstanceOf(NotFoundError);
+        expect(await entryTagIds(target.id, "topic")).toEqual([]);
+      }
+    });
+
+    it("lets the owner save a field that holds a tag the owner could not pick", async () => {
+      const admin = await addUser(db, "a3", "admin");
+      const owner2 = await addUser(db, "m7");
+      const suggester = await addUser(db, "m8");
+      const visible = await addTag(db, "owner-visible");
+      const entryRow = await addEntry(
+        db,
+        "Hidden kept",
+        {},
+        { ownerUserId: owner2.id },
+      );
+      const { tag: hidden } = await suggestTag({
+        userId: suggester.id,
+        label: "Someone elses idea",
+        locale: "en",
+      });
+      await saveEntryTags({
+        entryId: entryRow.id,
+        field: "topic",
+        tagIds: [hidden.id],
+        actor: { userId: admin.id, isAdmin: true },
+      });
+      expect(
+        (await getEntryTags(entryRow.id, { userId: owner2.id })).topic,
+      ).toEqual([]);
+      await saveEntryTags({
+        entryId: entryRow.id,
+        field: "topic",
+        tagIds: [hidden.id, visible.id],
+        actor: { userId: owner2.id, isAdmin: false },
+      });
+      expect((await entryTagIds(entryRow.id, "topic")).sort()).toEqual(
+        [hidden.id, visible.id].sort(),
+      );
+      await expect(
+        saveEntryTags({
+          entryId: entryRow.id,
+          field: "offering",
+          tagIds: [hidden.id],
+          actor: { userId: owner2.id, isAdmin: false },
+        }),
+      ).rejects.toBeInstanceOf(TagSelectionError);
+    });
   });
 
   describe("mergeTags", () => {

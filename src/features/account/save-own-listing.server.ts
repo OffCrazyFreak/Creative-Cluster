@@ -2,7 +2,7 @@ import { dequal } from "dequal";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import type { AppLocale } from "@/constants/locales";
-import { TAG_FIELDS } from "@/constants/tags";
+import { TAG_FIELDS, type TagField } from "@/constants/tags";
 import { db, type Tx } from "@/db/client.server";
 import { entry, entryTag, image, reviewItem } from "@/db/schema";
 import { invalidateMapDirectory } from "@/features/directory/map-directory.server";
@@ -76,12 +76,16 @@ async function assertImagesExist(tx: Tx, values: ListingInput) {
   if (found.length !== new Set(ids).size) throw new InvalidListingError();
 }
 
-async function tagsDiffer(tx: Tx, entryId: string, values: ListingInput) {
+async function changedTagFields(
+  tx: Tx,
+  entryId: string,
+  values: ListingInput,
+): Promise<TagField[]> {
   const rows = await tx
     .select({ tagId: entryTag.tagId, field: entryTag.field })
     .from(entryTag)
     .where(eq(entryTag.entryId, entryId));
-  return TAG_FIELDS.some((field) => {
+  return TAG_FIELDS.filter((field) => {
     const stored = rows.filter((row) => row.field === field);
     const wanted = new Set(values.tags[field]);
     return (
@@ -104,20 +108,21 @@ async function dismissOpenEdits(tx: Tx, entryId: string) {
     );
 }
 
-// An untrusted entry keeps its live content; the edit waits as one open review item per entry.
+// An untrusted entry keeps its live content; the edit waits as one open review item per entry. Only the
+// fields and tag fields the owner changed are queued, so approval leaves the others as an admin left them.
 async function queueForReview(
   tx: Tx,
   entryId: string,
   userId: string,
-  patch: ListingPatch,
-  values: ListingInput,
+  patch: Record<string, unknown>,
+  tags: Partial<Record<TagField, string[]>>,
 ) {
   await dismissOpenEdits(tx, entryId);
   await tx.insert(reviewItem).values({
     type: "untrusted_edit",
     entityType: "entry",
     entityId: entryId,
-    payload: { patch, tags: values.tags, submittedBy: userId },
+    payload: { patch, tags, submittedBy: userId },
   });
 }
 
@@ -142,11 +147,20 @@ export async function saveOwnListing({
       await assertImagesExist(tx, values);
       if (!current.trusted) {
         // Tags are saved by their own service, so an untrusted entry's tag edits ride in the review item.
-        if (keys.length === 0 && !(await tagsDiffer(tx, entryId, values))) {
+        const tagFields = await changedTagFields(tx, entryId, values);
+        if (keys.length === 0 && tagFields.length === 0) {
           await dismissOpenEdits(tx, entryId);
           return { status: "saved", changed: false, sourceLocale };
         }
-        await queueForReview(tx, entryId, userId, patch, values);
+        await queueForReview(
+          tx,
+          entryId,
+          userId,
+          pick(patch, keys),
+          Object.fromEntries(
+            tagFields.map((field) => [field, values.tags[field]]),
+          ),
+        );
         return { status: "pending_review", sourceLocale };
       }
       if (keys.length === 0)

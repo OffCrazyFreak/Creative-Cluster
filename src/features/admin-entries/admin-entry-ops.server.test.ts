@@ -228,7 +228,7 @@ describe.skipIf(!temp)("admin entry operations", () => {
         type: "untrusted_edit",
         entityType: "entry",
         entityId: org.id,
-        payload: { patch: { lat: 1, lng: 2, city: "Old" } },
+        payload: { patch: { lng: 2, city: "Old" } },
       })
       .returning();
     await movePin(org.id, { lat: 46, lng: 17 }, boss.id);
