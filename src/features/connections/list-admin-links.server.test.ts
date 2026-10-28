@@ -125,4 +125,11 @@ describe.skipIf(!temp)("admin proposed links list", () => {
     expect(empty.rows).toEqual([]);
     expect(empty.total).toBe(2);
   });
+  it("leaves out proposals whose listing is no longer public", async () => {
+    ids.hidden = (
+      await addEntry(db, "Hidden Lab", {}, { status: "archived" })
+    ).id;
+    await add("hidden", "open");
+    expect((await listAdminProposedLinks(none, adminId)).total).toBe(2);
+  });
 });

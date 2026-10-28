@@ -7,7 +7,11 @@ import { writeChange } from "@/lib/change-log/write-change.server";
 import { NotFoundError } from "@/server/errors";
 
 import type { DecideLinkInput } from "./connections-schemas";
-import { isLiveLink, recipientEntryId } from "./link-conditions.server";
+import {
+  isLiveLink,
+  linkEndsPublic,
+  recipientEntryId,
+} from "./link-conditions.server";
 
 type Actor = { userId: string; admin: boolean };
 
@@ -37,6 +41,7 @@ export async function decideLink(
           // Nobody confirms their own proposal, an admin included.
           or(isNull(link.proposedBy), ne(link.proposedBy, actor.userId)),
           isLiveLink(),
+          linkEndsPublic(),
           recipientOwnedBy(actor),
         ),
       )

@@ -11,7 +11,12 @@ import type {
   ILinkEntryRef,
   IMyConnections,
 } from "./connections-schemas";
-import { DAY_MS, isLiveLink, recipientEntryId } from "./link-conditions.server";
+import {
+  DAY_MS,
+  isLiveLink,
+  linkEndsPublic,
+  recipientEntryId,
+} from "./link-conditions.server";
 import { loadEvidenceByLink } from "./link-evidence.server";
 
 export const fromEntry = alias(entry, "from_entry");
@@ -43,7 +48,14 @@ async function loadItems(
     .from(link)
     .innerJoin(fromEntry, eq(fromEntry.id, link.fromId))
     .innerJoin(toEntry, eq(toEntry.id, link.toId))
-    .where(and(isLiveLink(), where))
+    // Confirmed links stay listed so either side can still end them; proposals need both ends public.
+    .where(
+      and(
+        isLiveLink(),
+        or(ne(link.status, "proposed"), linkEndsPublic()),
+        where,
+      ),
+    )
     .orderBy(desc(link.createdAt));
   const evidence = await loadEvidenceByLink(
     db,
@@ -104,6 +116,7 @@ export async function countPendingProposals(userId: string): Promise<number> {
       and(
         eq(link.status, "proposed"),
         isLiveLink(),
+        linkEndsPublic(),
         eq(entry.ownerUserId, userId),
       ),
     );
