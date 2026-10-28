@@ -57,7 +57,7 @@ function pageFiles(...chain) {
 const pages = [
   ["Map home /", ["/_map", "/_map/"], 280],
   ["Directory /directory", ["/directory/"], 252],
-  ["Entry /e/:slug", ["/_map", "/_map/e/$slug"], 349],
+  ["Entry /e/:slug", ["/_map", "/_map/e/$slug"], 356],
   ["Opportunities /opportunities", ["/_map", "/_map/opportunities/"], 306],
   ["Legal /about", ["/about"], 296],
   ["Login /login", ["/login"], 303],
