@@ -12,7 +12,7 @@ import { SELECTED_FRAME_ID } from "./map-icons/entry-icon-id";
 export const CLUSTER_LAYER_ID = "clusters";
 export const POINT_LAYER_ID = "points";
 const HOVER_LAYER_ID = "point-hover";
-const OPPORTUNITY_LAYER_ID = "point-opportunities";
+export const OPPORTUNITY_LAYER_ID = "point-opportunities";
 
 const active: ExpressionSpecification = [
   "boolean",

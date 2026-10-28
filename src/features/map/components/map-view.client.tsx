@@ -25,7 +25,11 @@ import { useMapCamera } from "../hooks/use-map-camera";
 import { useViewReport } from "../hooks/use-view-report";
 import { handleMapClick } from "../map-click";
 import { buildGeoJson, buildSlugIds } from "../map-geojson";
-import { CLUSTER_LAYER_ID, POINT_LAYER_ID } from "../map-layers";
+import {
+  CLUSTER_LAYER_ID,
+  OPPORTUNITY_LAYER_ID,
+  POINT_LAYER_ID,
+} from "../map-layers";
 import type { IMapPadding } from "../map-padding";
 import type { IViewport } from "../map-search";
 import { useMapRecovery } from "../use-map-recovery";
@@ -173,7 +177,12 @@ export default function MapView(props: IMapViewProps) {
         pitchWithRotate={false}
         touchPitch={false}
         maxPitch={0}
-        interactiveLayerIds={[CLUSTER_LAYER_ID, POINT_LAYER_ID]}
+        // The opportunity dot sits past the tile edge, so it is a target of its own.
+        interactiveLayerIds={[
+          CLUSTER_LAYER_ID,
+          POINT_LAYER_ID,
+          OPPORTUNITY_LAYER_ID,
+        ]}
         cursor={cursor}
         onLoad={() => setReady(true)}
         onMoveEnd={onMoveEnd}
