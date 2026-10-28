@@ -10,6 +10,7 @@ import {
   link,
   opportunity,
   reviewItem,
+  savedEntry,
   tag,
   translation,
   user,
@@ -38,6 +39,21 @@ export async function exportUserData(userId: string) {
     .select()
     .from(entry)
     .where(eq(entry.ownerUserId, userId));
+  const saved = await db
+    .select({
+      position: savedEntry.position,
+      savedAt: savedEntry.createdAt,
+      name: entry.name,
+      slug: entry.slug,
+    })
+    .from(savedEntry)
+    // A hidden listing's name is not this user's data, so only the saving itself is exported for it.
+    .leftJoin(
+      entry,
+      and(eq(entry.id, savedEntry.entryId), publicEntryCondition()),
+    )
+    .where(eq(savedEntry.userId, userId))
+    .orderBy(savedEntry.position);
   const ids = listings.map((row) => row.id);
   if (ids.length === 0)
     return bundle(account, [], {
@@ -49,6 +65,7 @@ export async function exportUserData(userId: string) {
       changes: [],
       views: [],
       images: [],
+      saved,
     });
 
   const imageIds = listings
@@ -195,6 +212,7 @@ export async function exportUserData(userId: string) {
     changes,
     views,
     images,
+    saved,
   });
 }
 

@@ -66,5 +66,7 @@
         "countPlural=few": "{count} unosa na ovom mjestu"
       }
     }
-  ]
+  ],
+  "map_saved_failed": "Spremljene unose nismo uspjeli promijeniti. Pokušaj ponovno.",
+  "map_saved_limit": "Možeš spremiti najviše {max} unosa."
 }

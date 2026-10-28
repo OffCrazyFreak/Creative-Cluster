@@ -16,7 +16,7 @@ We have no data protection officer because the law does not require one for us. 
 
 **Organization listings.** For organizations we publish what the organization gives us or what is public: name, description, what it offers and seeks, website, social links, location (address or town only), logo, tags, legal form and references. Names of contact persons can appear if the organization publishes them. The contact email and phone are visible only if the listing owner makes them public; otherwise we use them only to forward messages and to talk to you.
 
-**Accounts.** Accounts are created only by invitation, approval of an application, or claiming an existing listing. For an account we keep your email, name, language, password (only as a hash, never in clear text), sign-in records and, if you sign in with Google, your Google account identifier. The account lets you edit your listing, post opportunities and confirm connections.
+**Accounts.** Accounts are created only by invitation, approval of an application, or claiming an existing listing. For an account we keep your email, name, language, password (only as a hash, never in clear text), sign-in records and, if you sign in with Google, your Google account identifier. The account lets you edit your listing, post opportunities and confirm connections. If you save listings on the map (up to 10), we keep that list with your account; it is part of your data export and is deleted with the account.
 
 **Apply form.** If you apply, we process what you enter (as in the listings above), check your email with a link, and have an editor review it. Rejected applications can be edited and sent again; we delete them after 90 days.
 
