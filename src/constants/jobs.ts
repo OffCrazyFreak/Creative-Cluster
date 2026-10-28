@@ -9,3 +9,7 @@ export const JOB_STATUSES = ["queued", "running", "done", "failed"] as const;
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
 export const JOB_MAX_ATTEMPTS = 5;
+
+// The local `pnpm jobs:drain` budget, as long as the background function's. A translate job only
+// starts a model call that can finish inside the drain, and one call may take a full minute.
+export const LOCAL_DRAIN_MS = 5 * 60 * 1000;
