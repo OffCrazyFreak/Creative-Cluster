@@ -10,6 +10,8 @@
   "translation_hide_original": "Sakrij izvornik",
   "translation_original_heading": "Izvorni tekst",
   "translation_unavailable": "Prijevod još nije dostupan. Prikazan je izvorni tekst ({language}).",
+  "translation_original_changed": "Izvornik je promijenjen nakon ovog prijevoda.",
+  "translation_edit_outdated": "Izvorni tekst ovog polja promijenjen je nakon spremanja tvog prijevoda. Ažuriraj prijevod da odgovara izvorniku.",
   "translation_edit_open": "Uredi prijevod",
   "translation_edit_close": "Zatvori",
   "translation_edit_title": "Tvoj prijevod",

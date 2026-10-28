@@ -163,6 +163,27 @@ describe.skipIf(!temp)("entry translation view and owner edit", () => {
     ).toBe(true);
   });
 
+  it("keeps the owner's version after the original changes and marks it outdated", async () => {
+    const { owner, entry } = await setup();
+    await saveOwnerTranslation(
+      owner.id,
+      saveTranslationInputSchema.parse({ entryId: entry.id, offering: "Moj." }),
+    );
+    const fresh = await loadEntryTranslation(entry.id, "hr", null);
+    expect(fresh?.texts.offering).toMatchObject({ outdated: false });
+
+    await db
+      .update(schema.entry)
+      .set({ offeringText: "We now offer studio space as well." })
+      .where(eq(schema.entry.id, entry.id));
+    const after = await loadEntryTranslation(entry.id, "hr", null);
+    expect(after?.texts.offering).toMatchObject({
+      text: "Moj.",
+      origin: "human",
+      outdated: true,
+    });
+  });
+
   it("ignores rows of fields whose original text is gone", async () => {
     const { entry } = await setup();
     await db.insert(schema.translation).values({

@@ -10,6 +10,8 @@
   "translation_hide_original": "Hide original",
   "translation_original_heading": "Original text",
   "translation_unavailable": "No translation is available yet. The original text is shown ({language}).",
+  "translation_original_changed": "The original has changed since this translation was made.",
+  "translation_edit_outdated": "The original text of this field has changed since you saved your translation. Update your translation to match it.",
   "translation_edit_open": "Edit translation",
   "translation_edit_close": "Close",
   "translation_edit_title": "Your translation",

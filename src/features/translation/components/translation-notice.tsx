@@ -62,6 +62,9 @@ export default function TranslationNotice({
           </Button>
         </p>
       ) : null}
+      {translated.some((t) => t.outdated) ? (
+        <p className="text-sm">{m.translation_original_changed()}</p>
+      ) : null}
       {hasMissing ? (
         <p className="text-sm">
           {m.translation_unavailable({

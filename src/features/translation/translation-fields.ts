@@ -33,6 +33,9 @@ export interface ITranslatedText {
   // Only the description is rich text: a validated RichTextDoc.
   doc: SerializableDoc | null;
   origin: TranslationOrigin;
+  // The original changed after this text was saved. Only the owner's own version stays shown
+  // then (the owner decided it is kept); a machine one is replaced by the next job.
+  outdated: boolean;
 }
 
 // What the entry page shows when the visitor's language differs from the owner's.
