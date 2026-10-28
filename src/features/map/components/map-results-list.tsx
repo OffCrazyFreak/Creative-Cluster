@@ -6,14 +6,17 @@ import { getLocale } from "@/paraglide/runtime";
 
 import { distanceLabel } from "../distance-label";
 import { useHeldView } from "../hooks/use-held-view";
+import { useUpdateMapSearch } from "../hooks/use-update-map-search";
 import { listGroups } from "../list-headings";
 import { useMapFrame } from "../map-frame-context";
 import { splitByView } from "../view-area";
 import MapResultItem from "./map-result-item";
+import MapRecentSearches from "./map-recent-searches";
 import MapViewPendingChip from "./map-view-pending-chip";
 
 export default function MapResultsList() {
-  const { directory, pins, viewArea, origin } = useMapFrame();
+  const { directory, search, pins, viewArea, origin } = useMapFrame();
+  const updateSearch = useUpdateMapSearch();
   const locale = getLocale();
   const tags = directory?.tags ?? [];
   const view = useHeldView(viewArea);
@@ -43,6 +46,11 @@ export default function MapResultsList() {
 
   return (
     <section aria-labelledby="results-heading" className="flex flex-col gap-4">
+      <MapRecentSearches
+        query={search.q}
+        hasResults={pins.length > 0}
+        onPick={(q) => void updateSearch({ q })}
+      />
       <h2 id="results-heading" className="font-semibold">
         {m.common_entry_count({ count: pins.length })}
       </h2>

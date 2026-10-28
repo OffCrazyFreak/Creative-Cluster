@@ -76,5 +76,14 @@
   "map_near_me_approximate": "Prikazujemo unose prema približnoj lokaciji. Uključi lokaciju na uređaju za točniji redoslijed.",
   "map_near_me_denied": "Pristup lokaciji je odbijen. Dopusti ga u postavkama preglednika ili pretraži po gradu.",
   "map_near_me_unavailable": "Lokacija trenutačno nije dostupna. Pretraži po gradu ili adresi.",
-  "map_near_me_timeout": "Lokacija se ne može odrediti. Provjeri je li lokacija uključena na uređaju ili pretraži po gradu."
+  "map_near_me_timeout": "Lokacija se ne može odrediti. Provjeri je li lokacija uključena na uređaju ili pretraži po gradu.",
+  "map_pan_group": "Pomakni kartu",
+  "map_pan_up": "Pomakni kartu gore",
+  "map_pan_down": "Pomakni kartu dolje",
+  "map_pan_left": "Pomakni kartu ulijevo",
+  "map_pan_right": "Pomakni kartu udesno",
+  "map_recent_label": "Nedavna pretraživanja",
+  "map_recent_clear": "Obriši",
+  "map_recent_clear_label": "Obriši nedavna pretraživanja",
+  "map_recent_cleared": "Nedavna pretraživanja su obrisana."
 }
