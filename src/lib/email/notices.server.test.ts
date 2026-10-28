@@ -62,8 +62,11 @@ describe("terms notice", () => {
     const byTo = Object.fromEntries(
       jobs.map((j) => [
         (j.payload as { to: string }).to,
-        (j.payload as { props: { summary: string; effectiveDate: string } })
-          .props,
+        (
+          j.payload as {
+            props: { summary: string; effectiveDate: string; link: string };
+          }
+        ).props,
       ]),
     );
     expect(Object.keys(byTo).sort()).toEqual([
@@ -72,6 +75,10 @@ describe("terms notice", () => {
     ]);
     expect(byTo["b@example.org"]?.summary).toBe("Hrvatski sažetak");
     expect(byTo["a@example.org"]?.effectiveDate).toBe("January 1, 2027");
+    expect(new URL(byTo["a@example.org"]?.link ?? "").pathname).toBe("/terms");
+    expect(new URL(byTo["b@example.org"]?.link ?? "").pathname).toBe(
+      "/hr/terms",
+    );
   });
 
   it("drops a final full stop from the summary and from the Croatian date", async () => {

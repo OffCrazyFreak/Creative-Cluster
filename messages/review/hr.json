@@ -60,6 +60,7 @@
   "review_done": "Odlučeno o stavkama: {count}.",
   "review_gone": "Stavke o kojima je netko drugi već odlučio: {count}.",
   "review_failed": "Stavke o kojima nije moguće odlučiti: {count}. Provjeri razlog i napomenu pa pokušaj ponovno.",
+  "review_owner_has_listing": "Prijave s adresom čiji račun već ima unos ili je blokiran: {count}. Odbij ih ili najprije premjesti postojeći unos.",
   "review_error": "Odluka nije uspjela. Pokušaj ponovno.",
   "review_page": "Stranica {page} od {pages}",
   "review_prev": "Prethodna",

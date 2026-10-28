@@ -4,6 +4,7 @@ import type {
   IClaimEmailProps,
   IClaimReminderEmailProps,
 } from "@/emails/email-types";
+import { pageLink } from "@/lib/auth/auth-email.server";
 import { site } from "@/sites";
 
 import { claimTokenFor } from "./claim-token.server";
@@ -37,8 +38,8 @@ function archiveDateText(importedAt: Date, locale: AppLocale): string {
   }).format(shown);
 }
 
-function claimLinks(inviteId: string) {
-  const link = `${site.origin}/claim/${claimTokenFor(inviteId)}`;
+function claimLinks(inviteId: string, locale: AppLocale) {
+  const link = pageLink(`/claim/${claimTokenFor(inviteId)}`, locale);
   return { link, removeLink: `${link}/remove` };
 }
 
@@ -50,7 +51,7 @@ export function claimReminderProps(
   return {
     locale,
     entryName: source.name,
-    ...claimLinks(source.inviteId),
+    ...claimLinks(source.inviteId, locale),
     expiryDate: new Intl.DateTimeFormat(locale, {
       dateStyle: "long",
       timeZone: "UTC",
@@ -66,7 +67,7 @@ export function claimEmailProps(
   return {
     locale,
     entryName: source.name,
-    ...claimLinks(source.inviteId),
+    ...claimLinks(source.inviteId, locale),
     expiry: "days30",
     importSource,
     archiveDate: archiveDateText(source.importedAt, locale),

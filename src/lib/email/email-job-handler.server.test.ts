@@ -43,4 +43,28 @@ describe.skipIf(!temp)("email job handler", () => {
     ).rejects.toBeInstanceOf(PermanentJobError);
     expect(sent).not.toHaveBeenCalled();
   });
+
+  it("refuses a contact mail to an address that opted out after the job was queued", async () => {
+    await suppressEmail(temp!.db, "hushed@example.com", "claim_removal");
+    const job = { id: "j2", priority: 5, idempotencyKey: "k2" } as never;
+    await expect(
+      handleEmailJob(
+        {
+          template: "contact",
+          to: "hushed@example.com",
+          replyTo: "visitor@example.com",
+          props: {
+            locale: "en",
+            entryName: "X",
+            senderName: "V",
+            senderEmail: "visitor@example.com",
+            messageText: "Hi",
+            link: "l",
+          },
+        },
+        job,
+      ),
+    ).rejects.toBeInstanceOf(PermanentJobError);
+    expect(sent).not.toHaveBeenCalled();
+  });
 });

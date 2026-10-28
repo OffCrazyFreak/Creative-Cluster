@@ -36,6 +36,8 @@ export default function ClaimPanel({
         setState({ step: "error", message: m.auth_claim_invalid() });
       else if (result.status === "taken")
         setState({ step: "error", message: m.auth_claim_taken() });
+      else if (result.status === "refused")
+        setState({ step: "error", message: m.auth_claim_refused() });
       else if (result.passwordToken)
         setState({ step: "password", passwordToken: result.passwordToken });
       else setState({ step: "linked" });

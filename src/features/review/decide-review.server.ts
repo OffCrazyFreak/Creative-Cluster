@@ -72,14 +72,12 @@ async function decideInTx(
   )
     return "failed";
   if (item.type === "application") {
-    if (decision.decision === "approve") {
-      await approveApplication(tx, {
+    if (decision.decision === "approve")
+      return approveApplication(tx, {
         itemId: item.id,
         entryId: item.entityId,
         adminId,
       });
-      return "ok";
-    }
     const { reasonCode, note } = decision;
     if (!reasonCode) return "failed";
     if (NOTE_REQUIRED_REASON_CODES.includes(reasonCode) && !note)

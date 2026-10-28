@@ -12,7 +12,11 @@ const { temp } = await vi.hoisted(async () => {
 });
 vi.mock("@/db/client.server", () => ({ db: temp?.db }));
 vi.mock("@/env.server", () => ({
-  env: { PSEUDONYM_SECRET: "test-secret", NODE_ENV: "test" },
+  env: {
+    PSEUDONYM_SECRET: "test-secret",
+    NODE_ENV: "test",
+    BETTER_AUTH_URL: "http://localhost:3000",
+  },
 }));
 const { prepareClaimInvites, listUnsentInvites } =
   await import("./prepare-claims.server");

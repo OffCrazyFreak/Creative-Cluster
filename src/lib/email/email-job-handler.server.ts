@@ -36,9 +36,11 @@ export async function handleEmailJob(
 ): ReturnType<JobHandler> {
   if (!isEmailPayload(payload))
     throw new PermanentJobError("Malformed email job payload");
-  // Someone may have used the removal link after the mail was queued.
+  // Someone may have used the removal link after the mail was queued; it stops contact mail as well.
   if (
-    (payload.template === "claim" || payload.template === "claim_reminder") &&
+    (payload.template === "claim" ||
+      payload.template === "claim_reminder" ||
+      payload.template === "contact") &&
     (await isSuppressed(db, payload.to))
   )
     throw new PermanentJobError("Address is on the suppression list");
