@@ -55,7 +55,7 @@ export default function MapLocateButton({
         onLocate();
       }}
       className={cn(
-        "absolute top-2.5 right-2.5 z-1 rounded-full max-md:top-34.5 md:top-auto md:bottom-20",
+        "absolute top-2.5 right-2.5 z-1 rounded-full max-md:top-16 md:top-auto md:bottom-20",
         (status === "located" || status === "approximate") && "text-primary",
       )}
     >

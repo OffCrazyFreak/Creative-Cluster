@@ -159,7 +159,7 @@ export default function MapView(props: IMapViewProps) {
       ref={containerRef}
       role="region"
       aria-label={m.map_region_label()}
-      className="relative size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-left]:bottom-[min(var(--map-sheet-covered,50dvh),50dvh)]! md:[&_.maplibregl-ctrl-bottom-left]:right-40 md:[&_.maplibregl-ctrl-bottom-left]:left-[25.5rem]! [&_.maplibregl-ctrl-top-right]:top-12! max-md:[&_.maplibregl-ctrl-top-right]:top-44!"
+      className="relative size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-left]:bottom-[min(var(--map-sheet-covered,0px),50dvh)]! md:[&_.maplibregl-ctrl-bottom-left]:right-40 md:[&_.maplibregl-ctrl-bottom-left]:left-[25.5rem]! [&_.maplibregl-ctrl-top-right]:top-12! max-md:[&_.maplibregl-ctrl-top-right]:top-28!"
     >
       <MapLocateButton status={nearMe.status} onLocate={nearMe.locate} />
       <MapPanControls getMap={getMap} duration={duration} />

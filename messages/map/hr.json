@@ -42,7 +42,7 @@
   "map_results_list": "Popis rezultata",
   "map_skip_map": "Preskoči kartu",
   "map_region_label": "Karta unosa",
-  "map_sheet_label": "Ploča s rezultatima",
+  "map_back_to_map": "Natrag na kartu",
   "map_loading": "Učitavam kartu",
   "map_webgl_unsupported": "Ovaj preglednik ne može prikazati kartu (treba WebGL 2). Popis sadrži iste unose.",
   "map_load_failed": "Karta se nije mogla učitati. Popis i dalje radi.",

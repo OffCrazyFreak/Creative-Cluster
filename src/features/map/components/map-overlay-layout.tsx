@@ -1,57 +1,66 @@
 import {
   lazy,
   Suspense,
-  type CSSProperties,
+  useState,
   type ReactNode,
   type RefObject,
 } from "react";
 
-import MobileMenu from "@/components/custom/layout/mobile-menu";
 import { Card, CardContent } from "@/components/ui/card";
 
-import MapAccountButton from "./map-account-button";
 import MapFilterChips from "./map-filter-chips";
+import MapPhoneBarShell from "./map-phone-bar-shell";
 import MapSearchBar from "./map-search-bar";
 import MapSkipLink from "./map-skip-link";
 import MapStatusNotice from "./map-status-notice";
 import type { MapStatus } from "../map-frame-context";
 
-// Phones only: the drawer code stays out of the desktop and entry-page bundles.
-const MapSheet = lazy(() => import("./map-sheet"));
+// Phones only: the bar and search code stay out of the desktop and entry-page bundles.
+const MapPhoneLayout = lazy(() => import("./map-phone-layout"));
 
 interface IMapOverlayLayoutProps {
   wide: boolean;
   status: MapStatus;
   frameRef: RefObject<HTMLDivElement | null>;
   panelRef: RefObject<HTMLDivElement | null>;
-  sheetRef: RefObject<HTMLDivElement | null>;
   map: ReactNode;
-  // How much of the screen's bottom the phone sheet covers, as a CSS length.
-  sheetCovered: string;
-  onSheetCoveredChange: (covered: string) => void;
   children: ReactNode;
 }
 
-// The map fills the frame; the panel floats over it (side panel on desktop, bottom sheet on phones).
+// The map fills the frame; the panel floats over it (side panel on desktop, floating bar on phones).
 export default function MapOverlayLayout({
   wide,
   status,
   frameRef,
   panelRef,
-  sheetRef,
   map,
-  sheetCovered,
-  onSheetCoveredChange,
   children,
 }: IMapOverlayLayoutProps) {
+  // The phone's open search or entry page covers the map, which then leaves the tab order.
+  const [covered, setCovered] = useState(false);
+
+  // Children keep fixed slots so the map stays one instance across the breakpoint (keeping the pan).
   return (
     <div
       ref={frameRef}
-      style={{ "--map-sheet-covered": sheetCovered } as CSSProperties}
       className="relative h-[calc(100dvh-var(--site-header-height,3.0625rem))] min-h-[28rem] overflow-hidden max-md:h-dvh"
     >
-      <MapSkipLink />
-      <div className="absolute inset-0">{map}</div>
+      {wide ? <MapSkipLink /> : null}
+      {wide ? null : (
+        <Suspense fallback={<MapPhoneBarShell />}>
+          <MapPhoneLayout
+            status={status}
+            frameRef={frameRef}
+            barRef={panelRef}
+            onCoveredChange={setCovered}
+          >
+            {children}
+          </MapPhoneLayout>
+        </Suspense>
+      )}
+      <div className="absolute inset-0" inert={!wide && covered}>
+        {map}
+      </div>
       {wide ? (
         <div
           ref={panelRef}
@@ -66,34 +75,7 @@ export default function MapOverlayLayout({
             </CardContent>
           </Card>
         </div>
-      ) : (
-        <>
-          <div
-            ref={panelRef}
-            className="absolute inset-x-2 top-2 z-10 flex flex-col gap-2"
-          >
-            <div
-              data-map-bar=""
-              className="flex items-center gap-2 rounded-xl border bg-background p-1"
-            >
-              <MobileMenu />
-              <div className="min-w-0 flex-1">
-                <MapSearchBar />
-              </div>
-              <MapAccountButton />
-            </div>
-            <MapFilterChips />
-          </div>
-          <Suspense fallback={<div id="results-panel">{children}</div>}>
-            <MapSheet
-              sheetRef={sheetRef}
-              onCoveredChange={onSheetCoveredChange}
-            >
-              {children}
-            </MapSheet>
-          </Suspense>
-        </>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Ref } from "react";
 
 import {
   InputGroup,
@@ -13,7 +13,11 @@ import MapFiltersTrigger from "./map-filters-trigger";
 
 const DEBOUNCE_MS = 300;
 
-export default function MapSearchBar() {
+interface IMapSearchBarProps {
+  inputRef?: Ref<HTMLInputElement>;
+}
+
+export default function MapSearchBar({ inputRef }: IMapSearchBarProps) {
   const { search } = useMapFrame();
   const update = useUpdateMapSearch();
   // While typing, the draft wins; once the URL has caught up it is dropped again.
@@ -43,6 +47,7 @@ export default function MapSearchBar() {
     >
       <InputGroup>
         <InputGroupInput
+          ref={inputRef}
           type="search"
           name="q"
           autoComplete="off"

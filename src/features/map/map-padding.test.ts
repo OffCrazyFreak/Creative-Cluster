@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  measureCovered,
-  measurePadding,
-  sheetCoveredPixels,
-} from "./map-padding";
+import { measureCovered, measurePadding } from "./map-padding";
 
 function rect(x: number, y: number, width: number, height: number) {
   return {
@@ -58,10 +54,5 @@ describe("measureCovered", () => {
       bottom: 630,
       left: 0,
     });
-  });
-
-  it("reads the sheet's settled height from its snap length", () => {
-    expect(sheetCoveredPixels("50dvh", 800)).toBe(400);
-    expect(sheetCoveredPixels("96px", 800)).toBe(96);
   });
 });
