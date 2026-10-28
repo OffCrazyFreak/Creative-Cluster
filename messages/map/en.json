@@ -21,9 +21,20 @@
   "map_chip_remove": "Remove filter {label}",
   "map_chip_text": "Search: {text}",
   "map_chip_near": "Within {km} km",
-  "map_chip_area": "Inside the map area",
   "map_popular_tags": "Popular tags",
-  "map_search_area": "Search this area",
+  "map_group_on_map": "On the map · {count}",
+  "map_group_elsewhere": "Elsewhere · {count}",
+  "map_view_pending": "Update the list for this map view",
+  "map_on_map_live": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} entry on the map",
+        "countPlural=other": "{count} entries on the map"
+      }
+    }
+  ],
   "map_empty": "No listings match these filters.",
   "map_results_list": "Results list",
   "map_override_clear": "Show all results",

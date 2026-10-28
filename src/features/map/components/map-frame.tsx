@@ -10,7 +10,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { publishedDirectoryQueryOptions } from "@/features/directory/directory-queries";
 import { m } from "@/paraglide/messages";
 
-import type { IBounds } from "../geo";
 import { useIdleActivation } from "../hooks/use-idle-activation";
 import { useMapResults } from "../hooks/use-map-results";
 import { useMediaQuery } from "../hooks/use-media-query";
@@ -22,13 +21,17 @@ import {
   type IMapFrameValue,
   type MapStatus,
 } from "../map-frame-context";
-import { measurePadding } from "../map-padding";
+import {
+  measureCovered,
+  measurePadding,
+  sheetCoveredPixels,
+} from "../map-padding";
 import { formatViewport, parseViewport, type IViewport } from "../map-search";
+import { sameView, type IViewArea } from "../view-area";
 import { supportsWebgl2 } from "../webgl";
 import MapLazy from "./map-lazy";
 import MapListLayout from "./map-list-layout";
 import MapOverlayLayout from "./map-overlay-layout";
-import MapSearchAreaButton from "./map-search-area-button";
 
 // The pathless layout of "/", "/e/$slug" and the opportunities board. It stays mounted while the
 // panel (the Outlet) changes, so the map never reloads between those pages.
@@ -52,11 +55,9 @@ export default function MapFrame() {
   ].join("|");
   const [listOverride, setListOverride] =
     useSignatureState<string[]>(filterSignature);
-  // A pending area belongs to the filters it was panned under.
-  const [pendingBounds, setPendingBounds] =
-    useSignatureState<IBounds>(filterSignature);
-  const [areaBounds, setAreaBounds] =
-    useSignatureState<IBounds>(filterSignature);
+  const [viewArea, setViewArea] = useState<IViewArea | null>(null);
+  // Lets the map keep its attribution and the list's "on the map" group above the phone sheet.
+  const [sheetCovered, setSheetCovered] = useState("50dvh");
 
   // An entry opened directly stays map-free (no MapLibre download) until the visitor asks for it.
   const [directoryWanted, setDirectoryWanted] = useState(false);
@@ -73,7 +74,6 @@ export default function MapFrame() {
     directory,
     search,
     seed,
-    areaBounds,
     listOverride,
   });
 
@@ -96,6 +96,21 @@ export default function MapFrame() {
       ),
     [wide],
   );
+  const getCovered = useCallback(
+    () =>
+      measureCovered(
+        frameRef.current?.getBoundingClientRect() ??
+          new DOMRect(0, 0, 1000, 700),
+        panelRef.current?.getBoundingClientRect() ?? null,
+        window.innerHeight -
+          sheetCoveredPixels(sheetCovered, window.innerHeight),
+        wide,
+      ),
+    [wide, sheetCovered],
+  );
+  const reportViewArea = useCallback((next: IViewArea | null) => {
+    setViewArea((prev) => (sameView(prev, next) ? prev : next));
+  }, []);
 
   const initialViewport = useMemo<IViewport | null>(
     () => parseViewport(search.v),
@@ -122,14 +137,6 @@ export default function MapFrame() {
     [navigate],
   );
 
-  const applyAreaBounds = useCallback(
-    (bounds: IBounds | null) => {
-      setAreaBounds(bounds);
-      setPendingBounds(null);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filterSignature, setAreaBounds, setPendingBounds],
-  );
   const value = useMemo<IMapFrameValue>(
     () => ({
       directory,
@@ -141,8 +148,7 @@ export default function MapFrame() {
       requestMap,
       listOverride,
       setListOverride,
-      areaBounds,
-      setAreaBounds: applyAreaBounds,
+      viewArea,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -154,8 +160,7 @@ export default function MapFrame() {
       status,
       requestMap,
       listOverride,
-      areaBounds,
-      applyAreaBounds,
+      viewArea,
     ],
   );
 
@@ -198,11 +203,13 @@ export default function MapFrame() {
               pins={pins}
               initialViewport={initialViewport}
               getPadding={getPadding}
+              getCovered={getCovered}
+              coverKey={wide ? "wide" : sheetCovered}
               focusSlug={focusSlug}
               hoveredSlug={hoveredSlug}
               fitKey={filterSignature}
               onViewportChange={writeViewport}
-              onUserMove={setPendingBounds}
+              onViewChange={reportViewArea}
               onSelectSlug={(slug) =>
                 void navigate({ to: "/e/$slug", params: { slug } })
               }
@@ -210,16 +217,14 @@ export default function MapFrame() {
                 setListOverride(slugs);
                 void navigate({ to: "/", search: (prev) => prev });
               }}
-              onFailed={() => setStatus("failed")}
+              onFailed={() => {
+                setStatus("failed");
+                setViewArea(null);
+              }}
             />
           }
-          searchArea={
-            pendingBounds ? (
-              <MapSearchAreaButton
-                onClick={() => value.setAreaBounds(pendingBounds)}
-              />
-            ) : null
-          }
+          sheetCovered={sheetCovered}
+          onSheetCoveredChange={setSheetCovered}
         >
           {outlet}
         </MapOverlayLayout>

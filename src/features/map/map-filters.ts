@@ -3,7 +3,7 @@ import type {
   IDirectoryTag,
 } from "@/features/directory/directory-schemas";
 
-import { distanceKm, inBounds, type IBounds } from "./geo";
+import { distanceKm } from "./geo";
 import type { IMapFilters } from "./map-search";
 import { seededShuffle } from "./shuffle";
 
@@ -62,17 +62,4 @@ export function filterEntries({
     return kept.sort((a, b) => away(a) - away(b));
   }
   return seededShuffle(kept, seed);
-}
-
-export function limitToBounds(
-  entries: IDirectoryEntry[],
-  bounds: IBounds | null,
-): IDirectoryEntry[] {
-  if (!bounds) return entries;
-  return entries.filter(
-    (entry) =>
-      entry.lat !== null &&
-      entry.lng !== null &&
-      inBounds({ lat: entry.lat, lng: entry.lng }, bounds),
-  );
 }

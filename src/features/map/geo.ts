@@ -14,18 +14,3 @@ export function distanceKm(a: IPoint, b: IPoint): number {
     Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h));
 }
-
-export interface IBounds {
-  west: number;
-  south: number;
-  east: number;
-  north: number;
-}
-
-export function inBounds(point: IPoint, bounds: IBounds): boolean {
-  const withinLng =
-    bounds.west <= bounds.east
-      ? point.lng >= bounds.west && point.lng <= bounds.east
-      : point.lng >= bounds.west || point.lng <= bounds.east;
-  return point.lat >= bounds.south && point.lat <= bounds.north && withinLng;
-}

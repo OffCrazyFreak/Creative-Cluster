@@ -18,13 +18,13 @@ import type { IDirectoryEntry } from "@/features/directory/directory-schemas";
 import { m } from "@/paraglide/messages";
 import { site } from "@/sites";
 
-import type { IBounds } from "../geo";
 import { useFeatureState } from "../hooks/use-feature-state";
 import {
   useMediaQuery,
   usePrefersReducedMotion,
 } from "../hooks/use-media-query";
 import { useMapCamera } from "../hooks/use-map-camera";
+import { useViewReport } from "../hooks/use-view-report";
 import { handleMapClick } from "../map-click";
 import { buildGeoJson, buildSlugIds, SOURCE_ID } from "../map-geojson";
 import {
@@ -38,6 +38,7 @@ import {
 import type { IMapPadding } from "../map-padding";
 import type { IViewport } from "../map-search";
 import { useMapRecovery } from "../use-map-recovery";
+import type { IViewArea } from "../view-area";
 import MapConnectionArcs from "./map-connection-arcs";
 
 export interface IMapViewProps {
@@ -47,12 +48,15 @@ export interface IMapViewProps {
   pins: IDirectoryEntry[];
   initialViewport: IViewport | null;
   getPadding: () => IMapPadding;
+  // The parts of the map the floating panels hide, without the fit margin.
+  getCovered: () => IMapPadding;
+  coverKey: string;
   focusSlug: string | null;
   hoveredSlug: string | null;
   // Changes when the filters change, so the map refits to the new pins.
   fitKey: string;
   onViewportChange: (viewport: IViewport) => void;
-  onUserMove: (bounds: IBounds) => void;
+  onViewChange: (area: IViewArea | null) => void;
   onSelectSlug: (slug: string) => void;
   onListSlugs: (slugs: string[]) => void;
 }
@@ -112,6 +116,13 @@ export default function MapView(props: IMapViewProps) {
     slug: focusSlug,
     key: "selected",
   });
+  const reportView = useViewReport({
+    getMap,
+    ready,
+    getCovered: props.getCovered,
+    coverKey: props.coverKey,
+    onViewChange: props.onViewChange,
+  });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -127,17 +138,7 @@ export default function MapView(props: IMapViewProps) {
     const next = { lat: latitude, lng: longitude, zoom };
     setViewport(next);
     props.onViewportChange(next);
-    const map = getMap();
-    // Only gestures carry an originalEvent; the app's own camera moves must not offer "Search this area".
-    if (event.originalEvent && map) {
-      const b = map.getBounds();
-      props.onUserMove({
-        west: b.getWest(),
-        south: b.getSouth(),
-        east: b.getEast(),
-        north: b.getNorth(),
-      });
-    }
+    reportView();
   }
 
   async function onClick(event: MapLayerMouseEvent) {

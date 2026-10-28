@@ -1,7 +1,6 @@
 import {
   lazy,
   Suspense,
-  useState,
   type CSSProperties,
   type ReactNode,
   type RefObject,
@@ -25,7 +24,9 @@ interface IMapOverlayLayoutProps {
   panelRef: RefObject<HTMLDivElement | null>;
   sheetRef: RefObject<HTMLDivElement | null>;
   map: ReactNode;
-  searchArea: ReactNode;
+  // How much of the screen's bottom the phone sheet covers, as a CSS length.
+  sheetCovered: string;
+  onSheetCoveredChange: (covered: string) => void;
   children: ReactNode;
 }
 
@@ -37,12 +38,10 @@ export default function MapOverlayLayout({
   panelRef,
   sheetRef,
   map,
-  searchArea,
+  sheetCovered,
+  onSheetCoveredChange,
   children,
 }: IMapOverlayLayoutProps) {
-  // Lets the map keep its attribution above the phone sheet.
-  const [sheetCovered, setSheetCovered] = useState("50dvh");
-
   return (
     <div
       ref={frameRef}
@@ -51,7 +50,6 @@ export default function MapOverlayLayout({
     >
       <MapSkipLink />
       <div className="absolute inset-0">{map}</div>
-      {searchArea}
       {wide ? (
         <div
           ref={panelRef}
@@ -76,7 +74,10 @@ export default function MapOverlayLayout({
             <MapFilterChips />
           </div>
           <Suspense fallback={<div id="results-panel">{children}</div>}>
-            <MapSheet sheetRef={sheetRef} onCoveredChange={setSheetCovered}>
+            <MapSheet
+              sheetRef={sheetRef}
+              onCoveredChange={onSheetCoveredChange}
+            >
               {children}
             </MapSheet>
           </Suspense>

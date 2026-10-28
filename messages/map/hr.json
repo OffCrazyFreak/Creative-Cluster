@@ -21,9 +21,21 @@
   "map_chip_remove": "Ukloni filtar {label}",
   "map_chip_text": "Pretraga: {text}",
   "map_chip_near": "Unutar {km} km",
-  "map_chip_area": "Unutar područja karte",
   "map_popular_tags": "Popularne oznake",
-  "map_search_area": "Traži u ovom području",
+  "map_group_on_map": "Na karti · {count}",
+  "map_group_elsewhere": "Drugdje · {count}",
+  "map_view_pending": "Osvježi popis za ovaj prikaz karte",
+  "map_on_map_live": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} unos na karti",
+        "countPlural=other": "{count} unosa na karti",
+        "countPlural=few": "{count} unosa na karti"
+      }
+    }
+  ],
   "map_empty": "Nijedan unos ne odgovara filtrima.",
   "map_results_list": "Popis rezultata",
   "map_override_clear": "Prikaži sve rezultate",

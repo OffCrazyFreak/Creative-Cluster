@@ -17,12 +17,15 @@ import { SetHoveredSlugContext } from "../map-frame-context";
 interface IMapResultItemProps {
   entry: IDirectoryEntry;
   tags: IDirectoryTag[];
+  // Under an "on the map" or "elsewhere" heading, so one level deeper.
+  nested?: boolean;
 }
 
 const MAX_TAGS = 3;
 const LOGO_SIZE = 40;
 
-function MapResultItem({ entry, tags }: IMapResultItemProps) {
+function MapResultItem({ entry, tags, nested }: IMapResultItemProps) {
+  const Heading = nested ? "h4" : "h3";
   const setHoveredSlug = useContext(SetHoveredSlugContext);
   const locale = getLocale();
   const kind =
@@ -54,7 +57,7 @@ function MapResultItem({ entry, tags }: IMapResultItemProps) {
         />
       ) : null}
       <div className="flex min-w-0 flex-col gap-1">
-        <h3 className="font-semibold">
+        <Heading className="font-semibold">
           <Link
             to="/e/$slug"
             params={{ slug: entry.slug }}
@@ -62,7 +65,7 @@ function MapResultItem({ entry, tags }: IMapResultItemProps) {
           >
             {entry.name}
           </Link>
-        </h3>
+        </Heading>
         <p className="text-sm">{[kind, place].filter(Boolean).join(" · ")}</p>
         {entry.blurb ? <p className="text-sm">{entry.blurb}</p> : null}
         {entry.tags.length > 0 ? (
