@@ -31,6 +31,7 @@ export function buildGeoJson(
                 n: ids.get(entry.slug) ?? 0,
                 slug: entry.slug,
                 opps: entry.opps,
+                person: entry.kind === "person",
                 icon: entryIconId({
                   initials: entryInitials(entry.name),
                   logo: entry.logo,

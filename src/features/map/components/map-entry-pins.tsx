@@ -33,6 +33,7 @@ export default function MapEntryPins({ data }: IMapEntryPinsProps) {
       cluster
       clusterRadius={CLUSTER_RADIUS}
       clusterMaxZoom={CLUSTER_MAX_ZOOM}
+      maxzoom={CLUSTER_MAX_ZOOM + 1}
       promoteId="n"
     >
       <Layer {...clusterLayer} />

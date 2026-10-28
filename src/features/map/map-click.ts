@@ -1,67 +1,91 @@
-import type { Point } from "geojson";
 import type {
   GeoJSONSource,
   Map as MaplibreMap,
   MapGeoJSONFeature,
 } from "maplibre-gl";
 
-import { SOURCE_ID } from "./map-geojson";
 import {
-  CLUSTER_LAYER_ID,
-  CLUSTER_MAX_ZOOM,
-  POINT_LAYER_ID,
-} from "./map-layers";
+  fitPadding,
+  isSameSpot,
+  leafBounds,
+  PERSON_MAX_FIT_ZOOM,
+  toLeaf,
+} from "./cluster-leaves";
+import { SOURCE_ID } from "./map-geojson";
+import { CLUSTER_LAYER_ID, POINT_LAYER_ID } from "./map-layers";
+import type { IMapPadding } from "./map-padding";
 
-const SAME_POINT_DEGREES = 1e-5;
-const MAX_LEAVES = 200;
-
-interface IClickInput {
+interface IStackInput {
   map: MaplibreMap;
-  feature: MapGeoJSONFeature;
-  screen: { x: number; y: number };
+  clusterId: number;
+  // Map pixels under the panel and the phone sheet, kept clear when zooming in.
+  covered: IMapPadding;
   duration: number;
-  onSelectSlug: (slug: string) => void;
   onListSlugs: (slugs: string[]) => void;
 }
 
-function isSamePoint(leaves: { geometry: unknown }[]): boolean {
-  const [first] = leaves.map((leaf) => (leaf.geometry as Point).coordinates);
-  return leaves.every((leaf) => {
-    const [lng, lat] = (leaf.geometry as Point).coordinates;
-    return (
-      Math.abs(lng - first[0]) < SAME_POINT_DEGREES &&
-      Math.abs(lat - first[1]) < SAME_POINT_DEGREES
-    );
+interface IClickInput extends Omit<IStackInput, "clusterId"> {
+  feature: MapGeoJSONFeature;
+  screen: { x: number; y: number };
+  onSelectSlug: (slug: string) => void;
+}
+
+// A stack zooms to fit exactly its entries. Entries on one spot never split (clustering runs to
+// the deepest zoom), so the panel lists them instead; so does a stack holding a person once the
+// fit is already at that person's zoom cap.
+export async function openStack({
+  map,
+  clusterId,
+  covered,
+  duration,
+  onListSlugs,
+}: IStackInput) {
+  const source = map.getSource<GeoJSONSource>(SOURCE_ID);
+  if (!source) return;
+  const features = await source.getClusterLeaves(clusterId, Infinity, 0);
+  const leaves = features.flatMap((feature) => toLeaf(feature) ?? []);
+  if (leaves.length === 0) return;
+  const maxZoom = leaves.some((leaf) => leaf.person)
+    ? PERSON_MAX_FIT_ZOOM
+    : map.getMaxZoom();
+  if (isSameSpot(leaves) || map.getZoom() >= maxZoom) {
+    onListSlugs(leaves.map((leaf) => leaf.slug));
+    return;
+  }
+  const { clientWidth, clientHeight } = map.getCanvas();
+  const bounds = leafBounds(leaves);
+  // Absolute: the camera hook leaves the panel padding on the map, which would count twice.
+  const options = {
+    padding: fitPadding(clientWidth, clientHeight, covered),
+    maxZoom,
+    absolutePadding: true,
+  };
+  const camera = map.cameraForBounds(bounds, options);
+  if (camera?.zoom !== undefined && camera.zoom > map.getZoom()) {
+    map.fitBounds(bounds, { ...options, duration });
+    return;
+  }
+  // A cramped map (a phone in landscape) can fit no closer than now; zoom in until it splits.
+  const [[west, south], [east, north]] = bounds;
+  const zoom = await source.getClusterExpansionZoom(clusterId);
+  map.easeTo({
+    center: [(west + east) / 2, (south + north) / 2],
+    zoom: Math.min(zoom, maxZoom),
+    padding: options.padding,
+    duration,
   });
 }
 
-// A cluster zooms in; on one spot or at the clustering limit there is nothing left to split, so the
-// panel lists those entries instead (no spiderfy). Overlapping single points behave the same way.
 export async function handleMapClick({
-  map,
   feature,
   screen,
-  duration,
   onSelectSlug,
-  onListSlugs,
+  ...stack
 }: IClickInput) {
+  const { map, onListSlugs } = stack;
   if (feature.layer.id === CLUSTER_LAYER_ID) {
-    const source = map.getSource<GeoJSONSource>(SOURCE_ID);
-    if (!source) return;
     const clusterId = Number(feature.properties.cluster_id);
-    const count = Number(feature.properties.point_count);
-    const leaves = await source.getClusterLeaves(
-      clusterId,
-      Math.min(count, MAX_LEAVES),
-      0,
-    );
-    if (isSamePoint(leaves) || map.getZoom() >= CLUSTER_MAX_ZOOM) {
-      onListSlugs(leaves.map((leaf) => String(leaf.properties?.slug)));
-      return;
-    }
-    const zoom = await source.getClusterExpansionZoom(clusterId);
-    const [lng, lat] = (feature.geometry as Point).coordinates;
-    map.easeTo({ center: [lng, lat], zoom, duration });
+    await openStack({ ...stack, clusterId });
     return;
   }
 
