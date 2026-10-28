@@ -70,7 +70,7 @@
   "opportunities_refused_limit_active": "You already have the maximum number of open posts.",
   "opportunities_refused_limit_daily": "You can post {max} new opportunities a day. Try again tomorrow.",
   "opportunities_refused_duplicate": "You already have an open post with this title.",
-  "opportunities_refused_bad_deadline": "The deadline must be between today and {max} days from now, and a renewal needs a later one.",
+  "opportunities_refused_bad_deadline": "The deadline must be between today and {max} days from now. An edit cannot move it past the date the post ends, and a renewal needs a later one.",
   "opportunities_refused_invalid_tags": "One of the tags is not available. Pick the tags again.",
   "opportunities_refused_not_renewable": "This post cannot be renewed right now.",
   "opportunities_refused_not_editable": "This post can no longer be edited.",

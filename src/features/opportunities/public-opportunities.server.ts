@@ -175,7 +175,9 @@ export async function listPublicOpportunities(
   ]);
 
   const items: IPublicOpportunity[] = rows.map(({ opp, ...row }) => {
-    const translated = translations.get(opp.id);
+    // A leftover row in the source language (human, or before the job drops it) must not replace the original.
+    const translated =
+      opp.sourceLocale === input.locale ? undefined : translations.get(opp.id);
     const snippet = translated?.bodyText ?? opp.bodyText;
     return {
       id: opp.id,
