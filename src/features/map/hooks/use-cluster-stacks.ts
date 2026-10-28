@@ -56,7 +56,8 @@ export function useClusterStacks(
   useEffect(() => {
     if (!map) return;
     const instance = map;
-    let shown = "";
+    // No key equals null, so an empty view after new pins still clears the old stacks.
+    let shown: string | null = null;
     let cancelled = false;
 
     async function rank(clusters: ICluster[]) {
@@ -86,7 +87,7 @@ export function useClusterStacks(
         })
         // A data change can retire a cluster mid-lookup; forget the key so the next render retries.
         .catch(() => {
-          if (shown === key) shown = "";
+          if (shown === key) shown = null;
         });
     }
 
