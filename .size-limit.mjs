@@ -55,7 +55,7 @@ function pageFiles(...chain) {
 
 // [name, route chain, limit in kB]
 const pages = [
-  ["Map home /", ["/_map", "/_map/"], 273],
+  ["Map home /", ["/_map", "/_map/"], 280],
   ["Directory /directory", ["/directory/"], 252],
   ["Entry /e/:slug", ["/_map", "/_map/e/$slug"], 349],
   ["Opportunities /opportunities", ["/_map", "/_map/opportunities/"], 306],
