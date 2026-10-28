@@ -1,5 +1,3 @@
-import type { LngLatBoundsLike } from "maplibre-gl";
-
 import type { IMapPadding } from "./map-padding";
 
 export interface IClusterLeaf {
@@ -37,7 +35,9 @@ export function isSameSpot(leaves: IClusterLeaf[]): boolean {
   );
 }
 
-export function leafBounds(leaves: IClusterLeaf[]): LngLatBoundsLike {
+export function leafBounds(
+  leaves: IClusterLeaf[],
+): [[number, number], [number, number]] {
   const lngs = leaves.map((leaf) => leaf.lng);
   const lats = leaves.map((leaf) => leaf.lat);
   return [

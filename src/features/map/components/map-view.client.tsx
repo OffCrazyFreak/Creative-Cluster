@@ -150,12 +150,14 @@ export default function MapView(props: IMapViewProps) {
   function onStackClick(clusterId: number) {
     const map = getMap();
     if (!map) return;
-    void openStack({
+    openStack({
       map,
       clusterId,
       covered: props.getCovered(),
       duration,
       onListSlugs: props.onListSlugs,
+    }).catch(() => {
+      // The stack was re-clustered under the tap; the next render shows the current ones.
     });
   }
 

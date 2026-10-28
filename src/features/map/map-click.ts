@@ -53,9 +53,25 @@ export async function openStack({
     return;
   }
   const { clientWidth, clientHeight } = map.getCanvas();
-  map.fitBounds(leafBounds(leaves), {
+  const bounds = leafBounds(leaves);
+  // Absolute: the camera hook leaves the panel padding on the map, which would count twice.
+  const options = {
     padding: fitPadding(clientWidth, clientHeight, covered),
     maxZoom,
+    absolutePadding: true,
+  };
+  const camera = map.cameraForBounds(bounds, options);
+  if (camera?.zoom !== undefined && camera.zoom > map.getZoom()) {
+    map.fitBounds(bounds, { ...options, duration });
+    return;
+  }
+  // A cramped map (a phone in landscape) can fit no closer than now; zoom in until it splits.
+  const [[west, south], [east, north]] = bounds;
+  const zoom = await source.getClusterExpansionZoom(clusterId);
+  map.easeTo({
+    center: [(west + east) / 2, (south + north) / 2],
+    zoom: Math.min(zoom, maxZoom),
+    padding: options.padding,
     duration,
   });
 }

@@ -25,7 +25,9 @@ function readClusters(map: MaplibreMap): ICluster[] {
   if (!map.getSource(SOURCE_ID)) return [];
   const bounds = map.getBounds();
   const byId = new Map<number, ICluster>();
-  for (const feature of map.querySourceFeatures(SOURCE_ID)) {
+  for (const feature of map.querySourceFeatures(SOURCE_ID, {
+    filter: ["has", "point_count"],
+  })) {
     if (feature.properties.cluster_id == null) continue;
     if (feature.geometry.type !== "Point") continue;
     const id = Number(feature.properties.cluster_id);
@@ -82,8 +84,10 @@ export function useClusterStacks(
         .then((next) => {
           if (!cancelled && shown === key) setStacks(next);
         })
-        // A data change can retire a cluster mid-lookup; the next render reads the new ones.
-        .catch(() => undefined);
+        // A data change can retire a cluster mid-lookup; forget the key so the next render retries.
+        .catch(() => {
+          if (shown === key) shown = "";
+        });
     }
 
     update();
