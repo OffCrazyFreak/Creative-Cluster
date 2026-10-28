@@ -305,6 +305,26 @@ describe.skipIf(!temp)("listing lifecycle", () => {
     ).toHaveLength(1);
   });
 
+  it("keeps an old outside partner stub, which stays a draft for good", async () => {
+    const stub = await addEntry(
+      db,
+      "Outside Partner Stub",
+      {},
+      { status: "draft" },
+    );
+    await db
+      .update(schema.entry)
+      .set({
+        kind: "outside_partner",
+        updatedAt: new Date(Date.now() - 100 * 86_400_000),
+      })
+      .where(eq(schema.entry.id, stub.id));
+    await scheduled.purgeExpiredApplications();
+    expect(
+      await db.select().from(schema.entry).where(eq(schema.entry.id, stub.id)),
+    ).toHaveLength(1);
+  });
+
   it("leaves a draft alone that was verified after the purge query picked it", async () => {
     const draft = await addEntry(db, "Verified Late", {}, { status: "draft" });
     const { purgeEntry } = await import("./purge-entry.server");

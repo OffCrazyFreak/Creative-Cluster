@@ -64,9 +64,10 @@ export async function archiveStaleImports(): Promise<number> {
 }
 
 // Rejected applications are kept 90 days for resubmission; applications never confirmed by email expire with their link.
+// Outside partner stubs are drafts for good, and their confirmed links cascade on delete.
 export async function purgeExpiredApplications(): Promise<number> {
   const expiredCondition = sql`(${entry.status} = 'rejected' and ${entry.updatedAt} < now() - make_interval(days => ${REJECTED_APPLICATION_RETENTION_DAYS}))
-        or (${entry.status} = 'draft' and ${entry.ownerUserId} is null and ${entry.importedAt} is null and ${entry.updatedAt} < now() - make_interval(secs => ${APPLY_VERIFY_TTL_SECONDS}))`;
+        or (${entry.status} = 'draft' and ${entry.kind} <> 'outside_partner' and ${entry.ownerUserId} is null and ${entry.importedAt} is null and ${entry.updatedAt} < now() - make_interval(secs => ${APPLY_VERIFY_TTL_SECONDS}))`;
   const expired = await db
     .select({ id: entry.id })
     .from(entry)
