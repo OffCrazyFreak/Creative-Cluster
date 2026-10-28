@@ -13,7 +13,6 @@ import {
 } from "./map-layers";
 
 const SAME_POINT_DEGREES = 1e-5;
-const POINT_HIT_PX = 6;
 const MAX_LEAVES = 200;
 
 interface IClickInput {
@@ -66,13 +65,10 @@ export async function handleMapClick({
     return;
   }
 
-  const nearby = map.queryRenderedFeatures(
-    [
-      [screen.x - POINT_HIT_PX, screen.y - POINT_HIT_PX],
-      [screen.x + POINT_HIT_PX, screen.y + POINT_HIT_PX],
-    ],
-    { layers: [POINT_LAYER_ID] },
-  );
+  // The exact point: a 36 px tile is target enough, and a margin would catch the neighbours too.
+  const nearby = map.queryRenderedFeatures([screen.x, screen.y], {
+    layers: [POINT_LAYER_ID],
+  });
   const slugs = [
     ...new Set(nearby.map((item) => String(item.properties.slug))),
   ];

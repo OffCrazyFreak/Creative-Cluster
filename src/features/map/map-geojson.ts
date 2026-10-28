@@ -2,6 +2,8 @@ import type { FeatureCollection, Point } from "geojson";
 
 import type { IDirectoryEntry } from "@/features/directory/directory-schemas";
 
+import { entryIconId, entryInitials } from "./map-icons/entry-icon-id";
+
 export const SOURCE_ID = "entries";
 
 // Numeric id per entry (its position in the full directory) so promoteId and feature-state work.
@@ -29,6 +31,10 @@ export function buildGeoJson(
                 n: ids.get(entry.slug) ?? 0,
                 slug: entry.slug,
                 opps: entry.opps,
+                icon: entryIconId({
+                  initials: entryInitials(entry.name),
+                  logo: entry.logo,
+                }),
               },
             },
           ],

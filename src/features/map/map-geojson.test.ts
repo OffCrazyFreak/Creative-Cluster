@@ -29,4 +29,13 @@ describe("buildGeoJson", () => {
       json.features.map((f) => (f.properties as { opps: number }).opps),
     ).toEqual([2, 0]);
   });
+
+  it("names a logo tile when the entry has a logo, else an initials tile", () => {
+    const withLogo = { ...entry("a", 0), logo: { id: "i", hash: "h" } };
+    const entries = [withLogo, entry("b", 0)];
+    const json = buildGeoJson(entries, buildSlugIds(entries));
+    expect(
+      json.features.map((f) => (f.properties as { icon: string }).icon),
+    ).toEqual(["entry:A:i:h", "entry:B"]);
+  });
 });

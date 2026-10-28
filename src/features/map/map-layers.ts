@@ -2,21 +2,17 @@ import type {
   CircleLayerSpecification,
   LineLayerSpecification,
   ExpressionSpecification,
+  SymbolLayerSpecification,
 } from "maplibre-gl";
 
+import { MAP_COLORS as COLORS } from "./map-colors";
 import { SOURCE_ID } from "./map-geojson";
-
-// Placeholder colours for the map layers only; the brand theme replaces them with the style fork.
-const COLORS = {
-  cluster: "#4f46e5",
-  point: "#4f46e5",
-  selected: "#db2777",
-  outline: "#ffffff",
-  badge: "#f59e0b",
-} as const;
+import { SELECTED_FRAME_ID } from "./map-icons/entry-icon-id";
 
 export const CLUSTER_LAYER_ID = "clusters";
 export const POINT_LAYER_ID = "points";
+const HOVER_LAYER_ID = "point-hover";
+export const OPPORTUNITY_LAYER_ID = "point-opportunities";
 
 const active: ExpressionSpecification = [
   "boolean",
@@ -34,8 +30,16 @@ const selected: ExpressionSpecification = [
   ["feature-state", "selected"],
   false,
 ];
+const isPoint: ExpressionSpecification = ["!", ["has", "point_count"]];
 
-// Circle layers only (no DOM markers): clusters grow with their count, points grow on hover or selection.
+// Pins never hide each other: an entry that silently vanished in a dense town would read as
+// missing data. Clustering keeps the overlap in check instead.
+const ALWAYS_VISIBLE = {
+  "icon-allow-overlap": true,
+  "icon-ignore-placement": true,
+} as const;
+
+// No DOM markers: clusters are circles that grow with their count, points are logo or initials tiles.
 export const clusterLayer: Omit<CircleLayerSpecification, "source"> = {
   id: CLUSTER_LAYER_ID,
   type: "circle",
@@ -59,21 +63,33 @@ export const clusterLayer: Omit<CircleLayerSpecification, "source"> = {
   },
 };
 
-export const pointLayer: Omit<CircleLayerSpecification, "source"> = {
+export const pointLayer: Omit<SymbolLayerSpecification, "source"> = {
   id: POINT_LAYER_ID,
+  type: "symbol",
+  filter: isPoint,
+  layout: { "icon-image": ["get", "icon"], ...ALWAYS_VISIBLE },
+};
+
+// The selection frame around the open entry, and faintly while its list row is hovered or focused.
+export const hoverLayer: Omit<SymbolLayerSpecification, "source"> = {
+  id: HOVER_LAYER_ID,
+  type: "symbol",
+  filter: isPoint,
+  layout: { "icon-image": SELECTED_FRAME_ID, ...ALWAYS_VISIBLE },
+  paint: { "icon-opacity": ["case", selected, 1, active, 0.6, 0] },
+};
+
+// An amber dot on the tile's corner marks entries that have live opportunities.
+export const opportunityLayer: Omit<CircleLayerSpecification, "source"> = {
+  id: OPPORTUNITY_LAYER_ID,
   type: "circle",
-  filter: ["!", ["has", "point_count"]],
+  filter: ["all", isPoint, hasOpportunities],
   paint: {
-    "circle-color": ["case", selected, COLORS.selected, COLORS.point],
-    "circle-radius": ["case", ["any", active, selected], 11, 7],
-    // A thicker amber ring marks entries that have live opportunities.
-    "circle-stroke-width": ["case", hasOpportunities, 4, 2],
-    "circle-stroke-color": [
-      "case",
-      hasOpportunities,
-      COLORS.badge,
-      COLORS.outline,
-    ],
+    "circle-color": COLORS.badge,
+    "circle-radius": 5,
+    "circle-translate": [16, -16],
+    "circle-stroke-width": 2,
+    "circle-stroke-color": COLORS.outline,
   },
 };
 
