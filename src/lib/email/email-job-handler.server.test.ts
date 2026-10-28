@@ -1,4 +1,7 @@
+import { eq } from "drizzle-orm";
 import { afterAll, describe, expect, it, vi } from "vitest";
+
+import * as schema from "@/db/schema";
 
 import { PermanentJobError } from "@/lib/jobs/job-registry.server";
 
@@ -42,5 +45,35 @@ describe.skipIf(!temp)("email job handler", () => {
       ),
     ).rejects.toBeInstanceOf(PermanentJobError);
     expect(sent).not.toHaveBeenCalled();
+  });
+
+  it("refuses a contact mail to an address that opted out after the job was queued, and drops its text", async () => {
+    await suppressEmail(temp!.db, "hushed@example.com", "claim_removal");
+    const payload = {
+      template: "contact" as const,
+      to: "hushed@example.com",
+      replyTo: "visitor@example.com",
+      props: {
+        locale: "en" as const,
+        entryName: "X",
+        senderName: "V",
+        senderEmail: "visitor@example.com",
+        messageText: "Hi",
+        link: "l",
+      },
+    };
+    const [row] = await temp!.db
+      .insert(schema.job)
+      .values({ type: "email", payload, idempotencyKey: "contact:k2" })
+      .returning();
+    await expect(handleEmailJob(payload, row as never)).rejects.toBeInstanceOf(
+      PermanentJobError,
+    );
+    expect(sent).not.toHaveBeenCalled();
+    const [after] = await temp!.db
+      .select()
+      .from(schema.job)
+      .where(eq(schema.job.id, row.id));
+    expect(after.payload).toEqual({ template: "contact" });
   });
 });

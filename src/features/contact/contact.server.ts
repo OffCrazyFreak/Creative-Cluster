@@ -7,6 +7,7 @@ import {
 } from "@/constants/contact";
 import { db, type DbOrTx } from "@/db/client.server";
 import { contactMessage, entry } from "@/db/schema";
+import { isSuppressed } from "@/features/claims/email-suppression.server";
 import { startOfUtcDay } from "@/lib/email/email-budget.server";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
 import { triggerDrain } from "@/lib/jobs/trigger-drain.server";
@@ -56,6 +57,8 @@ async function findRecipient(tx: DbOrTx, entryId: string) {
     )
     .limit(1);
   if (!row?.contactEmail) throw new NotFoundError();
+  // Whoever used a removal link asked not to be written to again, through any listing with that address.
+  if (await isSuppressed(tx, row.contactEmail)) throw new NotFoundError();
   return { ...row, contactEmail: row.contactEmail };
 }
 

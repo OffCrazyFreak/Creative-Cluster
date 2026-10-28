@@ -11,26 +11,20 @@ import {
   suggestTagInput,
 } from "./tag-schemas";
 import { getEntryTags, listPickerTags } from "./tag-queries.server";
-
-function viewerOf(
-  session: { user: { id: string; role?: string | null } } | null,
-) {
-  return {
-    userId: session?.user.id ?? null,
-    isAdmin: session?.user.role === "admin",
-  };
-}
+import { tagViewer } from "./tag-viewer.server";
 
 export const listTags = createServerFn({ method: "GET" })
   .middleware([publicGuard])
   .inputValidator(z.void())
-  .handler(({ context }) => listPickerTags(viewerOf(context.session)));
+  .handler(async ({ context }) =>
+    listPickerTags(await tagViewer(context.session)),
+  );
 
 export const getTagsOfEntry = createServerFn({ method: "GET" })
   .middleware([publicGuard])
   .inputValidator(entryTagsInput)
-  .handler(({ data, context }) =>
-    getEntryTags(data.entryId, viewerOf(context.session)),
+  .handler(async ({ data, context }) =>
+    getEntryTags(data.entryId, await tagViewer(context.session)),
   );
 
 export const suggestNewTag = createServerFn({ method: "POST" })

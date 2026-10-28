@@ -80,8 +80,15 @@ export interface IReviewPage {
 }
 
 // "expired": the post's deadline passed while it waited. "no_account": done, but the entry has no account to email.
+// "owner_has_listing": the applicant's account already owns a listing or is blocked, so nothing changed.
 export type DecideOutcome =
-  "ok" | "gone" | "unsupported" | "failed" | "expired" | "no_account";
+  | "ok"
+  | "gone"
+  | "unsupported"
+  | "failed"
+  | "expired"
+  | "no_account"
+  | "owner_has_listing";
 
 export interface IItemDecision {
   decision: DecideReviewInput["decision"];

@@ -23,6 +23,7 @@ export function useReviewDecisions() {
       const failed = countOf(results, "failed");
       const expired = countOf(results, "expired");
       const noAccount = countOf(results, "no_account");
+      const hasListing = countOf(results, "owner_has_listing");
       if (done + noAccount)
         toast.success(m.review_done({ count: done + noAccount }));
       if (noAccount) toast.info(m.review_no_account({ count: noAccount }));
@@ -30,8 +31,10 @@ export function useReviewDecisions() {
       if (gone) toast.info(m.review_gone({ count: gone }));
       if (unsupported) toast.info(m.review_unsupported({ count: unsupported }));
       if (failed) toast.error(m.review_failed({ count: failed }));
+      if (hasListing)
+        toast.error(m.review_owner_has_listing({ count: hasListing }));
       await queryClient.invalidateQueries({ queryKey: REVIEW_QUEUE_KEY });
-      return failed === 0;
+      return failed + hasListing === 0;
     } catch {
       toast.error(m.review_error());
       return false;

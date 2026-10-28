@@ -34,6 +34,8 @@ vi.mock("@/lib/turnstile/verify-turnstile.server", () => {
 const { sendContactMessage } = await import("./contact.server");
 const { purgeContactData } = await import("./purge-contact.server");
 const { scrubContactJob } = await import("./scrub-contact-job.server");
+const { suppressEmail } =
+  await import("@/features/claims/email-suppression.server");
 
 const db = temp!.db;
 
@@ -140,6 +142,15 @@ describe("sendContactMessage", () => {
     expect(await sendContactMessage(input(bounced.id))).toEqual({
       status: "unavailable",
     });
+  });
+
+  it("sends nothing to an address that used a removal link on any listing", async () => {
+    const other = await recipient("Quiet@Example.org");
+    await suppressEmail(db, "quiet@example.org", "claim_removal");
+    expect(await sendContactMessage(input(other.id))).toEqual({
+      status: "unavailable",
+    });
+    expect(await db.select().from(schema.job)).toHaveLength(0);
   });
 });
 

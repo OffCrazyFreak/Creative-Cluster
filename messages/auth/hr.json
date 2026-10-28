@@ -49,6 +49,7 @@
   "auth_claim_submit": "Preuzmi unos",
   "auth_claim_invalid": "Ova poveznica za preuzimanje ne vrijedi ili je istekla.",
   "auth_claim_taken": "Ovaj je unos već preuzet.",
+  "auth_claim_refused": "Račun s ovom adresom već ima unos ili ga ne može preuzeti. Javi nam se i riješit ćemo to.",
   "auth_claim_failed": "Unos nije moguće preuzeti. Pokušaj ponovno.",
   "auth_claim_next": "Sada odaberi lozinku za svoj račun.",
   "auth_error_generic": "Nešto je pošlo po zlu. Pokušaj ponovno.",

@@ -49,6 +49,7 @@
   "auth_claim_submit": "Claim the listing",
   "auth_claim_invalid": "This claim link is not valid or has expired.",
   "auth_claim_taken": "This listing has already been claimed.",
+  "auth_claim_refused": "The account with this address already has a listing or cannot take one on. Write to us and we will sort it out.",
   "auth_claim_failed": "Could not claim the listing. Please try again.",
   "auth_claim_next": "Now choose a password for your account.",
   "auth_error_generic": "Something went wrong. Please try again.",

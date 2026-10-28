@@ -4,6 +4,7 @@ import { INVITE_EXPIRY, INVITE_TOKEN_TTL_SECONDS } from "@/constants/email";
 import { LOCALES, type AppLocale } from "@/constants/locales";
 import type { Tx } from "@/db/client.server";
 import { account, entry, reviewItem, user } from "@/db/schema";
+import { cannotOwnListing } from "@/features/auth/listing-owner-check.server";
 import { pageLink } from "@/lib/auth/auth-email.server";
 import { createPasswordToken } from "@/lib/auth/password-token.server";
 import { writeChange } from "@/lib/change-log/write-change.server";
@@ -59,7 +60,10 @@ interface IApproveInput {
 }
 
 // Publishing, the owner account and the mail commit together: no approval without an owner.
-export async function approveApplication(tx: Tx, input: IApproveInput) {
+export async function approveApplication(
+  tx: Tx,
+  input: IApproveInput,
+): Promise<"ok" | "owner_has_listing"> {
   const [row] = await tx
     .select()
     .from(entry)
@@ -75,6 +79,8 @@ export async function approveApplication(tx: Tx, input: IApproveInput) {
     row.contactName ?? row.name,
     locale,
   );
+  // Nothing is written yet when this returns, so the item stays open for the admin to reject or sort out.
+  if (await cannotOwnListing(tx, owner.id, row.id)) return "owner_has_listing";
   await tx
     .update(entry)
     .set({
@@ -122,4 +128,5 @@ export async function approveApplication(tx: Tx, input: IApproveInput) {
     },
     idempotencyKey: `approved:${input.itemId}`,
   });
+  return "ok";
 }

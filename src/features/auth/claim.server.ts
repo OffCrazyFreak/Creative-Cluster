@@ -8,12 +8,16 @@ import { db, type DbOrTx } from "@/db/client.server";
 import { account, claimInvite, entry, user } from "@/db/schema";
 import { writeChange } from "@/lib/change-log/write-change.server";
 import { createPasswordToken } from "@/lib/auth/password-token.server";
+import { openInviteCondition } from "@/features/claims/claim-state.server";
 import { site } from "@/sites";
+
+import { cannotOwnListing } from "./listing-owner-check.server";
 
 export type ClaimResult =
   | { status: "ok"; passwordToken: string | null }
   | { status: "invalid" }
-  | { status: "taken" };
+  | { status: "taken" }
+  | { status: "refused" };
 
 // Only the hash is stored, so a leaked database cannot be used to claim listings.
 export function hashClaimToken(token: string): string {
@@ -53,7 +57,7 @@ export async function getClaimPreview(token: string) {
     .select({ entryName: entry.name, email: claimInvite.email })
     .from(claimInvite)
     .innerJoin(entry, eq(entry.id, claimInvite.entryId))
-    .where(and(usableInvite(hashClaimToken(token)), isNull(entry.ownerUserId)))
+    .where(and(usableInvite(hashClaimToken(token)), openInviteCondition))
     .limit(1);
   return row ?? null;
 }
@@ -76,6 +80,14 @@ export async function claimListing(token: string): Promise<ClaimResult> {
       .for("update");
     if (!listing) return { status: "invalid" };
     if (listing.ownerUserId) return { status: "taken" };
+    // The link stays usable for its TTL, so the listing must still be live and have the address it was sent to.
+    const [open] = await tx
+      .select({ id: claimInvite.id })
+      .from(claimInvite)
+      .innerJoin(entry, eq(entry.id, claimInvite.entryId))
+      .where(and(eq(claimInvite.id, invite.id), openInviteCondition))
+      .limit(1);
+    if (!open) return { status: "invalid" };
 
     const email = invite.email.toLowerCase();
     const existingId = await userIdByEmail(tx, email);
@@ -97,6 +109,8 @@ export async function claimListing(token: string): Promise<ClaimResult> {
     const ownerId =
       existingId ?? created?.id ?? (await userIdByEmail(tx, email));
     if (!ownerId) throw new Error("Claim could not resolve the owner account");
+    if (await cannotOwnListing(tx, ownerId, listing.id))
+      return { status: "refused" };
 
     await tx
       .update(entry)

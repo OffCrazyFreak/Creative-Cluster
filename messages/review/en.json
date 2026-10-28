@@ -60,6 +60,7 @@
   "review_done": "{count} items decided.",
   "review_gone": "{count} items were already decided by someone else.",
   "review_failed": "{count} items could not be decided. Check the reason and note, then try again.",
+  "review_owner_has_listing": "{count} applications use an address whose account already owns a listing or is blocked. Reject them, or move the existing listing first.",
   "review_error": "The decision failed. Please try again.",
   "review_page": "Page {page} of {pages}",
   "review_prev": "Previous",

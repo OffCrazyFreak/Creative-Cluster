@@ -467,6 +467,33 @@ describe.skipIf(!temp)("review services", () => {
     expect(row.status).toBe("pending");
   });
 
+  it("refuses to approve a second listing for an account that already owns one", async () => {
+    const boss = await admin();
+    const first = await verifiedApplication(
+      "First Listing",
+      "twice@example.test",
+    );
+    await decideReviewItems(
+      { ids: [first.review_item.id], decision: "approve" },
+      boss.id,
+    );
+    const second = await verifiedApplication(
+      "Second Listing",
+      "twice@example.test",
+    );
+    const [result] = await decideReviewItems(
+      { ids: [second.review_item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("owner_has_listing");
+    const [row] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, second.entry.id));
+    expect(row.status).toBe("pending");
+    expect(row.ownerUserId).toBeNull();
+  });
+
   it("reports only public listings and never hides them", async () => {
     const listing = await addEntry(db, "Reported Place");
     const hidden = await addEntry(

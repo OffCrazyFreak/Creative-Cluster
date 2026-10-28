@@ -3,7 +3,7 @@ import { count, eq, like } from "drizzle-orm";
 import type { AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
 import { job, user } from "@/db/schema";
-import { site } from "@/sites";
+import { pageLink } from "@/lib/auth/auth-email.server";
 
 import { enqueueEmail } from "./enqueue-email.server";
 
@@ -78,7 +78,7 @@ export async function enqueueTermsNotice(notice: ITermsNotice) {
           name: person.name,
           summary: cleanSummary(notice.summary[locale]),
           effectiveDate: formatDate(notice.effectiveDate, locale),
-          link: `${site.origin}/terms`,
+          link: pageLink("/terms", locale),
         },
       });
     }
