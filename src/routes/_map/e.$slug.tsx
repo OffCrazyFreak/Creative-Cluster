@@ -7,7 +7,11 @@ import { goneStatusMiddleware } from "@/features/entry/gone-status-middleware";
 import { entryQueryOptions } from "@/features/entry/entry-queries";
 import { placeLine } from "@/features/entry/components/entry-location";
 import { useTrackEntryView } from "@/features/entry/use-track-entry-view";
-import { needsNoindex } from "@/features/translation/translation-indexing";
+import {
+  indexedLocales,
+  needsNoindex,
+} from "@/features/translation/translation-indexing";
+import { LOCALES } from "@/constants/locales";
 import { publicConnectionsQuery } from "@/features/connections/connections-queries";
 import { entryTranslationQueryOptions } from "@/features/translation/translation-queries";
 import { m } from "@/paraglide/messages";
@@ -32,23 +36,37 @@ export const Route = createFileRoute("/_map/e/$slug")({
       });
     // Connections are prefetched so the list is in the server-rendered HTML; they load alongside
     // the translation instead of after it.
-    const [translation] = await Promise.all([
-      result.status === "found" && result.entry.sourceLocale !== getLocale()
-        ? context.queryClient.fetchQuery(
-            entryTranslationQueryOptions(
-              result.entry.id,
-              getLocale(),
-              context.viewer?.id ?? null,
+    // Every other language is looked up so hreflang only names pages that are indexable.
+    const found = result.status === "found" ? result.entry : null;
+    const others = found
+      ? LOCALES.filter((locale) => locale !== found.sourceLocale)
+      : [];
+    const [views] = await Promise.all([
+      found
+        ? Promise.all(
+            others.map((locale) =>
+              context.queryClient.fetchQuery(
+                entryTranslationQueryOptions(
+                  found.id,
+                  locale,
+                  context.viewer?.id ?? null,
+                ),
+              ),
             ),
           )
-        : null,
-      result.status === "found"
-        ? context.queryClient.prefetchQuery(
-            publicConnectionsQuery(result.entry.id),
-          )
+        : [],
+      found
+        ? context.queryClient.prefetchQuery(publicConnectionsQuery(found.id))
         : null,
     ]);
-    return { ...result, translation };
+    const byLocale = Object.fromEntries(
+      others.map((locale, index) => [locale, views[index]]),
+    );
+    return {
+      ...result,
+      translation: byLocale[getLocale()] ?? null,
+      alternates: indexedLocales(found?.sourceLocale ?? "", byLocale),
+    };
   },
   head: ({ loaderData, params }) => {
     if (!loaderData || loaderData.status === "gone")
@@ -90,7 +108,7 @@ export const Route = createFileRoute("/_map/e/$slug")({
       ],
       links: noindex
         ? [canonicalLink(`/e/${params.slug}`)]
-        : indexableLinks(`/e/${params.slug}`),
+        : indexableLinks(`/e/${params.slug}`, loaderData.alternates),
       scripts: [
         {
           type: "application/ld+json",

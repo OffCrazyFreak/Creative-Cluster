@@ -14,10 +14,17 @@ interface ILink {
 }
 
 // Canonical for the current language plus reciprocal alternates and x-default (the site's own language).
-export function indexableLinks(path: string): ILink[] {
+// Pass `locales` when some languages of the page are noindex: an alternate must never point at one.
+export function indexableLinks(
+  path: string,
+  locales: readonly AppLocale[] = LOCALES,
+): ILink[] {
+  const fallback = locales.includes(site.baseLocale)
+    ? site.baseLocale
+    : locales[0];
   return [
     { rel: "canonical", href: absoluteUrl(path) },
-    ...LOCALES.map((locale) => ({
+    ...locales.map((locale) => ({
       rel: "alternate",
       hrefLang: locale,
       href: absoluteUrl(path, locale),
@@ -25,7 +32,7 @@ export function indexableLinks(path: string): ILink[] {
     {
       rel: "alternate",
       hrefLang: "x-default",
-      href: absoluteUrl(path, site.baseLocale),
+      href: absoluteUrl(path, fallback),
     },
   ];
 }
