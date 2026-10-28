@@ -109,6 +109,36 @@ describe("stripMetadata", () => {
     expect(imageSize(out)).toMatchObject({ width: 200, height: 100 });
   });
 
+  it("drops comments between JPEG scans and anything after the end of the image", () => {
+    const first = jpegWithExif();
+    const progressive = Buffer.concat([
+      first.subarray(0, -2),
+      segment(0xfe, GPS),
+      segment(0xda, Buffer.from([1, 1, 0, 0, 0x3f, 0])),
+      Buffer.from([0x56, 0xff, 0x00, 0xff, 0xd0, 0x78, 0xff, 0xd9]),
+      jpegWithExif(),
+    ]);
+    const out = stripMetadata(progressive, "image/jpeg");
+    expect(out.includes(GPS)).toBe(false);
+    expect(out.subarray(-8)).toEqual(
+      Buffer.from([0x56, 0xff, 0x00, 0xff, 0xd0, 0x78, 0xff, 0xd9]),
+    );
+  });
+
+  it("accepts and drops bytes after the end of a PNG or WebP", () => {
+    const junk = Buffer.concat([Buffer.alloc(16, 0xff), GPS]);
+    const strippedPng = stripMetadata(
+      Buffer.concat([png(), junk]),
+      "image/png",
+    );
+    expect(strippedPng).toEqual(stripMetadata(png(), "image/png"));
+    const strippedWebp = stripMetadata(
+      Buffer.concat([webp(), junk]),
+      "image/webp",
+    );
+    expect(strippedWebp).toEqual(stripMetadata(webp(), "image/webp"));
+  });
+
   it("leaves an image without metadata unchanged", () => {
     const clean = stripMetadata(png(), "image/png");
     expect(stripMetadata(clean, "image/png")).toEqual(clean);
