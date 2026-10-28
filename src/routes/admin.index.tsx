@@ -5,6 +5,7 @@ import { REVIEW_TYPES } from "@/constants/moderation";
 import { REVIEW_AGE_FILTERS } from "@/constants/review";
 import ReviewQueuePage from "@/features/review/components/review-queue-page";
 import { reviewQueueQueryOptions } from "@/features/review/review-queries";
+import { loginOnUnauthorized } from "@/features/session/login-on-unauthorized";
 
 const searchSchema = z.object({
   type: z.enum(REVIEW_TYPES).optional().catch(undefined),
@@ -20,8 +21,10 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/admin/")({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => search,
-  loader: ({ context, deps }) =>
-    context.queryClient.ensureQueryData(reviewQueueQueryOptions(deps)),
+  loader: ({ context, deps, location }) =>
+    loginOnUnauthorized({ context, location }, () =>
+      context.queryClient.ensureQueryData(reviewQueueQueryOptions(deps)),
+    ),
   component: AdminHome,
 });
 

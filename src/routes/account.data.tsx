@@ -5,12 +5,15 @@ import {
   erasureStateQueryOptions,
   ownListingStatusQueryOptions,
 } from "@/features/lifecycle/lifecycle-queries";
+import { loginOnUnauthorized } from "@/features/session/login-on-unauthorized";
 
 export const Route = createFileRoute("/account/data")({
-  loader: ({ context }) =>
-    Promise.all([
-      context.queryClient.ensureQueryData(ownListingStatusQueryOptions()),
-      context.queryClient.ensureQueryData(erasureStateQueryOptions()),
-    ]),
+  loader: ({ context, location }) =>
+    loginOnUnauthorized({ context, location }, () =>
+      Promise.all([
+        context.queryClient.ensureQueryData(ownListingStatusQueryOptions()),
+        context.queryClient.ensureQueryData(erasureStateQueryOptions()),
+      ]),
+    ),
   component: AccountDataPage,
 });
