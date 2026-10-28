@@ -22,5 +22,14 @@ export const rpcc = {
     email: "TODO-privacy@inovatoridnz.net",
   },
   searchConsoleToken: null,
-  map: { center: [10, 48], zoom: 3.5, style: "openfreemap" },
+  map: {
+    center: [10, 48],
+    zoom: 3.5,
+    style: "openfreemap",
+    // Europe, Iceland and the Canaries to the Urals.
+    ipBounds: [
+      [-25, 27],
+      [45, 72],
+    ],
+  },
 } as const satisfies ISiteConfig;

@@ -25,6 +25,7 @@ import {
   measurePadding,
   sheetCoveredPixels,
 } from "../map-padding";
+import type { IMapOrigin } from "../map-origin";
 import { formatViewport, parseViewport, type IViewport } from "../map-search";
 import { sameView, type IViewArea } from "../view-area";
 import { supportsWebgl2 } from "../webgl";
@@ -53,6 +54,8 @@ export default function MapFrame() {
     search.radius,
   ].join("|");
   const [viewArea, setViewArea] = useState<IViewArea | null>(null);
+  // GPS or the IP guess, reported by the map; the list sorts from it.
+  const [origin, setOrigin] = useState<IMapOrigin | null>(null);
   // Lets the map keep its attribution and the list's "on the map" group above the phone sheet.
   const [sheetCovered, setSheetCovered] = useState("50dvh");
 
@@ -67,7 +70,12 @@ export default function MapFrame() {
     enabled: !entryMatch || status === "active" || directoryWanted,
   });
   const directory = directoryQuery.data;
-  const { filters, pins } = useMapResults({ directory, search, seed });
+  const { filters, pins } = useMapResults({
+    directory,
+    search,
+    seed,
+    origin: origin?.point ?? null,
+  });
 
   const requestMap = useCallback(() => {
     setStatus(supportsWebgl2() ? "active" : "unsupported");
@@ -138,8 +146,9 @@ export default function MapFrame() {
       mapStatus: status,
       requestMap,
       viewArea,
+      origin,
     }),
-    [directory, search, filters, pins, status, requestMap, viewArea],
+    [directory, search, filters, pins, status, requestMap, viewArea, origin],
   );
 
   const outlet = <Outlet />;
@@ -188,6 +197,7 @@ export default function MapFrame() {
               fitKey={filterSignature}
               onViewportChange={writeViewport}
               onViewChange={reportViewArea}
+              onOriginChange={setOrigin}
               onSelectSlug={(slug) =>
                 void navigate({ to: "/e/$slug", params: { slug } })
               }

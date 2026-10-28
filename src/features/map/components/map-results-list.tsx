@@ -2,7 +2,9 @@ import { useRef } from "react";
 
 import { useSavedEntries } from "@/features/saved/hooks/use-saved-entries";
 import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 
+import { distanceLabel } from "../distance-label";
 import { useHeldView } from "../hooks/use-held-view";
 import { listGroups } from "../list-headings";
 import { useMapFrame } from "../map-frame-context";
@@ -11,7 +13,8 @@ import MapResultItem from "./map-result-item";
 import MapViewPendingChip from "./map-view-pending-chip";
 
 export default function MapResultsList() {
-  const { directory, pins, viewArea } = useMapFrame();
+  const { directory, pins, viewArea, origin } = useMapFrame();
+  const locale = getLocale();
   const tags = directory?.tags ?? [];
   const view = useHeldView(viewArea);
   const listRef = useRef<HTMLDivElement>(null);
@@ -82,6 +85,7 @@ export default function MapResultsList() {
                     entry={entry}
                     tags={tags}
                     nested={Boolean(group.heading)}
+                    distance={distanceLabel(entry, origin, locale)}
                   />
                 ))}
               </ul>

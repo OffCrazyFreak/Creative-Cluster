@@ -31,6 +31,7 @@ import {
   OPPORTUNITY_LAYER_ID,
   POINT_LAYER_ID,
 } from "../map-layers";
+import type { IMapOrigin } from "../map-origin";
 import type { IMapPadding } from "../map-padding";
 import type { IViewport } from "../map-search";
 import { useMapRecovery } from "../use-map-recovery";
@@ -60,6 +61,7 @@ export interface IMapViewProps {
   onViewportChange: (viewport: IViewport) => void;
   onViewChange: (area: IViewArea | null) => void;
   onSelectSlug: (slug: string) => void;
+  onOriginChange: (origin: IMapOrigin | null) => void;
 }
 
 const DEFAULT_VIEWPORT: IViewport = {
@@ -122,6 +124,7 @@ export default function MapView(props: IMapViewProps) {
     hasInitialViewport: Boolean(initialViewport),
     duration,
     getPadding,
+    onOriginChange: props.onOriginChange,
   });
   const reportView = useViewReport({
     getMap,

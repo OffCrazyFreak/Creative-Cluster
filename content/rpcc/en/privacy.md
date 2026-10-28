@@ -34,6 +34,8 @@ We have no data protection officer because the law does not require one for us. 
 
 **Addresses and map.** We turn an address into a position with Geoapify (EU) or from the public address register of the State Geodetic Administration (DGU), which we keep ourselves; in that case no personal data leaves our system. The map tiles load from OpenFreeMap, so your browser contacts that server (it sees your IP address, as with any image).
 
+**Your location on the map.** If you press the "Entries near me" button, or your browser already allows this site to use your location, your browser gives the map your position so the list can show the nearest entries first and how far away they are. This happens only on your device: we never receive, store or pass on your position. You can withdraw the permission in your browser settings at any time. Without it, our host (Netlify) guesses your approximate town from your IP address when the map opens. We use that guess, rounded to about a kilometre, only to order the list for you, and only when it falls in or near Europe. We do not store or log it.
+
 **Must you give the data?** You do not have to give anything, but we cannot publish a listing without a name, a description, one contact and a location (country and town). We cannot publish a person without consent. We cannot open an account without an email.
 
 We make no automated decisions and do no profiling with legal or similar effects on you. Tag matching ("similar to you") is a simple match of tags you chose, and you can switch it off in your account.

@@ -21,5 +21,14 @@ export const dnz = {
     email: "TODO-privacy@inovatoridnz.net",
   },
   searchConsoleToken: null,
-  map: { center: [17.6, 42.85], zoom: 8, style: "openfreemap" },
+  map: {
+    center: [17.6, 42.85],
+    zoom: 8,
+    style: "openfreemap",
+    // Croatia.
+    ipBounds: [
+      [13.4, 42.3],
+      [19.5, 46.6],
+    ],
+  },
 } as const satisfies ISiteConfig;
