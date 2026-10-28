@@ -8,7 +8,14 @@ import {
   type ViewStateChangeEvent,
 } from "@vis.gl/react-maplibre";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
 
 import { MAP_STYLES } from "@/constants/map-styles";
 import type { IDirectoryEntry } from "@/features/directory/directory-schemas";
@@ -64,6 +71,7 @@ export interface IMapViewProps {
   onViewChange: (area: IViewArea | null) => void;
   onSelectSlug: (slug: string) => void;
   onOriginChange: (origin: IMapOrigin | null) => void;
+  locateRef?: Ref<HTMLButtonElement>;
 }
 
 const DEFAULT_VIEWPORT: IViewport = {
@@ -73,7 +81,14 @@ const DEFAULT_VIEWPORT: IViewport = {
 };
 
 export default function MapView(props: IMapViewProps) {
-  const { allEntries, pins, initialViewport, getPadding, focusSlug } = props;
+  const {
+    allEntries,
+    pins,
+    initialViewport,
+    getPadding,
+    focusSlug,
+    locateRef,
+  } = props;
   const mapRef = useRef<MapRef>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewport, setViewport] = useState(initialViewport ?? DEFAULT_VIEWPORT);
@@ -161,7 +176,11 @@ export default function MapView(props: IMapViewProps) {
       aria-label={m.map_region_label()}
       className="relative size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-left]:bottom-[min(var(--map-sheet-covered,0px),50dvh)]! md:[&_.maplibregl-ctrl-bottom-left]:right-40 md:[&_.maplibregl-ctrl-bottom-left]:left-[25.5rem]! [&_.maplibregl-ctrl-top-right]:top-12! max-md:[&_.maplibregl-ctrl-top-right]:top-28!"
     >
-      <MapLocateButton status={nearMe.status} onLocate={nearMe.locate} />
+      <MapLocateButton
+        ref={locateRef}
+        status={nearMe.status}
+        onLocate={nearMe.locate}
+      />
       <MapPanControls getMap={getMap} duration={duration} />
       <Map
         key={mapKey}
