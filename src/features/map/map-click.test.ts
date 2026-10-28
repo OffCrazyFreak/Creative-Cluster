@@ -2,7 +2,7 @@ import type { Map as MaplibreMap } from "maplibre-gl";
 import { describe, expect, it, vi } from "vitest";
 
 import { PERSON_MAX_FIT_ZOOM } from "./cluster-leaves";
-import { openStack } from "./map-click";
+import { handleMapClick, openStack } from "./map-click";
 
 const COVERED = { top: 0, right: 0, bottom: 300, left: 0 };
 
@@ -34,15 +34,15 @@ function fakeMap(leaves: ReturnType<typeof leaf>[], zoom = 10, fitZoom = 14) {
 }
 
 async function open(map: MaplibreMap) {
-  const onListSlugs = vi.fn();
+  const onSameSpot = vi.fn();
   await openStack({
     map,
     clusterId: 1,
     covered: COVERED,
     duration: 0,
-    onListSlugs,
+    onSameSpot,
   });
-  return onListSlugs;
+  return onSameSpot;
 }
 
 describe("openStack", () => {
@@ -78,16 +78,46 @@ describe("openStack", () => {
     expect(fitBounds.mock.calls[0][1].maxZoom).toBe(PERSON_MAX_FIT_ZOOM);
   });
 
-  it("lists a person's stack instead of zooming past the cap", async () => {
+  it("opens a person's stack as a spot instead of zooming past the cap", async () => {
     const leaves = [leaf("a", 15.9), leaf("b", 16, true)];
-    const { map, fitBounds } = fakeMap(leaves, PERSON_MAX_FIT_ZOOM);
-    expect(await open(map)).toHaveBeenCalledWith(["a", "b"]);
+    const { map, fitBounds, easeTo } = fakeMap(leaves, PERSON_MAX_FIT_ZOOM);
+    expect(await open(map)).toHaveBeenCalledWith({
+      lng: 15.95,
+      lat: 45.8,
+      slugs: ["a", "b"],
+    });
     expect(fitBounds).not.toHaveBeenCalled();
+    expect(easeTo).not.toHaveBeenCalled();
   });
 
-  it("lists entries on one spot, which no zoom can split", async () => {
+  it("opens entries on one spot, which no zoom can split", async () => {
     const { map, fitBounds } = fakeMap([leaf("a", 15.9), leaf("b", 15.9)]);
-    expect(await open(map)).toHaveBeenCalledWith(["a", "b"]);
+    expect(await open(map)).toHaveBeenCalledWith({
+      lng: 15.9,
+      lat: 45.8,
+      slugs: ["a", "b"],
+    });
     expect(fitBounds).not.toHaveBeenCalled();
+  });
+});
+
+describe("handleMapClick", () => {
+  it("selects the tapped pin", async () => {
+    const { map } = fakeMap([]);
+    const onSelectSlug = vi.fn();
+    const onSameSpot = vi.fn();
+    await handleMapClick({
+      map,
+      feature: {
+        layer: { id: "points" },
+        properties: { slug: "a" },
+      } as unknown as Parameters<typeof handleMapClick>[0]["feature"],
+      covered: COVERED,
+      duration: 0,
+      onSelectSlug,
+      onSameSpot,
+    });
+    expect(onSelectSlug).toHaveBeenCalledWith("a");
+    expect(onSameSpot).not.toHaveBeenCalled();
   });
 });

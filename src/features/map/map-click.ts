@@ -12,8 +12,14 @@ import {
   toLeaf,
 } from "./cluster-leaves";
 import { SOURCE_ID } from "./map-geojson";
-import { CLUSTER_LAYER_ID, POINT_LAYER_ID } from "./map-layers";
+import { CLUSTER_LAYER_ID } from "./map-layers";
 import type { IMapPadding } from "./map-padding";
+
+export interface ISameSpot {
+  lng: number;
+  lat: number;
+  slugs: string[];
+}
 
 interface IStackInput {
   map: MaplibreMap;
@@ -21,24 +27,27 @@ interface IStackInput {
   // Map pixels under the panel and the phone sheet, kept clear when zooming in.
   covered: IMapPadding;
   duration: number;
-  onListSlugs: (slugs: string[]) => void;
+  onSameSpot: (spot: ISameSpot) => void;
 }
 
 interface IClickInput extends Omit<IStackInput, "clusterId"> {
   feature: MapGeoJSONFeature;
-  screen: { x: number; y: number };
   onSelectSlug: (slug: string) => void;
 }
 
+function average(values: number[]) {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
 // A stack zooms to fit exactly its entries. Entries on one spot never split (clustering runs to
-// the deepest zoom), so the panel lists them instead; so does a stack holding a person once the
+// the deepest zoom), so a popover lists them instead; so does a stack holding a person once the
 // fit is already at that person's zoom cap.
 export async function openStack({
   map,
   clusterId,
   covered,
   duration,
-  onListSlugs,
+  onSameSpot,
 }: IStackInput) {
   const source = map.getSource<GeoJSONSource>(SOURCE_ID);
   if (!source) return;
@@ -49,7 +58,11 @@ export async function openStack({
     ? PERSON_MAX_FIT_ZOOM
     : map.getMaxZoom();
   if (isSameSpot(leaves) || map.getZoom() >= maxZoom) {
-    onListSlugs(leaves.map((leaf) => leaf.slug));
+    onSameSpot({
+      lng: average(leaves.map((leaf) => leaf.lng)),
+      lat: average(leaves.map((leaf) => leaf.lat)),
+      slugs: leaves.map((leaf) => leaf.slug),
+    });
     return;
   }
   const { clientWidth, clientHeight } = map.getCanvas();
@@ -76,26 +89,17 @@ export async function openStack({
   });
 }
 
+// Pins never overlap (clustering runs to the deepest zoom with a radius wider than a tile), so a
+// pin tap is always exactly one entry.
 export async function handleMapClick({
   feature,
-  screen,
   onSelectSlug,
   ...stack
 }: IClickInput) {
-  const { map, onListSlugs } = stack;
   if (feature.layer.id === CLUSTER_LAYER_ID) {
     const clusterId = Number(feature.properties.cluster_id);
     await openStack({ ...stack, clusterId });
     return;
   }
-
-  // The exact point: a 36 px tile is target enough, and a margin would catch the neighbours too.
-  const nearby = map.queryRenderedFeatures([screen.x, screen.y], {
-    layers: [POINT_LAYER_ID],
-  });
-  const slugs = [
-    ...new Set(nearby.map((item) => String(item.properties.slug))),
-  ];
-  if (slugs.length > 1) onListSlugs(slugs);
-  else onSelectSlug(String(feature.properties.slug));
+  onSelectSlug(String(feature.properties.slug));
 }

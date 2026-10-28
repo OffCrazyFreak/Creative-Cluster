@@ -51,7 +51,14 @@ export function useMapCamera({
     const padding = getPadding();
     if (bounds[0][0] === bounds[1][0] && bounds[0][1] === bounds[1][1])
       map.easeTo({ center: bounds[0], zoom: FOCUS_ZOOM, padding, duration });
-    else map.fitBounds(bounds, { padding, maxZoom: MAX_FIT_ZOOM, duration });
+    // Absolute: an earlier focus left the panel padding on the map, which would count twice.
+    else
+      map.fitBounds(bounds, {
+        padding,
+        maxZoom: MAX_FIT_ZOOM,
+        duration,
+        absolutePadding: true,
+      });
     // Only a filter change refits; panning and result narrowing never fight the user.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, fitKey]);

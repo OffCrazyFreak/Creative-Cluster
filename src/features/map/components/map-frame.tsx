@@ -14,7 +14,6 @@ import { useIdleActivation } from "../hooks/use-idle-activation";
 import { useMapResults } from "../hooks/use-map-results";
 import { useMediaQuery } from "../hooks/use-media-query";
 import { useOrderSeed } from "../hooks/use-order-seed";
-import { useSignatureState } from "../hooks/use-signature-state";
 import {
   MapFrameContext,
   SetHoveredSlugContext,
@@ -53,8 +52,6 @@ export default function MapFrame() {
     search.near,
     search.radius,
   ].join("|");
-  const [listOverride, setListOverride] =
-    useSignatureState<string[]>(filterSignature);
   const [viewArea, setViewArea] = useState<IViewArea | null>(null);
   // Lets the map keep its attribution and the list's "on the map" group above the phone sheet.
   const [sheetCovered, setSheetCovered] = useState("50dvh");
@@ -70,12 +67,7 @@ export default function MapFrame() {
     enabled: !entryMatch || status === "active" || directoryWanted,
   });
   const directory = directoryQuery.data;
-  const { filters, pins, listed } = useMapResults({
-    directory,
-    search,
-    seed,
-    listOverride,
-  });
+  const { filters, pins } = useMapResults({ directory, search, seed });
 
   const requestMap = useCallback(() => {
     setStatus(supportsWebgl2() ? "active" : "unsupported");
@@ -143,31 +135,17 @@ export default function MapFrame() {
       search,
       filters,
       pins,
-      listed,
       mapStatus: status,
       requestMap,
-      listOverride,
-      setListOverride,
       viewArea,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      directory,
-      search,
-      filters,
-      pins,
-      listed,
-      status,
-      requestMap,
-      listOverride,
-      viewArea,
-    ],
+    [directory, search, filters, pins, status, requestMap, viewArea],
   );
 
   const outlet = <Outlet />;
   const live = directory ? (
     <p role="status" aria-live="polite" className="sr-only">
-      {m.map_results_live({ count: listed.length })}
+      {m.map_results_live({ count: pins.length })}
     </p>
   ) : null;
 
@@ -213,10 +191,6 @@ export default function MapFrame() {
               onSelectSlug={(slug) =>
                 void navigate({ to: "/e/$slug", params: { slug } })
               }
-              onListSlugs={(slugs) => {
-                setListOverride(slugs);
-                void navigate({ to: "/", search: (prev) => prev });
-              }}
               onFailed={() => {
                 setStatus("failed");
                 setViewArea(null);

@@ -23,13 +23,12 @@ interface IMapFiltersMenuProps {
 }
 
 export default function MapFiltersMenu({ defaultOpen }: IMapFiltersMenuProps) {
-  const { directory, search, setListOverride } = useMapFrame();
+  const { directory, search } = useMapFrame();
   const { countries, legal } = useMapFacets(directory);
   const update = useUpdateMapSearch();
   const locale = getLocale();
 
   function clearAll() {
-    setListOverride(null);
     void update({
       q: "",
       tags: "",

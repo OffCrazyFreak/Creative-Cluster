@@ -37,7 +37,6 @@
   ],
   "map_empty": "No listings match these filters.",
   "map_results_list": "Results list",
-  "map_override_clear": "Show all results",
   "map_skip_map": "Skip the map",
   "map_region_label": "Map of listings",
   "map_sheet_label": "Results panel",
@@ -54,7 +53,7 @@
       }
     }
   ],
-  "map_override_title": [
+  "map_same_spot": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],

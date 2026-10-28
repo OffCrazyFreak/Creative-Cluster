@@ -16,12 +16,8 @@ export interface IMapFrameValue {
   filters: IMapFilters;
   // Entries matching the filters: the pins on the map.
   pins: IDirectoryEntry[];
-  // Entries in the panel: the pins, or the ones at a clicked spot.
-  listed: IDirectoryEntry[];
   mapStatus: MapStatus;
   requestMap: () => void;
-  listOverride: string[] | null;
-  setListOverride: (slugs: string[] | null) => void;
   // The part of the map in sight, which the list groups its entries by; null without a map.
   viewArea: IViewArea | null;
 }

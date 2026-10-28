@@ -4,7 +4,6 @@ import {
   AttributionControl,
   Map,
   NavigationControl,
-  type MapLayerMouseEvent,
   type MapRef,
   type ViewStateChangeEvent,
 } from "@vis.gl/react-maplibre";
@@ -22,8 +21,8 @@ import {
   usePrefersReducedMotion,
 } from "../hooks/use-media-query";
 import { useMapCamera } from "../hooks/use-map-camera";
+import { useMapClicks } from "../hooks/use-map-clicks";
 import { useViewReport } from "../hooks/use-view-report";
-import { handleMapClick, openStack } from "../map-click";
 import { buildGeoJson, buildSlugIds } from "../map-geojson";
 import {
   CLUSTER_LAYER_ID,
@@ -37,6 +36,7 @@ import { useMapRecovery } from "../use-map-recovery";
 import type { IViewArea } from "../view-area";
 import MapConnectionArcs from "./map-connection-arcs";
 import MapEntryPins from "./map-entry-pins";
+import MapSameSpotPopover from "./map-same-spot-popover";
 import MapSelectedFrame from "./map-selected-frame";
 import MapStackMarkers from "./map-stack-markers";
 
@@ -57,7 +57,6 @@ export interface IMapViewProps {
   onViewportChange: (viewport: IViewport) => void;
   onViewChange: (area: IViewArea | null) => void;
   onSelectSlug: (slug: string) => void;
-  onListSlugs: (slugs: string[]) => void;
 }
 
 const DEFAULT_VIEWPORT: IViewport = {
@@ -107,6 +106,12 @@ export default function MapView(props: IMapViewProps) {
     slug: props.hoveredSlug,
     key: "active",
   });
+  const clicks = useMapClicks({
+    getMap,
+    getCovered: props.getCovered,
+    duration,
+    onSelectSlug: props.onSelectSlug,
+  });
   const reportView = useViewReport({
     getMap,
     ready,
@@ -130,35 +135,6 @@ export default function MapView(props: IMapViewProps) {
     setViewport(next);
     props.onViewportChange(next);
     reportView();
-  }
-
-  async function onClick(event: MapLayerMouseEvent) {
-    const map = getMap();
-    const feature = event.features?.[0];
-    if (!map || !feature) return;
-    await handleMapClick({
-      map,
-      feature,
-      screen: event.point,
-      covered: props.getCovered(),
-      duration,
-      onSelectSlug: props.onSelectSlug,
-      onListSlugs: props.onListSlugs,
-    });
-  }
-
-  function onStackClick(clusterId: number) {
-    const map = getMap();
-    if (!map) return;
-    openStack({
-      map,
-      clusterId,
-      covered: props.getCovered(),
-      duration,
-      onListSlugs: props.onListSlugs,
-    }).catch(() => {
-      // The stack was re-clustered under the tap; the next render shows the current ones.
-    });
   }
 
   return (
@@ -197,7 +173,7 @@ export default function MapView(props: IMapViewProps) {
         cursor={cursor}
         onLoad={() => setReady(true)}
         onMoveEnd={onMoveEnd}
-        onClick={(event) => void onClick(event)}
+        onClick={(event) => void clicks.onClick(event)}
         onMouseEnter={() => setCursor("pointer")}
         onMouseLeave={() => setCursor("")}
       >
@@ -218,7 +194,13 @@ export default function MapView(props: IMapViewProps) {
         <MapStackMarkers
           allEntries={allEntries}
           data={geoJson}
-          onStackClick={onStackClick}
+          onStackClick={clicks.onStackClick}
+        />
+        <MapSameSpotPopover
+          spot={clicks.sameSpot}
+          pins={pins}
+          onSelect={clicks.selectFromSpot}
+          onClose={clicks.closeSpot}
         />
       </Map>
     </div>
