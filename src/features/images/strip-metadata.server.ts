@@ -7,6 +7,7 @@ const JPEG_ICC = 0xe2;
 const JPEG_ADOBE = 0xee;
 const JPEG_APP15 = 0xef;
 const JPEG_COMMENT = 0xfe;
+const ICC_SIGNATURE = Buffer.from("ICC_PROFILE\0", "latin1");
 const JPEG_START_OF_SCAN = 0xda;
 const JPEG_END_OF_IMAGE = 0xd9;
 const PNG_DROP = new Set(["tEXt", "zTXt", "iTXt", "eXIf", "tIME"]);
@@ -20,10 +21,13 @@ function malformed(): never {
 
 // APP1 (EXIF, XMP), APP13 (IPTC), the other app segments and comments can carry GPS, names and device ids.
 // JFIF, ICC and Adobe colour segments stay because they change how the pixels look.
-function dropsJpegSegment(marker: number) {
+// APP2 also carries MPF and FlashPix data, which can hold image ids, so only a real ICC profile stays.
+function dropsJpegSegment(marker: number, payload: Buffer) {
   if (marker === JPEG_COMMENT) return true;
   if (marker <= JPEG_APP0 || marker > JPEG_APP15) return false;
-  return marker !== JPEG_ICC && marker !== JPEG_ADOBE;
+  if (marker === JPEG_ICC)
+    return !payload.subarray(0, ICC_SIGNATURE.length).equals(ICC_SIGNATURE);
+  return marker !== JPEG_ADOBE;
 }
 
 // Scan data escapes 0xFF as FF 00 and restarts with FF D0 to D7; any other marker ends the scan.
@@ -57,7 +61,8 @@ function stripJpeg(bytes: Buffer): Buffer {
     let end = at + 2 + bytes.readUInt16BE(at + 2);
     if (end > bytes.length) malformed();
     if (marker === JPEG_START_OF_SCAN) end = scanEnd(bytes, end);
-    if (!dropsJpegSegment(marker)) parts.push(bytes.subarray(at, end));
+    if (!dropsJpegSegment(marker, bytes.subarray(at + 4, end)))
+      parts.push(bytes.subarray(at, end));
     at = end;
   }
   return Buffer.concat(parts);

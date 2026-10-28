@@ -94,6 +94,18 @@ describe("stripMetadata", () => {
     expect(imageSize(out)).toMatchObject({ width: 200, height: 100 });
   });
 
+  it("drops APP2 segments that are not a colour profile", () => {
+    const jpeg = jpegWithExif();
+    const withMpf = Buffer.concat([
+      jpeg.subarray(0, 2),
+      segment(0xe2, Buffer.concat([Buffer.from("MPF\0"), GPS])),
+      jpeg.subarray(2),
+    ]);
+    const out = stripMetadata(withMpf, "image/jpeg");
+    expect(out.includes(GPS)).toBe(false);
+    expect(out.includes(Buffer.from("ICC_PROFILE"))).toBe(true);
+  });
+
   it("drops eXIf and text chunks from a PNG", () => {
     const out = stripMetadata(png(), "image/png");
     expect(out.includes(GPS)).toBe(false);
