@@ -22,6 +22,8 @@ const { temp } = await vi.hoisted(async () => {
 vi.mock("@/db/client.server", () => ({ db: temp?.db }));
 const { saveOwnListing } = await import("./save-own-listing.server");
 const { findOwnListing } = await import("./get-own-listing.server");
+const { decideReviewItems } =
+  await import("@/features/review/decide-review.server");
 
 function formValues(
   overrides: Partial<ListingFormValues> = {},
@@ -360,6 +362,125 @@ describe.skipIf(!temp)("saveOwnListing", () => {
       ),
     });
     expect(same).toMatchObject({ status: "pending_review" });
+  });
+
+  it("approving a queued edit keeps admin changes made after it was queued", async () => {
+    const { owner, row } = await setup();
+    const boss = await addUser(db, "boss", "admin");
+    const [adminTag, ownerTag] = await db
+      .insert(schema.tag)
+      .values([
+        { slug: "admin-later", labelEn: "a", labelHr: "a" },
+        { slug: "owner-pick", labelEn: "o", labelHr: "o" },
+      ])
+      .returning();
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues()),
+    });
+    await distrust(row.id);
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(
+        formValues({
+          name: "Studio Renamed",
+          tags: { topic: [], offering: [ownerTag.id], seeking: [] },
+        }),
+      ),
+    });
+    await db
+      .update(schema.entry)
+      .set({ website: "https://admin.example.test" })
+      .where(eq(schema.entry.id, row.id));
+    await db
+      .insert(schema.entryTag)
+      .values({ entryId: row.id, tagId: adminTag.id, field: "topic" });
+    const [item] = await db
+      .select()
+      .from(schema.reviewItem)
+      .where(eq(schema.reviewItem.entityId, row.id));
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("ok");
+    const after = await reload(row.id);
+    expect(after.name).toBe("Studio Renamed");
+    expect(after.website).toBe("https://admin.example.test");
+    const tags = await db
+      .select()
+      .from(schema.entryTag)
+      .where(eq(schema.entryTag.entryId, row.id));
+    expect(tags.map((t) => [t.field, t.tagId]).sort()).toEqual(
+      [
+        ["offering", ownerTag.id],
+        ["topic", adminTag.id],
+      ].sort(),
+    );
+  });
+
+  it("approves an owner edit beside a tag the owner could not pick", async () => {
+    const { owner, row } = await setup();
+    const suggester = await addUser(db, "suggester");
+    const boss = await addUser(db, "boss2", "admin");
+    await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues()),
+    });
+    await distrust(row.id);
+    const [hidden] = await db
+      .insert(schema.tag)
+      .values({
+        slug: "hidden-suggestion",
+        labelEn: "h",
+        labelHr: "h",
+        status: "suggested",
+        suggestedBy: suggester.id,
+      })
+      .returning();
+    await db
+      .insert(schema.entryTag)
+      .values({ entryId: row.id, tagId: hidden.id, field: "topic" });
+    const [picked] = await db
+      .insert(schema.tag)
+      .values({ slug: "owner-picked", labelEn: "p", labelHr: "p" })
+      .returning();
+    const loaded = (await findOwnListing(owner.id))!.values.tags;
+    const unchanged = await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(formValues({ tags: loaded })),
+    });
+    expect(unchanged).toMatchObject({ status: "saved", changed: false });
+    const result = await saveOwnListing({
+      entryId: row.id,
+      userId: owner.id,
+      values: parse(
+        formValues({
+          tags: { ...loaded, topic: [...loaded.topic, picked.id] },
+        }),
+      ),
+    });
+    expect(result).toMatchObject({ status: "pending_review" });
+    const [item] = await db
+      .select()
+      .from(schema.reviewItem)
+      .where(eq(schema.reviewItem.entityId, row.id));
+    const [decided] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(decided.outcome).toBe("ok");
+    const tags = await db
+      .select()
+      .from(schema.entryTag)
+      .where(eq(schema.entryTag.entryId, row.id));
+    expect(tags.map((t) => t.tagId).sort()).toEqual(
+      [hidden.id, picked.id].sort(),
+    );
   });
 
   it("stores a person at an offset town pin with no address or cover", async () => {

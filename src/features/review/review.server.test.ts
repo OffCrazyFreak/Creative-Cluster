@@ -6,7 +6,7 @@ import { emptyLocation } from "@/features/location";
 import { richTextFromPlain } from "@/lib/rich-text/empty-rich-text";
 import { parseRichText } from "@/lib/rich-text/parse-rich-text";
 
-import { addEntry, addTag } from "../../../tests/helpers/fixture-data";
+import { addEntry, addTag, addUser } from "../../../tests/helpers/fixture-data";
 import type { ITempDatabase } from "../../../tests/helpers/temp-database";
 import type { ApplicationInput } from "../apply/apply-schemas";
 
@@ -326,6 +326,121 @@ describe.skipIf(!temp)("review services", () => {
       boss.id,
     );
     expect(result.outcome).toBe("ok");
+  });
+
+  it("keeps the detected language of an approved text edit", async () => {
+    const boss = await admin();
+    const listing = await addEntry(db, "Language Kept");
+    const [item] = await db
+      .insert(schema.reviewItem)
+      .values({
+        type: "untrusted_edit",
+        entityType: "entry",
+        entityId: listing.id,
+        payload: {
+          patch: { descriptionText: "Novi opis", sourceLocale: "hr" },
+          submittedBy: boss.id,
+        },
+      })
+      .returning();
+    await decideReviewItems({ ids: [item.id], decision: "approve" }, boss.id);
+    const [after] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, listing.id));
+    expect(after.descriptionText).toBe("Novi opis");
+    expect(after.sourceLocale).toBe("hr");
+  });
+
+  it("approves an edit whose tags were merged or rejected since it was queued", async () => {
+    const boss = await admin();
+    const merged = await addTag(db, "merged-later");
+    const survivor = await addTag(db, "merge-survivor");
+    const rejected = await addTag(db, "rejected-later", {
+      status: "rejected",
+    });
+    await db
+      .update(schema.tag)
+      .set({ canonicalId: survivor.id })
+      .where(eq(schema.tag.id, merged.id));
+    const listing = await addEntry(
+      db,
+      "Tags Moved",
+      {},
+      {
+        ownerUserId: boss.id,
+      },
+    );
+    const [item] = await db
+      .insert(schema.reviewItem)
+      .values({
+        type: "untrusted_edit",
+        entityType: "entry",
+        entityId: listing.id,
+        payload: {
+          patch: { name: "Tags Moved Renamed" },
+          tags: { topic: [merged.id, rejected.id] },
+          submittedBy: boss.id,
+        },
+      })
+      .returning();
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("ok");
+    const tags = await db
+      .select()
+      .from(schema.entryTag)
+      .where(eq(schema.entryTag.entryId, listing.id));
+    expect(tags.map((row) => row.tagId)).toEqual([survivor.id]);
+    const [after] = await db
+      .select()
+      .from(schema.entry)
+      .where(eq(schema.entry.id, listing.id));
+    expect(after.name).toBe("Tags Moved Renamed");
+  });
+
+  it("approves an edit that sent back a pending tag an admin removed since", async () => {
+    const boss = await admin();
+    const owner = await addUser(db, "edit-owner");
+    const suggester = await addUser(db, "edit-suggester");
+    const pending = await addTag(db, "pending-removed", {
+      status: "suggested",
+      suggestedBy: suggester.id,
+    });
+    const picked = await addTag(db, "owner-added");
+    const listing = await addEntry(
+      db,
+      "Pending Removed",
+      {},
+      {
+        ownerUserId: owner.id,
+      },
+    );
+    const [item] = await db
+      .insert(schema.reviewItem)
+      .values({
+        type: "untrusted_edit",
+        entityType: "entry",
+        entityId: listing.id,
+        payload: {
+          patch: {},
+          tags: { topic: [pending.id, picked.id] },
+          submittedBy: owner.id,
+        },
+      })
+      .returning();
+    const [result] = await decideReviewItems(
+      { ids: [item.id], decision: "approve" },
+      boss.id,
+    );
+    expect(result.outcome).toBe("ok");
+    const tags = await db
+      .select()
+      .from(schema.entryTag)
+      .where(eq(schema.entryTag.entryId, listing.id));
+    expect(tags.map((row) => row.tagId)).toEqual([picked.id]);
   });
 
   it("refuses to approve an application for a blocked account", async () => {

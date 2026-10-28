@@ -32,7 +32,7 @@ export async function movePin(
         geocodedAt: new Date(),
       };
       await tx.update(entry).set(patch).where(eq(entry.id, entryId));
-      // A queued owner edit holds a full snapshot; approving it later would write the old coordinates back over this move.
+      // A queued owner edit that touched the pin (it queues only changed fields) would write it back over this move.
       await tx
         .update(reviewItem)
         .set({
@@ -52,7 +52,7 @@ export async function movePin(
             eq(reviewItem.type, "untrusted_edit"),
             eq(reviewItem.status, "open"),
             eq(reviewItem.entityId, entryId),
-            sql`${reviewItem.payload}->'patch' ? 'lat'`,
+            sql`${reviewItem.payload}->'patch' ?| array['lat', 'lng', 'onlineOnly', 'pinMovedByHand', 'locationSource', 'precision']`,
           ),
         );
       await writeChange(tx, {

@@ -1,6 +1,7 @@
 import { dequal } from "dequal";
 import { and, eq, inArray } from "drizzle-orm";
 
+import { LOCALES } from "@/constants/locales";
 import { TAG_FIELDS } from "@/constants/tags";
 import type { Tx } from "@/db/client.server";
 import { entry, image, reviewItem } from "@/db/schema";
@@ -11,6 +12,7 @@ import { enqueueTranslation } from "@/lib/translation/enqueue-translation.server
 import { NotFoundError } from "@/server/errors";
 
 import { pickRevertible } from "./entry-fields";
+import { resolveQueuedTags } from "./queued-tags.server";
 
 interface IApplyUntrustedEdit {
   itemId: string;
@@ -63,12 +65,15 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
   if (!row) throw new NotFoundError();
   await applyUntrustedEditTags(tx, input.entryId, input.payload);
 
-  // The queued patch is a full snapshot; only what still differs from the live row is a change, so edits made
-  // since (an admin fix, a revert) are not overwritten with stale values.
-  const proposed = await withoutMissingImages(
-    tx,
-    pickRevertible(recordOf(input.payload.patch)),
-  );
+  // Items queued before patches held only changed fields carry a full snapshot; only what still differs from
+  // the live row is a change, so edits made since (an admin fix, a revert) are not overwritten with stale values.
+  const patch = recordOf(input.payload.patch);
+  const locale = LOCALES.find((code) => code === patch.sourceLocale);
+  const proposed = await withoutMissingImages(tx, {
+    ...pickRevertible(patch),
+    // Without the detected language the new text would be translated as if written in the old one.
+    ...(locale ? { sourceLocale: locale } : {}),
+  });
   const changes = Object.fromEntries(
     Object.entries(proposed).filter(
       ([key, value]) => !dequal(row[key as keyof typeof row], value),
@@ -127,8 +132,13 @@ async function applyUntrustedEditTags(
     await saveEntryTagsInTx(tx, {
       entryId,
       field,
-      tagIds: ids.filter((id): id is string => typeof id === "string"),
-      actor: { userId: submittedBy, isAdmin: false },
+      tagIds: await resolveQueuedTags(tx, {
+        entryId,
+        field,
+        submittedBy,
+        ids: ids.filter((id): id is string => typeof id === "string"),
+      }),
+      actor: { userId: submittedBy, isAdmin: false, viaReview: true },
     });
   }
 }

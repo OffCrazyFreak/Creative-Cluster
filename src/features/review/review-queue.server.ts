@@ -60,7 +60,7 @@ function filters(input: ReviewListInput): SQL {
   return and(...conditions) as SQL;
 }
 
-// The queued patch is a full snapshot of the form, so the useful summary is what differs from the live listing.
+// Older queued patches are full form snapshots, so the useful summary is what differs from the live listing.
 function changedFieldsOf(
   payload: Record<string, unknown>,
   current: Record<string, unknown> | undefined,
