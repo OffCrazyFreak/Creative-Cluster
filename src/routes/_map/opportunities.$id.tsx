@@ -52,7 +52,9 @@ export const Route = createFileRoute("/_map/opportunities/$id")({
         { property: "og:type", content: "website" },
         ...(noindex ? [{ name: "robots", content: "noindex, follow" }] : []),
       ],
-      links: noindex ? [canonicalLink(path)] : indexableLinks(path),
+      links: noindex
+        ? [canonicalLink(path)]
+        : indexableLinks(path, opportunity.indexedLocales),
     };
   },
   component: OpportunityPage,

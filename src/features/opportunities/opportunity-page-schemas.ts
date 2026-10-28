@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { LOCALES } from "@/constants/locales";
+import { LOCALES, type AppLocale } from "@/constants/locales";
 import {
   OPPORTUNITY_REPORT_MESSAGE_MAX,
   type OpportunityCategory,
@@ -61,6 +61,8 @@ export interface IOpportunityPage {
   translation: IOpportunityTranslation | null;
   // True when the reader's language differs but no translation exists yet.
   translationMissing: boolean;
+  // Languages whose page is indexable (the owner's and each stored translation), for hreflang.
+  indexedLocales: AppLocale[];
 }
 
 export type OpportunityPageResult =

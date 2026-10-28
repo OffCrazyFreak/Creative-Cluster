@@ -8,6 +8,7 @@ import {
 } from "@/constants/moderation";
 import ChangesPage from "@/features/changes/components/changes-page";
 import { changesQueryOptions } from "@/features/changes/changes-queries";
+import { loginOnUnauthorized } from "@/features/session/login-on-unauthorized";
 
 const searchSchema = z.object({
   entityType: z.enum(MODERATED_ENTITIES).optional().catch(undefined),
@@ -20,8 +21,10 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/admin/changes")({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => search,
-  loader: ({ context, deps }) =>
-    context.queryClient.ensureQueryData(changesQueryOptions(deps)),
+  loader: ({ context, deps, location }) =>
+    loginOnUnauthorized({ context, location }, () =>
+      context.queryClient.ensureQueryData(changesQueryOptions(deps)),
+    ),
   component: ChangesRoute,
 });
 

@@ -26,6 +26,7 @@
   "common_try_again": "Try again",
   "common_cancel": "Cancel",
   "common_close": "Close",
+  "common_loading": "Loading",
   "common_entry_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

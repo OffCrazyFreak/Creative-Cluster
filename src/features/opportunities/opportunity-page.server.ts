@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 
-import type { AppLocale } from "@/constants/locales";
+import { LOCALES, type AppLocale } from "@/constants/locales";
 import { db } from "@/db/client.server";
 import { entry, image, opportunity, opportunityTag, tag } from "@/db/schema";
 import { hasContactChannel } from "@/features/entry/redact-entry";
@@ -18,6 +18,10 @@ import type {
   IOpportunityPage,
   OpportunityPageResult,
 } from "./opportunity-page-schemas";
+
+function isTranslated(stored: IStoredTranslation | undefined) {
+  return Boolean(stored?.title || stored?.body);
+}
 
 export async function findOpportunityForPage(
   id: string,
@@ -49,7 +53,9 @@ export async function findOpportunityForPage(
   if (state === "gone" || state === "missing") return { status: state };
 
   const { opp } = found;
-  const [tags, translations] = await Promise.all([
+  // Every other language is looked up so the page's hreflang only names indexable pages.
+  const others = LOCALES.filter((other) => other !== opp.sourceLocale);
+  const [tags, ...perLocale] = await Promise.all([
     db
       .select({
         slug: tag.slug,
@@ -59,12 +65,13 @@ export async function findOpportunityForPage(
       .from(opportunityTag)
       .innerJoin(tag, eq(tag.id, opportunityTag.tagId))
       .where(and(eq(opportunityTag.opportunityId, id), publicTagCondition)),
-    opp.sourceLocale === locale
-      ? new Map<string, IStoredTranslation>()
-      : loadOpportunityTranslations(db, [id], locale),
+    ...others.map((other) => loadOpportunityTranslations(db, [id], other)),
   ]);
-  const translated = translations.get(id);
-  const hasTranslation = Boolean(translated?.title || translated?.body);
+  const stored = new Map(
+    others.map((other, index) => [other, perLocale[index]?.get(id)]),
+  );
+  const translated = stored.get(locale);
+  const hasTranslation = isTranslated(translated);
   const body = safeParseRichText(opp.body)?.doc ?? EMPTY_RICH_TEXT;
 
   const opportunityPage: IOpportunityPage = {
@@ -102,6 +109,9 @@ export async function findOpportunityForPage(
           }
         : null,
     translationMissing: opp.sourceLocale !== locale && !hasTranslation,
+    indexedLocales: LOCALES.filter(
+      (other) => other === opp.sourceLocale || isTranslated(stored.get(other)),
+    ),
   };
   return { status: "found", opportunity: opportunityPage };
 }

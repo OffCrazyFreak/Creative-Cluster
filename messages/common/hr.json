@@ -26,6 +26,7 @@
   "common_try_again": "Pokušaj ponovno",
   "common_cancel": "Odustani",
   "common_close": "Zatvori",
+  "common_loading": "Učitavanje",
   "common_entry_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

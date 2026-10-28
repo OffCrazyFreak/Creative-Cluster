@@ -124,6 +124,24 @@ describe.skipIf(!temp)("opportunity page", () => {
     });
   });
 
+  it("names another language for hreflang only once it is translated", async () => {
+    const { post, result } = await page({ sourceLocale: "en" });
+    expect(result).toMatchObject({ opportunity: { indexedLocales: ["en"] } });
+    await db.insert(schema.translation).values({
+      entityType: "opportunity",
+      entityId: post.id,
+      field: "title",
+      locale: "hr",
+      text: "Prevedeni naslov",
+      origin: "machine",
+      sourceHash: "x",
+    });
+    const again = await findOpportunityForPage(post.id, "en");
+    expect(again).toMatchObject({
+      opportunity: { indexedLocales: ["hr", "en"], translationMissing: false },
+    });
+  });
+
   it("offers the contact relay only for a working address", async () => {
     async function channel(email: string | null, invalid = false) {
       const owner = await addEntry(db, "Contact");
