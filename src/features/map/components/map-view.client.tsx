@@ -22,6 +22,7 @@ import {
 } from "../hooks/use-media-query";
 import { useMapCamera } from "../hooks/use-map-camera";
 import { useMapClicks } from "../hooks/use-map-clicks";
+import { useNearMe } from "../hooks/use-near-me";
 import { useViewReport } from "../hooks/use-view-report";
 import { buildGeoJson, buildSlugIds } from "../map-geojson";
 import {
@@ -36,6 +37,7 @@ import { useMapRecovery } from "../use-map-recovery";
 import type { IViewArea } from "../view-area";
 import MapConnectionArcs from "./map-connection-arcs";
 import MapEntryPins from "./map-entry-pins";
+import MapLocateButton from "./map-locate-button";
 import MapSameSpotPopover from "./map-same-spot-popover";
 import MapSavedStars from "./map-saved-stars";
 import MapSelectedFrame from "./map-selected-frame";
@@ -113,6 +115,14 @@ export default function MapView(props: IMapViewProps) {
     duration,
     onSelectSlug: props.onSelectSlug,
   });
+  const nearMe = useNearMe({
+    getMap,
+    ready,
+    focusSlug,
+    hasInitialViewport: Boolean(initialViewport),
+    duration,
+    getPadding,
+  });
   const reportView = useViewReport({
     getMap,
     ready,
@@ -133,6 +143,7 @@ export default function MapView(props: IMapViewProps) {
   function onMoveEnd(event: ViewStateChangeEvent) {
     const { latitude, longitude, zoom } = event.viewState;
     const next = { lat: latitude, lng: longitude, zoom };
+    if (event.originalEvent) nearMe.noteUserMove();
     setViewport(next);
     props.onViewportChange(next);
     reportView();
@@ -143,8 +154,9 @@ export default function MapView(props: IMapViewProps) {
       ref={containerRef}
       role="region"
       aria-label={m.map_region_label()}
-      className="size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-right]:bottom-[min(var(--map-sheet-covered,50dvh),50dvh)]! max-md:[&_.maplibregl-ctrl-top-right]:top-32!"
+      className="relative size-full [&_.maplibregl-ctrl-attrib_a]:inline-block [&_.maplibregl-ctrl-attrib_a]:py-1.5 max-md:[&_.maplibregl-ctrl-bottom-right]:bottom-[min(var(--map-sheet-covered,50dvh),50dvh)]! [&_.maplibregl-ctrl-top-right]:top-12! max-md:[&_.maplibregl-ctrl-top-right]:top-44!"
     >
+      <MapLocateButton status={nearMe.status} onLocate={nearMe.locate} />
       <Map
         key={mapKey}
         ref={mapRef}

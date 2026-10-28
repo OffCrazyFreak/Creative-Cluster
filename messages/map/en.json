@@ -68,5 +68,10 @@
   "map_saved_failed": "Your saved entries could not be changed. Try again.",
   "map_saved_limit": "You can save up to {max} entries.",
   "map_save": "Save {name}",
-  "map_unsave": "Remove {name} from saved"
+  "map_unsave": "Remove {name} from saved",
+  "map_near_me": "Entries near me",
+  "map_near_me_approximate": "Showing entries by your approximate location. Turn on location on your device for a more exact order.",
+  "map_near_me_denied": "Location access is blocked. Allow it in your browser settings or search by town.",
+  "map_near_me_unavailable": "Your location isn't available right now. Search by town or address.",
+  "map_near_me_timeout": "Your location can't be determined. Check that location is turned on on your device, or search by town."
 }
