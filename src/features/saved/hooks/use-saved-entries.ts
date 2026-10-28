@@ -33,21 +33,15 @@ export function useSavedEntries() {
       toast.error(m.map_saved_failed());
       return;
     }
-    function onError() {
-      toast.error(m.map_saved_failed());
-    }
     if (isSaved(target.slug)) {
-      save.mutate(
-        entries.filter((item) => item.slug !== target.slug),
-        { onError },
-      );
+      save.mutate(entries.filter((item) => item.slug !== target.slug));
       return;
     }
     if (entries.length >= MAX_SAVED_ENTRIES) {
       toast.error(m.map_saved_limit({ max: MAX_SAVED_ENTRIES }));
       return;
     }
-    save.mutate([...entries, target], { onError });
+    save.mutate([...entries, target]);
   }
 
   return { entries, isSaved, toggle };

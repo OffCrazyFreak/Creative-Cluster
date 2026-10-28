@@ -19,7 +19,7 @@ export function listSavedEntries(
   tx: DbOrTx = db,
 ): Promise<ISavedEntry[]> {
   return tx
-    .select({ slug: entry.slug, name: entry.name })
+    .select({ id: entry.id, slug: entry.slug, name: entry.name })
     .from(savedEntry)
     .innerJoin(entry, eq(entry.id, savedEntry.entryId))
     .where(and(eq(savedEntry.userId, userId), publicEntryCondition()))
@@ -59,13 +59,14 @@ export async function replaceSavedList(
   keys: string[],
 ): Promise<ISavedEntry[]> {
   return db.transaction(async (tx) => {
-    // The account row lock serialises saves of one member, even while the list is still empty.
+    // The account row lock serialises saves of one member, even while the list is still empty;
+    // "no key update" leaves foreign key checks of other tables free.
     const [owner] = await tx
       .select({ id: user.id })
       .from(user)
       .where(eq(user.id, userId))
       .limit(1)
-      .for("update");
+      .for("no key update");
     if (!owner) throw new NotFoundError();
     const previous = await tx
       .select({ entryId: savedEntry.entryId, createdAt: savedEntry.createdAt })

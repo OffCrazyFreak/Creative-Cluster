@@ -15,6 +15,8 @@ export type ReplaceSavedInput = z.infer<typeof replaceSavedInput>;
 
 // What the map needs to star pins and list the Saved group: pins and links are keyed by slug.
 export interface ISavedEntry {
+  // Missing only on an entry the member just clicked, until the saved list is fetched again.
+  id?: string;
   slug: string;
   name: string;
 }
