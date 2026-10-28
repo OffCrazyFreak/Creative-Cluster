@@ -32,6 +32,7 @@ import { useMapRecovery } from "../use-map-recovery";
 import type { IViewArea } from "../view-area";
 import MapConnectionArcs from "./map-connection-arcs";
 import MapEntryPins from "./map-entry-pins";
+import MapSelectedFrame from "./map-selected-frame";
 
 export interface IMapViewProps {
   // Every published entry, for stable numeric ids.
@@ -99,14 +100,6 @@ export default function MapView(props: IMapViewProps) {
     ids: slugIds,
     slug: props.hoveredSlug,
     key: "active",
-  });
-  useFeatureState({
-    getMap,
-    ready,
-    data: geoJson,
-    ids: slugIds,
-    slug: focusSlug,
-    key: "selected",
   });
   const reportView = useViewReport({
     getMap,
@@ -190,6 +183,11 @@ export default function MapView(props: IMapViewProps) {
         />
         <MapConnectionArcs allEntries={allEntries} selectedSlug={focusSlug} />
         <MapEntryPins data={geoJson} />
+        <MapSelectedFrame
+          ready={ready}
+          allEntries={allEntries}
+          selectedSlug={focusSlug}
+        />
       </Map>
     </div>
   );

@@ -12,7 +12,7 @@ import { SELECTED_FRAME_ID } from "./map-icons/entry-icon-id";
 export const CLUSTER_LAYER_ID = "clusters";
 export const POINT_LAYER_ID = "points";
 const HOVER_LAYER_ID = "point-hover";
-const OPPORTUNITY_LAYER_ID = "point-opportunities";
+export const OPPORTUNITY_LAYER_ID = "point-opportunities";
 
 const active: ExpressionSpecification = [
   "boolean",
@@ -24,11 +24,6 @@ const hasOpportunities: ExpressionSpecification = [
   ">",
   ["to-number", ["get", "opps"], 0],
   0,
-];
-const selected: ExpressionSpecification = [
-  "boolean",
-  ["feature-state", "selected"],
-  false,
 ];
 const isPoint: ExpressionSpecification = ["!", ["has", "point_count"]];
 
@@ -70,13 +65,13 @@ export const pointLayer: Omit<SymbolLayerSpecification, "source"> = {
   layout: { "icon-image": ["get", "icon"], ...ALWAYS_VISIBLE },
 };
 
-// The selection frame around the open entry, and faintly while its list row is hovered or focused.
+// The selection frame's shape, shown faintly while the entry's list row is hovered or focused.
 export const hoverLayer: Omit<SymbolLayerSpecification, "source"> = {
   id: HOVER_LAYER_ID,
   type: "symbol",
   filter: isPoint,
   layout: { "icon-image": SELECTED_FRAME_ID, ...ALWAYS_VISIBLE },
-  paint: { "icon-opacity": ["case", selected, 1, active, 0.6, 0] },
+  paint: { "icon-opacity": ["case", active, 0.6, 0] },
 };
 
 // An amber dot on the tile's corner marks entries that have live opportunities.
