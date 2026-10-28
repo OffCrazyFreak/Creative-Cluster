@@ -41,7 +41,7 @@ function sleep(ms: number) {
 // next free slot in one statement, so concurrent searches queue one second apart instead of racing a window.
 const NOMINATIM_MAX_WAIT_MS = 3000;
 
-async function acquireNominatim() {
+export async function acquireNominatim() {
   const result = await db.execute(sql`
     insert into usage_counter (key, window_start, count) values ('nominatim:slot', now(), 0)
     on conflict (key) do update
@@ -51,7 +51,7 @@ async function acquireNominatim() {
         <= now() + make_interval(secs => ${NOMINATIM_MAX_WAIT_MS / 1000})
     returning extract(epoch from (window_start - now())) * 1000 as wait_ms`);
   const row = (result as { rows: { wait_ms: string }[] }).rows[0];
-  if (!row) throw new GeocodeError("rate_limited");
+  if (!row) throw new GeocodeError("busy", "nominatim queue full");
   const wait = Number(row.wait_ms);
   if (wait > 0) await sleep(wait);
 }

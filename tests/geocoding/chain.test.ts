@@ -11,6 +11,7 @@ import {
   type GeocodeErrorCode,
 } from "../../src/lib/geocoding/errors";
 import { getJson } from "../../src/lib/geocoding/http";
+import { createPhoton } from "../../src/lib/geocoding/photon";
 import type { GeoHit, Geocoder } from "../../src/lib/geocoding/types";
 
 const HIT: GeoHit = {
@@ -192,6 +193,23 @@ describe("circuit breaker", () => {
       code: "bad_request",
     });
     expect(call).toHaveBeenCalledTimes(2);
+  });
+
+  it("skips Photon for a country without a box instead of pausing it for every country", async () => {
+    const fetcher = vi.fn(() =>
+      Promise.resolve(new Response(JSON.stringify({ features: [] }))),
+    );
+    const photon = withBreaker(
+      createPhoton({ fetcher, userAgent: "test" }),
+      createBreaker(() => 0),
+    );
+    const norway = await searchChain([photon], {
+      text: "Oslo",
+      countryCode: "NO",
+    });
+    expect(norway).toEqual({ value: [], degraded: false });
+    await searchChain([photon], query);
+    expect(fetcher).toHaveBeenCalledTimes(1);
   });
 });
 
