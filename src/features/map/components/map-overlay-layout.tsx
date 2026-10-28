@@ -1,98 +1,68 @@
-import {
-  lazy,
-  Suspense,
-  type CSSProperties,
-  type ReactNode,
-  type RefObject,
-} from "react";
+import { lazy, Suspense, type ReactNode, type RefObject } from "react";
 
-import MobileMenu from "@/components/custom/layout/mobile-menu";
 import { Card, CardContent } from "@/components/ui/card";
 
-import MapAccountButton from "./map-account-button";
 import MapFilterChips from "./map-filter-chips";
 import MapSearchBar from "./map-search-bar";
 import MapSkipLink from "./map-skip-link";
 import MapStatusNotice from "./map-status-notice";
 import type { MapStatus } from "../map-frame-context";
 
-// Phones only: the drawer code stays out of the desktop and entry-page bundles.
-const MapSheet = lazy(() => import("./map-sheet"));
+// Phones only: the bar and search code stay out of the desktop and entry-page bundles.
+const MapPhoneLayout = lazy(() => import("./map-phone-layout"));
 
 interface IMapOverlayLayoutProps {
   wide: boolean;
   status: MapStatus;
   frameRef: RefObject<HTMLDivElement | null>;
   panelRef: RefObject<HTMLDivElement | null>;
-  sheetRef: RefObject<HTMLDivElement | null>;
   map: ReactNode;
-  // How much of the screen's bottom the phone sheet covers, as a CSS length.
-  sheetCovered: string;
-  onSheetCoveredChange: (covered: string) => void;
   children: ReactNode;
 }
 
-// The map fills the frame; the panel floats over it (side panel on desktop, bottom sheet on phones).
+// The map fills the frame; the panel floats over it (side panel on desktop, floating bar on phones).
 export default function MapOverlayLayout({
   wide,
   status,
   frameRef,
   panelRef,
-  sheetRef,
   map,
-  sheetCovered,
-  onSheetCoveredChange,
   children,
 }: IMapOverlayLayoutProps) {
   return (
     <div
       ref={frameRef}
-      style={{ "--map-sheet-covered": sheetCovered } as CSSProperties}
       className="relative h-[calc(100dvh-var(--site-header-height,3.0625rem))] min-h-[28rem] overflow-hidden max-md:h-dvh"
     >
-      <MapSkipLink />
-      <div className="absolute inset-0">{map}</div>
       {wide ? (
-        <div
-          ref={panelRef}
-          className="absolute inset-y-3 left-3 z-10 flex w-96 max-w-[calc(100%-1.5rem)] flex-col gap-2"
-        >
-          <MapSearchBar />
-          <MapFilterChips />
-          <Card className="min-h-0 flex-1 overflow-y-auto">
-            <CardContent id="results-panel" className="flex flex-col gap-4">
-              <MapStatusNotice status={status} />
-              {children}
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
         <>
+          <MapSkipLink />
+          <div className="absolute inset-0">{map}</div>
           <div
             ref={panelRef}
-            className="absolute inset-x-2 top-2 z-10 flex flex-col gap-2"
+            className="absolute inset-y-3 left-3 z-10 flex w-96 max-w-[calc(100%-1.5rem)] flex-col gap-2"
           >
-            <div
-              data-map-bar=""
-              className="flex items-center gap-2 rounded-xl border bg-background p-1"
-            >
-              <MobileMenu />
-              <div className="min-w-0 flex-1">
-                <MapSearchBar />
-              </div>
-              <MapAccountButton />
-            </div>
+            <MapSearchBar />
             <MapFilterChips />
+            <Card className="min-h-0 flex-1 overflow-y-auto">
+              <CardContent id="results-panel" className="flex flex-col gap-4">
+                <MapStatusNotice status={status} />
+                {children}
+              </CardContent>
+            </Card>
           </div>
-          <Suspense fallback={<div id="results-panel">{children}</div>}>
-            <MapSheet
-              sheetRef={sheetRef}
-              onCoveredChange={onSheetCoveredChange}
-            >
-              {children}
-            </MapSheet>
-          </Suspense>
         </>
+      ) : (
+        <Suspense fallback={null}>
+          <MapPhoneLayout
+            status={status}
+            frameRef={frameRef}
+            barRef={panelRef}
+            map={map}
+          >
+            {children}
+          </MapPhoneLayout>
+        </Suspense>
       )}
     </div>
   );

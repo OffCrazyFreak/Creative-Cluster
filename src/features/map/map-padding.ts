@@ -44,12 +44,3 @@ export function measurePadding(
     left: clamp(covered.left + MARGIN, frame.width),
   };
 }
-
-// The sheet animates between snap points, so its settled height comes from the snap, not its box.
-export function sheetCoveredPixels(
-  css: string,
-  viewportHeight: number,
-): number {
-  const value = Number.parseFloat(css);
-  return css.endsWith("dvh") ? (value / 100) * viewportHeight : value;
-}

@@ -20,11 +20,7 @@ import {
   type IMapFrameValue,
   type MapStatus,
 } from "../map-frame-context";
-import {
-  measureCovered,
-  measurePadding,
-  sheetCoveredPixels,
-} from "../map-padding";
+import { measureCovered, measurePadding } from "../map-padding";
 import type { IMapOrigin } from "../map-origin";
 import { formatViewport, parseViewport, type IViewport } from "../map-search";
 import { sameView, type IViewArea } from "../view-area";
@@ -56,8 +52,6 @@ export default function MapFrame() {
   const [viewArea, setViewArea] = useState<IViewArea | null>(null);
   // GPS or the IP guess, reported by the map; the list sorts from it.
   const [origin, setOrigin] = useState<IMapOrigin | null>(null);
-  // Lets the map keep its attribution and the list's "on the map" group above the phone sheet.
-  const [sheetCovered, setSheetCovered] = useState("50dvh");
 
   // An entry opened directly stays map-free (no MapLibre download) until the visitor asks for it.
   const [directoryWanted, setDirectoryWanted] = useState(false);
@@ -84,14 +78,13 @@ export default function MapFrame() {
 
   const frameRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const sheetRef = useRef<HTMLDivElement>(null);
   const getPadding = useCallback(
     () =>
       measurePadding(
         frameRef.current?.getBoundingClientRect() ??
           new DOMRect(0, 0, 1000, 700),
         panelRef.current?.getBoundingClientRect() ?? null,
-        sheetRef.current?.getBoundingClientRect() ?? null,
+        null,
         wide,
       ),
     [wide],
@@ -102,11 +95,10 @@ export default function MapFrame() {
         frameRef.current?.getBoundingClientRect() ??
           new DOMRect(0, 0, 1000, 700),
         panelRef.current?.getBoundingClientRect() ?? null,
-        window.innerHeight -
-          sheetCoveredPixels(sheetCovered, window.innerHeight),
+        null,
         wide,
       ),
-    [wide, sheetCovered],
+    [wide],
   );
   const reportViewArea = useCallback((next: IViewArea | null) => {
     setViewArea((prev) => (sameView(prev, next) ? prev : next));
@@ -183,7 +175,6 @@ export default function MapFrame() {
           status={status}
           frameRef={frameRef}
           panelRef={panelRef}
-          sheetRef={sheetRef}
           map={
             <MapLazy
               allEntries={directory.entries}
@@ -191,7 +182,7 @@ export default function MapFrame() {
               initialViewport={initialViewport}
               getPadding={getPadding}
               getCovered={getCovered}
-              coverKey={wide ? "wide" : sheetCovered}
+              coverKey={wide ? "wide" : "phone"}
               focusSlug={focusSlug}
               hoveredSlug={hoveredSlug}
               fitKey={filterSignature}
@@ -207,8 +198,6 @@ export default function MapFrame() {
               }}
             />
           }
-          sheetCovered={sheetCovered}
-          onSheetCoveredChange={setSheetCovered}
         >
           {outlet}
         </MapOverlayLayout>
