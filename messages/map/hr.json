@@ -38,7 +38,6 @@
   ],
   "map_empty": "Nijedan unos ne odgovara filtrima.",
   "map_results_list": "Popis rezultata",
-  "map_override_clear": "Prikaži sve rezultate",
   "map_skip_map": "Preskoči kartu",
   "map_region_label": "Karta unosa",
   "map_sheet_label": "Ploča s rezultatima",
@@ -56,7 +55,7 @@
       }
     }
   ],
-  "map_override_title": [
+  "map_same_spot": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],

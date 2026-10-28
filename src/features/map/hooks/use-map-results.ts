@@ -10,7 +10,6 @@ interface IUseMapResultsInput {
   directory: IMapDirectory | undefined;
   search: MapSearch;
   seed: number;
-  listOverride: string[] | null;
 }
 
 // All filtering happens in the browser on the published directory.
@@ -18,7 +17,6 @@ export function useMapResults({
   directory,
   search,
   seed,
-  listOverride,
 }: IUseMapResultsInput) {
   // Filters depend on the filter fields only: the viewport param `v` changes on every pan.
   const { q, tags, country, legal, near, radius } = search;
@@ -45,11 +43,5 @@ export function useMapResults({
     });
   }, [directory, index, filters, seed]);
 
-  const listed = useMemo(() => {
-    if (!listOverride) return pins;
-    const wanted = new Set(listOverride);
-    return pins.filter((entry) => wanted.has(entry.slug));
-  }, [pins, listOverride]);
-
-  return { filters, pins, listed };
+  return { filters, pins };
 }
