@@ -36,7 +36,8 @@ export const Route = createFileRoute("/_map/e/$slug")({
       });
     // Connections are prefetched so the list is in the server-rendered HTML; they load alongside
     // the translation instead of after it.
-    // Every other language is looked up so hreflang only names pages that are indexable.
+    // Every other language is looked up so hreflang only names pages that are indexable. Only the
+    // shown language may fail the page; another one that fails is left out of hreflang.
     const found = result.status === "found" ? result.entry : null;
     const others = found
       ? LOCALES.filter((locale) => locale !== found.sourceLocale)
@@ -44,15 +45,18 @@ export const Route = createFileRoute("/_map/e/$slug")({
     const [views] = await Promise.all([
       found
         ? Promise.all(
-            others.map((locale) =>
-              context.queryClient.fetchQuery(
+            others.map((locale) => {
+              const view = context.queryClient.fetchQuery(
                 entryTranslationQueryOptions(
                   found.id,
                   locale,
                   context.viewer?.id ?? null,
                 ),
-              ),
-            ),
+              );
+              return locale === getLocale()
+                ? view
+                : view.catch(() => undefined);
+            }),
           )
         : [],
       found

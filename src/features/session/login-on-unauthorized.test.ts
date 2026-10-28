@@ -39,7 +39,6 @@ const ROUTES = {
   AdminIndex,
   AdminLinks,
   AdminUsers,
-  Help,
 };
 
 async function runLoader(route: { options: { loader?: unknown } }) {
@@ -71,4 +70,12 @@ describe("signed-in loaders on an expired session", () => {
       expect(viewer).toBeNull();
     });
   }
+});
+
+describe("help page on an expired admin session", () => {
+  it("clears the viewer and shows the public guide", async () => {
+    const { thrown, viewer } = await runLoader(Help);
+    expect(thrown).toBeNull();
+    expect(viewer).toBeNull();
+  });
 });
