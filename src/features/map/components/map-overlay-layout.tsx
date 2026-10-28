@@ -24,7 +24,6 @@ interface IMapOverlayLayoutProps {
   status: MapStatus;
   frameRef: RefObject<HTMLDivElement | null>;
   panelRef: RefObject<HTMLDivElement | null>;
-  sheetRef: RefObject<HTMLDivElement | null>;
   locateRef: RefObject<HTMLButtonElement | null>;
   map: ReactNode;
   // Pixels of the screen's bottom the phone's entry sheet covers.
@@ -41,7 +40,6 @@ export default function MapOverlayLayout({
   status,
   frameRef,
   panelRef,
-  sheetRef,
   locateRef,
   map,
   sheetCovered,
@@ -67,7 +65,6 @@ export default function MapOverlayLayout({
             status={status}
             frameRef={frameRef}
             barRef={panelRef}
-            sheetRef={sheetRef}
             locateRef={locateRef}
             onCoveredChange={setCovered}
             selectedSlug={selectedSlug}

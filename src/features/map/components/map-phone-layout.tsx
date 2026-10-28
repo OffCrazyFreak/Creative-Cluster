@@ -1,4 +1,4 @@
-import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
+import { useMatch, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode, type RefObject } from "react";
 
 import MobileMenu from "@/components/custom/layout/mobile-menu";
@@ -18,7 +18,6 @@ interface IMapPhoneLayoutProps {
   status: MapStatus;
   frameRef: RefObject<HTMLDivElement | null>;
   barRef: RefObject<HTMLDivElement | null>;
-  sheetRef: RefObject<HTMLDivElement | null>;
   locateRef: RefObject<HTMLButtonElement | null>;
   onCoveredChange: (covered: boolean) => void;
   selectedSlug: string | null;
@@ -33,7 +32,6 @@ export default function MapPhoneLayout({
   status,
   frameRef,
   barRef,
-  sheetRef,
   locateRef,
   onCoveredChange,
   selectedSlug,
@@ -42,8 +40,9 @@ export default function MapPhoneLayout({
   children,
 }: IMapPhoneLayoutProps) {
   const { directory, origin } = useMapFrame();
-  const router = useRouter();
   const navigate = useNavigate();
+  const pageSlug = useMatch({ from: "/_map/e/$slug", shouldThrow: false })
+    ?.params.slug;
   const onIndex = useRouterState({
     select: (state) => state.matches.at(-1)?.routeId === "/_map/",
   });
@@ -70,8 +69,13 @@ export default function MapPhoneLayout({
   function close() {
     setSearchOpen(false);
     if (onIndex) return;
-    if (backReturnsToMap(mapHistoryIndex, historyIndex)) router.history.back();
-    else void navigate({ to: "/" });
+    // Right after the map, the page's history entry becomes the map with its sheet, so Back
+    // then closes the sheet as it does after a pin tap.
+    void navigate({
+      to: "/",
+      search: (prev) => ({ ...prev, entry: pageSlug ?? prev.entry }),
+      replace: backReturnsToMap(mapHistoryIndex, historyIndex),
+    });
   }
 
   return (
@@ -98,7 +102,6 @@ export default function MapPhoneLayout({
         distance={entry ? distanceLabel(entry, origin, getLocale()) : null}
         onClose={() => onSelectedChange(null)}
         onHeightChange={onSheetHeightChange}
-        sheetRef={sheetRef}
         returnFocusRef={locateRef}
       />
     </>

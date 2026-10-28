@@ -24,7 +24,6 @@ interface IMapEntrySheetProps {
   onClose: () => void;
   // The sheet's height in pixels, 0 once it closes.
   onHeightChange: (height: number) => void;
-  sheetRef: RefObject<HTMLDivElement | null>;
   // A map control, not the search field, whose focus would raise the phone keyboard.
   returnFocusRef: RefObject<HTMLElement | null>;
 }
@@ -36,7 +35,6 @@ export default function MapEntrySheet({
   distance,
   onClose,
   onHeightChange,
-  sheetRef,
   returnFocusRef,
 }: IMapEntrySheetProps) {
   // Kept through the closing slide, which still shows the last entry.
@@ -67,10 +65,7 @@ export default function MapEntrySheet({
       showSwipeHandle
     >
       <DrawerContent
-        ref={(node: HTMLDivElement | null) => {
-          sheetRef.current = node;
-          setPopup(node);
-        }}
+        ref={setPopup}
         finalFocus={returnFocusRef}
         aria-label={m.map_entry_sheet_label()}
         className="md:hidden"

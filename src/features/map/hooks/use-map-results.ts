@@ -20,10 +20,11 @@ export function useMapResults({
   seed,
   origin,
 }: IUseMapResultsInput) {
-  // Filters depend on the filter fields only: the viewport param `v` changes on every pan.
+  // Filters depend on the filter fields only: `v` changes on every pan, `entry` on every pin tap.
   const { q, tags, country, legal, near, radius } = search;
   const filters = useMemo(
-    () => toFilters({ q, tags, country, legal, near, radius, v: "" }),
+    () =>
+      toFilters({ q, tags, country, legal, near, radius, v: "", entry: "" }),
     [q, tags, country, legal, near, radius],
   );
   // The text index is built when the first query is typed, not on every page load.

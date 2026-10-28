@@ -46,7 +46,6 @@ function render(wide: boolean) {
       status="active"
       frameRef={createRef()}
       panelRef={createRef()}
-      sheetRef={createRef()}
       locateRef={createRef()}
       map={<MapProbe />}
       sheetCovered={0}

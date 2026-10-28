@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { publishedDirectoryQueryOptions } from "@/features/directory/directory-queries";
 import { m } from "@/paraglide/messages";
 
+import { useEntrySelection } from "../hooks/use-entry-selection";
 import { useIdleActivation } from "../hooks/use-idle-activation";
 import { useMapResults } from "../hooks/use-map-results";
 import { useMediaQuery } from "../hooks/use-media-query";
@@ -20,6 +21,7 @@ import {
   type IMapFrameValue,
   type MapStatus,
 } from "../map-frame-context";
+import { mapFocusSlug } from "../map-focus";
 import { measureCovered, measurePadding } from "../map-padding";
 import type { IMapOrigin } from "../map-origin";
 import { formatViewport, parseViewport, type IViewport } from "../map-search";
@@ -54,13 +56,8 @@ export default function MapFrame() {
   const [origin, setOrigin] = useState<IMapOrigin | null>(null);
   // Lets the map keep its attribution and the list's "on the map" group above the phone sheet.
   const [sheetCovered, setSheetCovered] = useState(0);
-  // Phones select a pin into a sheet instead of opening its page; an opened page selects it too.
-  const [phoneSlug, setPhoneSlug] = useState(focusSlug);
-  const [lastFocusSlug, setLastFocusSlug] = useState(focusSlug);
-  if (focusSlug !== lastFocusSlug) {
-    setLastFocusSlug(focusSlug);
-    if (focusSlug) setPhoneSlug(focusSlug);
-  }
+  // Phones select a pin into a sheet instead of opening its page.
+  const selection = useEntrySelection();
 
   // An entry opened directly stays map-free (no MapLibre download) until the visitor asks for it.
   const [directoryWanted, setDirectoryWanted] = useState(false);
@@ -87,7 +84,6 @@ export default function MapFrame() {
 
   const frameRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const sheetRef = useRef<HTMLDivElement>(null);
   const locateRef = useRef<HTMLButtonElement>(null);
   const getPadding = useCallback(
     () =>
@@ -95,10 +91,13 @@ export default function MapFrame() {
         frameRef.current?.getBoundingClientRect() ??
           new DOMRect(0, 0, 1000, 700),
         panelRef.current?.getBoundingClientRect() ?? null,
-        sheetRef.current?.getBoundingClientRect() ?? null,
+        // The settled height, not the sheet's box, which is still sliding in on the first tap.
+        sheetCovered > 0
+          ? new DOMRect(0, window.innerHeight - sheetCovered, 0, sheetCovered)
+          : null,
         wide,
       ),
-    [wide],
+    [wide, sheetCovered],
   );
   const getCovered = useCallback(
     () =>
@@ -186,7 +185,6 @@ export default function MapFrame() {
           status={status}
           frameRef={frameRef}
           panelRef={panelRef}
-          sheetRef={sheetRef}
           locateRef={locateRef}
           map={
             <MapLazy
@@ -196,7 +194,12 @@ export default function MapFrame() {
               getPadding={getPadding}
               getCovered={getCovered}
               coverKey={wide ? "wide" : String(sheetCovered)}
-              focusSlug={wide ? focusSlug : (focusSlug ?? phoneSlug)}
+              focusSlug={mapFocusSlug(
+                wide,
+                focusSlug,
+                selection.selectedSlug,
+                sheetCovered,
+              )}
               locateRef={locateRef}
               hoveredSlug={hoveredSlug}
               fitKey={filterSignature}
@@ -206,7 +209,7 @@ export default function MapFrame() {
               onSelectSlug={(slug) =>
                 wide
                   ? void navigate({ to: "/e/$slug", params: { slug } })
-                  : setPhoneSlug(slug)
+                  : selection.select(slug)
               }
               onFailed={() => {
                 setStatus("failed");
@@ -216,8 +219,8 @@ export default function MapFrame() {
           }
           sheetCovered={sheetCovered}
           onSheetCoveredChange={setSheetCovered}
-          selectedSlug={phoneSlug}
-          onSelectedChange={setPhoneSlug}
+          selectedSlug={selection.selectedSlug}
+          onSelectedChange={selection.select}
         >
           {outlet}
         </MapOverlayLayout>
