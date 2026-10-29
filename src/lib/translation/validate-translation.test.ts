@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { nextQuotaReset } from "./quota-reset";
+import { nextQuotaRetry } from "./quota-reset";
 import { buildGlossary } from "./glossary";
 import { detectLocale, detectSourceLocale } from "./detect-locale";
 import { validateTranslation } from "./validate-translation";
@@ -136,12 +136,18 @@ describe("buildGlossary", () => {
   });
 });
 
-describe("nextQuotaReset", () => {
-  it("is 00:05 UTC on the next day after the reset has passed", () => {
-    expect(nextQuotaReset(new Date("2026-10-14T13:00:00Z")).toISOString()).toBe(
-      "2026-10-15T00:05:00.000Z",
+describe("nextQuotaRetry", () => {
+  it("retries an hour later, since resets can come late", () => {
+    expect(nextQuotaRetry(new Date("2026-10-14T13:00:00Z")).toISOString()).toBe(
+      "2026-10-14T14:00:00.000Z",
     );
-    expect(nextQuotaReset(new Date("2026-10-14T00:10:00Z")).toISOString()).toBe(
+    expect(nextQuotaRetry(new Date("2026-10-14T00:10:00Z")).toISOString()).toBe(
+      "2026-10-14T01:10:00.000Z",
+    );
+  });
+
+  it("retries right after 00:05 UTC when that comes first", () => {
+    expect(nextQuotaRetry(new Date("2026-10-14T23:30:00Z")).toISOString()).toBe(
       "2026-10-15T00:05:00.000Z",
     );
   });

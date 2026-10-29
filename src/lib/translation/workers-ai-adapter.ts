@@ -12,8 +12,9 @@ import {
 export const WORKERS_AI_MODEL = "@cf/google/gemma-4-26b-a4b-it";
 // Two attempts per field must fit the 5 minute background drain; jobs run there, not in the 30 s scheduled one.
 export const REQUEST_TIMEOUT_MS = 60_000;
-// Error 3036: the 10,000 neurons per day free allocation is used up (resets 00:00 UTC).
-const QUOTA_ERROR_CODE = 3036;
+// The free 10,000 neurons per day are used up: the docs list 3036, accounts report 4006, so the message counts too.
+const QUOTA_ERROR_CODES = [3036, 4006];
+const QUOTA_MESSAGE = /daily free allocation/i;
 
 const SYSTEM_PROMPT = [
   "You are a professional translator for a directory of creative and cultural organisations.",
@@ -37,7 +38,14 @@ const RESPONSE_SCHEMA = {
 
 const envelopeSchema = z.object({
   success: z.boolean().optional(),
-  errors: z.array(z.object({ code: z.number().optional() })).optional(),
+  errors: z
+    .array(
+      z.object({
+        code: z.number().optional(),
+        message: z.string().optional(),
+      }),
+    )
+    .optional(),
   result: z
     .object({
       choices: z
@@ -113,8 +121,13 @@ export function createWorkersAiAdapter({
       const envelope = envelopeSchema.safeParse(
         await response.json().catch(() => null),
       );
-      const codes = envelope.data?.errors?.map((e) => e.code) ?? [];
-      if (response.status === 429 && codes.includes(QUOTA_ERROR_CODE)) {
+      const errors = envelope.data?.errors ?? [];
+      const quotaUsedUp = errors.some(
+        (e) =>
+          (e.code !== undefined && QUOTA_ERROR_CODES.includes(e.code)) ||
+          QUOTA_MESSAGE.test(e.message ?? ""),
+      );
+      if (response.status === 429 && quotaUsedUp) {
         throw new TranslationQuotaError("Workers AI daily allocation used up");
       }
       // Anything else (capacity 3040, 5xx, bad token) is retried by the job queue with backoff.

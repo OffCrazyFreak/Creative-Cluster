@@ -396,7 +396,7 @@ describe.skipIf(!temp)("runTranslation", () => {
     expect(calls).toHaveLength(2);
   });
 
-  it("defers to 00:05 UTC the next day on a quota error", async () => {
+  it("defers an hour on a quota error", async () => {
     const id = await entryWithText();
     const adapter: ITranslationAdapter = {
       name: "limited",
@@ -410,7 +410,7 @@ describe.skipIf(!temp)("runTranslation", () => {
       { entityType: "entry", entityId: id },
       new Date("2026-10-14T15:30:00Z"),
     );
-    expect(result).toEqual({ deferUntil: new Date("2026-10-15T00:05:00Z") });
+    expect(result).toEqual({ deferUntil: new Date("2026-10-14T16:30:00Z") });
     expect(await rows(id)).toHaveLength(0);
   });
 

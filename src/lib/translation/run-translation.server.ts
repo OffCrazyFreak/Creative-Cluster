@@ -2,7 +2,7 @@ import type { DbOrTx } from "@/db/client.server";
 import type { JobResult } from "@/lib/jobs/job-registry.server";
 
 import { buildGlossary } from "./glossary";
-import { nextQuotaReset } from "./quota-reset";
+import { nextQuotaRetry } from "./quota-reset";
 import {
   TranslationQuotaError,
   type ITranslationAdapter,
@@ -102,7 +102,7 @@ export async function runTranslation(
     }
   } catch (error) {
     if (error instanceof TranslationQuotaError) {
-      return { deferUntil: nextQuotaReset(now) };
+      return { deferUntil: nextQuotaRetry(now) };
     }
     throw error;
   }
