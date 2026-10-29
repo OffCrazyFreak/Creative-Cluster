@@ -87,6 +87,44 @@ describe("Workers AI adapter", () => {
     );
   });
 
+  it("raises a quota error on the 4006 code accounts get in practice", async () => {
+    const { adapter } = adapterWith(
+      Response.json(
+        {
+          success: false,
+          errors: [
+            {
+              code: 4006,
+              message:
+                "AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you would like to continue usage.",
+            },
+          ],
+        },
+        { status: 429 },
+      ),
+    );
+    await expect(adapter.translate(input)).rejects.toBeInstanceOf(
+      TranslationQuotaError,
+    );
+  });
+
+  it("raises a quota error on the allocation message under an unknown code", async () => {
+    const { adapter } = adapterWith(
+      Response.json(
+        {
+          success: false,
+          errors: [
+            { code: 9999, message: "used up your daily free allocation" },
+          ],
+        },
+        { status: 429 },
+      ),
+    );
+    await expect(adapter.translate(input)).rejects.toBeInstanceOf(
+      TranslationQuotaError,
+    );
+  });
+
   it("treats a capacity error as an ordinary failure to retry", async () => {
     const { adapter } = adapterWith(
       Response.json(
