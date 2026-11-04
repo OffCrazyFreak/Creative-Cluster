@@ -20,7 +20,7 @@ export function reverseKey(lat: number, lng: number) {
   return `reverse:${lat.toFixed(5)},${lng.toFixed(5)}`;
 }
 
-// Provider terms allow storing results and Nominatim asks for it; empty answers expire so a fixed OSM edit is picked up.
+// Geoapify terms and ODbL allow storing results and Nominatim's policy asks for it; empty answers expire so a fixed OSM edit is picked up.
 export async function readCache(
   db: DbOrTx,
   key: string,

@@ -11,7 +11,7 @@ interface ICloudinaryOptions extends IImageRef {
   width: number;
 }
 
-// The source is always the public origin because Cloudinary fetches only from our two hosts; c_limit stops 2x upscaling.
+// The source is always the public origin because Cloudinary fetches only from our two hosts; c_limit stops 2x upscaling; EntryImage falls back to our URL on error.
 export function cloudinaryImageUrl({
   cloudName,
   origin,

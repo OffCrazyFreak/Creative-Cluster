@@ -14,7 +14,7 @@ interface IPageSubject {
   expiresAt: Date;
 }
 
-// Unapproved posts are 404 whatever the entry's state, so a suspended entry cannot reveal them.
+// Active: indexed. Ended: banner for 30 days, then 410. Removed or suspended: 410 at once. Unapproved: 404, so a suspended entry cannot reveal them.
 export function pageStateOf(
   post: IPageSubject,
   entryStatus: EntryStatus,

@@ -17,7 +17,7 @@ function connect(pool: Pool) {
   return drizzle({ client: pool, schema, casing: "snake_case" });
 }
 
-// Returns null when no server is reachable, so the suite skips instead of failing on a bare machine.
+// A throwaway database so tests never touch real data; returns null when no server is reachable, so the suite skips on a bare machine.
 export async function createTempDatabase(
   label: string,
 ): Promise<ITempDatabase | null> {

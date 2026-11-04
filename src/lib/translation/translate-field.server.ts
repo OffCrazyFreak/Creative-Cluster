@@ -61,7 +61,7 @@ async function attempt(field: ISourceField, context: IFieldContext) {
   }
 }
 
-// One request per field keeps a long description from truncating the short fields with it.
+// One request per field so a long description cannot truncate short fields; null text means store nothing, and quota errors reach the job.
 export async function translateField(
   field: ISourceField,
   context: IFieldContext,

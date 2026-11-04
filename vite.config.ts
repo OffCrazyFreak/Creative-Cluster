@@ -10,7 +10,7 @@ import { defineConfig, loadEnv } from "vite";
 import { paraglideOptions } from "./src/sites/paraglide-options.ts";
 import { parseSiteId } from "./src/sites/site-id.ts";
 
-// Both Netlify sites share one build command, and without a real Turnstile key the client falls back to the always-pass test key.
+// Production builds must name their site, because both Netlify sites share one build command, and a real Turnstile key, never the test key.
 function resolveSiteId(command: string, mode: string) {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   // Cloudflare's test site keys start with 1x, 2x or 3x and must never reach a Netlify build.

@@ -35,7 +35,7 @@ export async function scrubSentEmails(
       and lower(payload ->> 'to') = ${lowered}`);
 }
 
-// Change log rows stay for audit but lose identifiers; `onlyIf` is re-checked under the lock so a changed listing is left alone.
+// Deletes text, translations, posts, connections, queue items and unshared images; log rows stay without identifiers; `onlyIf` is re-checked under the lock.
 export async function purgeEntry(tx: Tx, entryId: string, onlyIf?: SQL) {
   const [row] = await tx
     .select({

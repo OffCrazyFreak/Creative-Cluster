@@ -4,6 +4,8 @@ import { dirname, join } from "node:path";
 
 const clientDir = "dist/client";
 
+// The CI build has no Sentry token, so these limits leave out the Sentry plugin that production builds add.
+
 // A page loads the root route plus its match chain; the map library is an idle import with its own budget below.
 const serverAssets = "dist/server/assets";
 const manifestFile = existsSync(serverAssets)

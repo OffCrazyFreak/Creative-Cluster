@@ -22,7 +22,7 @@ interface IStoreImageInput {
   kind: ImageKind;
 }
 
-// Start reads the whole multipart request before middleware, so the platform's size cap comes first and these checks second.
+// Stores bytes only: the owner area attaches images and checks who may; Start reads the request before middleware, so the platform's size cap comes first.
 export async function storeImage({
   userId,
   file,

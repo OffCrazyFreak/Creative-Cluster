@@ -79,7 +79,7 @@ export interface IReviewPage {
   pageSize: number;
 }
 
-// "expired": deadline passed while waiting. "no_account": no account to email. "owner_has_listing": nothing changed.
+// "expired": deadline passed while waiting. "no_account": done, no account to email. "owner_has_listing": account owns a listing or is blocked, nothing changed.
 export type DecideOutcome =
   | "ok"
   | "gone"

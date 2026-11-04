@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { getMapDirectory } from "@/features/directory/map-directory.server";
 
-// Raw route so it runs no session lookup and never sets a cookie while publicly cacheable; browsers revalidate on each use.
+// Raw route so it runs no session lookup and sets no cookie; revalidation means a suspended entry leaves the map within the server cache plus the stale window.
 export const Route = createFileRoute("/directory.json")({
   server: {
     handlers: {

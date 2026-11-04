@@ -4,7 +4,7 @@ import { env } from "@/env.server";
 
 export const UNKNOWN_IP = "unknown";
 
-// x-forwarded-for is client-controlled and would hand an attacker a fresh rate-limit key per request.
+// Production trusts only the platform header: x-forwarded-for is client-controlled and would hand an attacker a fresh rate-limit key per request.
 export function clientIp(): string {
   const platform = getRequestHeader(env.CLIENT_IP_HEADER)?.trim();
   if (platform) return platform;

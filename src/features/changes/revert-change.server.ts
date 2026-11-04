@@ -30,7 +30,7 @@ function text(value: unknown): string {
   return JSON.stringify(value ?? null, null, 2);
 }
 
-// Groups restore whole and newer edits stay, so a revert never splits a location or discards a later change.
+// Only fields with a stored "before" restore; groups restore whole and newer edits stay, so a revert never splits a location or discards a later change.
 function restorableFields(log: LogRow, current?: EntryRow): string[] {
   const before = log.before ?? {};
   const after = log.after ?? {};
