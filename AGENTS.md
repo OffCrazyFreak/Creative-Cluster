@@ -106,15 +106,22 @@ Put these to me instead of working around them: I say yes far more often than no
 - Write numeric dates as `03.11.2026.` in Croatian text and ISO `2026-11-03` in English, with straight quotes.
 - Cite commits by full 40-character SHA.
 
-## Commit message
+## Commits
+
+Write every commit in this template:
 
 ```text
-type(scope): Short summary in imperative mood
+type(scope): Imperative summary
+
+Why paragraph: the problem and the reason, never repeating the subject.
 
 Changes:
 - Specific change
 
-Brief explanation of why the change was needed.
+Notes: a tradeoff the reader would otherwise miss.
 ```
 
-Types: `feat`, `fix`, `docs`, `refactor`, `chore`, `style`, `perf`, `ci`, `test`. Scope is the feature area (`directory`, `auth`, `map`, ...).
+- Keep the subject to 72 characters.
+- Add `Changes:` only for two or more separable parts, and `Notes:` only for a tradeoff.
+- Use type `fix`, `feat`, `docs`, `refactor`, `chore`, `style`, `perf`, `ci` or `test`.
+- Leave the scope out when none fits, and otherwise reuse one from `git log`.
