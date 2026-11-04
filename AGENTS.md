@@ -51,6 +51,7 @@ Put these to me instead of working around them: I say yes far more often than no
 - For 5000+ changed lines, 50+ files, or auth, security, personal data or migrations, also run Greptile once: `@greptileai review` or its CLI.
 - Give those same big or sensitive PRs one `reviewer` per app area, and wait for both bots unless a quota is out.
 - When a change alters what renders, check every changed screen in the T3 preview, then ask me whether to attach screenshots.
+- When the T3 Code preview browser is available, use it for previews and screenshots and for pages that block or error on fetch.
 - Before any merge, settle every PR comment and review body, bots included, with the smallest fix, the same mistake elsewhere in the PR included, or a reply giving the reason.
 - Merge once CI is green and review is settled, as the orchestrating session; a delegate reports instead of merging.
 - Append anything a deploy needs (data step, migration, env step, post-deploy check) to the PR body, saying what is left and by whom.
