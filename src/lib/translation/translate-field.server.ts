@@ -62,7 +62,6 @@ async function attempt(field: ISourceField, context: IFieldContext) {
 }
 
 // One request per field keeps a long description from truncating the short fields with it.
-// One retry; null text means nothing may be stored. Quota errors propagate to the job.
 export async function translateField(
   field: ISourceField,
   context: IFieldContext,

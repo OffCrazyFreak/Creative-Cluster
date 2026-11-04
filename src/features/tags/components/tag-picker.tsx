@@ -60,8 +60,7 @@ export default function TagPicker({
   const [query, setQuery] = useState("");
   const [failed, setFailed] = useState(false);
 
-  // Ids missing from the options (still loading, or not listable for this viewer) stay selected under a
-  // fallback label, so saving never wipes tags the picker could not show.
+  // Ids missing from the options stay selected under a fallback label, so saving never wipes tags the picker could not show.
   const selected = useMemo(
     () =>
       value.map(

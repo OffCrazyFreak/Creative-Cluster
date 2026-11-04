@@ -21,8 +21,7 @@ export default function MapEntryPins({ data }: IMapEntryPinsProps) {
   const { current } = useMap();
   const map = current?.getMap();
 
-  // The style is still loading when this mounts, so react-maplibre adds the source on a later
-  // render, after the resolver is set.
+  // The style is still loading at mount, so react-maplibre adds the source on a later render, after the resolver is set.
   useEffect(() => (map ? watchEntryIcons(map) : undefined), [map]);
 
   return (

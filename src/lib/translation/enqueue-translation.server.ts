@@ -7,9 +7,7 @@ export interface IEnqueueTranslation {
   entityId: string;
 }
 
-// Call inside the save transaction, after the new text is written. Always queues, with no
-// idempotency key: the job compares source hashes (a repeat costs nothing), removes translations
-// of emptied fields, and a key would swallow an edit that returns to an earlier text.
+// No idempotency key, because the job compares source hashes and a key would swallow an edit returning to earlier text.
 export async function enqueueTranslation(
   tx: DbOrTx,
   { entityType, entityId }: IEnqueueTranslation,

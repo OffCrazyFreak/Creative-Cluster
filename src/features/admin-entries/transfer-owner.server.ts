@@ -6,8 +6,7 @@ import { writeChange } from "@/lib/change-log/write-change.server";
 
 import type { OpResult, TransferError } from "./admin-entries-schemas";
 
-// One account owns at most one listing (the account area shows a single one), and a blocked account could not
-// use it, so both are refused. No mail goes out: none of the 22 templates describes an ownership change.
+// One account owns one listing and a blocked account could not use it; no mail goes out because no template covers this.
 export async function transferOwner(
   entryId: string,
   newOwnerId: string,

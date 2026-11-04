@@ -17,8 +17,7 @@ interface IListGroupsInput<T> {
   };
 }
 
-// Saved entries lead in their own group. The rest split under headings only when the map shows
-// some entries but not all, and otherwise share one heading once a Saved group sits above them.
+// Headings split only when the map shows some entries but not all; otherwise the rest share one under a Saved group.
 export function listGroups<T>({
   saved,
   onMap,

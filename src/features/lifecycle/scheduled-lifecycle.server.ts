@@ -63,8 +63,7 @@ export async function archiveStaleImports(): Promise<number> {
   return archived;
 }
 
-// Rejected applications are kept 90 days for resubmission; applications never confirmed by email expire with their link.
-// Outside partner stubs are drafts for good, and their confirmed links cascade on delete.
+// Rejected applications stay 90 days for resubmission, and ones never confirmed by email expire with their link.
 export async function purgeExpiredApplications(): Promise<number> {
   const expiredCondition = sql`(${entry.status} = 'rejected' and ${entry.updatedAt} < now() - make_interval(days => ${REJECTED_APPLICATION_RETENTION_DAYS}))
         or (${entry.status} = 'draft' and ${entry.kind} <> 'outside_partner' and ${entry.ownerUserId} is null and ${entry.importedAt} is null and ${entry.updatedAt} < now() - make_interval(secs => ${APPLY_VERIFY_TTL_SECONDS}))`;
@@ -96,8 +95,7 @@ export async function purgeExpiredApplications(): Promise<number> {
   return purged;
 }
 
-// Set-password links (invites, claims, approvals and plain resets share one identifier shape) are
-// dropped 90 days after issue; keep every link's TTL below that.
+// All set-password links share one identifier shape and drop after 90 days, so keep every link's TTL below that.
 export async function purgeOldInviteTokens(): Promise<number> {
   const removed = await db
     .delete(verification)
@@ -114,8 +112,7 @@ export async function purgeOldInviteTokens(): Promise<number> {
   return removed.length;
 }
 
-// Deletes accounts whose 14 day grace period is over. The admin rule is checked and the data purged first:
-// better-auth removes sessions and credentials before its delete hook runs, so a refusal there would lock the person out.
+// The admin rule and purge run first because better-auth removes credentials before its hook, so a refusal there would lock the person out.
 export async function deleteDueErasedAccounts(): Promise<number> {
   const due = await db
     .select({ identifier: verification.identifier })

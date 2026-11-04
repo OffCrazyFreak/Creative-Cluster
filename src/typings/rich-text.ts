@@ -16,8 +16,7 @@ export interface RichTextDoc extends IRichTextNode {
   type: "doc";
 }
 
-// The same document typed as plain JSON scalars so it can cross a server function; parseRichText
-// only lets scalar attributes through, so the stored RichTextDoc is safe to narrow to this.
+// parseRichText only lets scalar attributes through, so the stored RichTextDoc is safe to narrow to this for server functions.
 export interface IJsonRichTextNode {
   type: string;
   attrs?: Record<string, string | number | boolean | null>;
@@ -33,8 +32,7 @@ export interface JsonRichTextDoc extends IJsonRichTextNode {
   type: "doc";
 }
 
-// TanStack Form's key walker overflows on the recursive RichTextDoc type, so forms hold this flat shape;
-// the server still validates the real structure with richTextInput.
+// TanStack Form's key walker overflows on the recursive RichTextDoc type; the server still validates with richTextInput.
 export interface IFormRichText {
   type: "doc";
   content?: readonly unknown[];

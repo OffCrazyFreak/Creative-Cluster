@@ -6,8 +6,7 @@ import { user } from "@/db/schema";
 import { enqueueEmail } from "@/lib/email/enqueue-email.server";
 import { triggerDrain } from "@/lib/jobs/trigger-drain.server";
 
-// The Digital Services Act requires a statement of reasons. The ban itself is already done by
-// better-auth, so a failure here is logged instead of turning a successful block into an error.
+// The Digital Services Act requires a statement of reasons; a failure is only logged because the ban is already done.
 export async function sendBlockedNotice(userId: string, reason: string) {
   try {
     const [person] = await db

@@ -19,7 +19,7 @@ export type ClaimResult =
   | { status: "taken" }
   | { status: "refused" };
 
-// Only the hash is stored, so a leaked database cannot be used to claim listings.
+// Only the hash is stored, so a leaked database cannot claim listings.
 export function hashClaimToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
@@ -130,8 +130,7 @@ export async function claimListing(token: string): Promise<ClaimResult> {
       after: { ownerUserId: ownerId },
     });
 
-    // An account that already has a password keeps it; one without (new, or invited but never
-    // set up) needs the link that lets the owner choose one.
+    // Accounts without a password (new, or invited but never set up) need the link that lets the owner choose one.
     const passwordToken = (await hasPassword(tx, ownerId))
       ? null
       : await createPasswordToken(tx, ownerId, INVITE_TOKEN_TTL_SECONDS);

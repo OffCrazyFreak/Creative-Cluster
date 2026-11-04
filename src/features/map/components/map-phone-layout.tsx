@@ -26,8 +26,7 @@ interface IMapPhoneLayoutProps {
   children: ReactNode;
 }
 
-// The phone map: full screen under a floating bar whose search opens into the list; other
-// pages of the frame (an entry, the board) show in that open surface, with back to the map.
+// The floating search opens into the list, and other pages of the frame show in that open surface, with back to the map.
 export default function MapPhoneLayout({
   status,
   frameRef,
@@ -69,8 +68,7 @@ export default function MapPhoneLayout({
   function close() {
     setSearchOpen(false);
     if (onIndex) return;
-    // Right after the map, the page's history entry becomes the map with its sheet, so Back
-    // then closes the sheet as it does after a pin tap.
+    // The page's history entry becomes the map with its sheet, so Back then closes the sheet as after a pin tap.
     void navigate({
       to: "/",
       search: (prev) => ({ ...prev, entry: pageSlug ?? prev.entry }),

@@ -1,8 +1,7 @@
 const DROP_SELECTOR =
   "style, script, meta, link, xml, title, head, o\\:p, img, svg, object, iframe";
 
-// Word and Google Docs wrap pasted text in styling markup the schema ignores anyway; this removes the
-// noise (conditional comments, style blocks, fake bold wrappers) before ProseMirror parses it.
+// Word and Google Docs add noise (conditional comments, style blocks, fake bold wrappers) that goes before ProseMirror parses it.
 export function cleanPastedHtml(html: string): string {
   const parsed = new DOMParser().parseFromString(html, "text/html");
 

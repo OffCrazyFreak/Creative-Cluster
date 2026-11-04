@@ -1,9 +1,7 @@
 import type { LocationValue } from "./location-schemas";
 import { pseudonymPin } from "./person-offset.server";
 
-// Call in the entry service when a person is saved. Only a fresh TownPicker value (source town_list with
-// townPopulation) is offset; a value read back from the database already is, so it passes unchanged.
-// Anything else (a PinPicker value, a forged request) loses its coordinates: people are never stored exactly.
+// Only a fresh TownPicker value is offset; stored values already are, and anything else loses its coordinates so people are never exact.
 export function applyPersonOffset(
   entryId: string,
   value: LocationValue,

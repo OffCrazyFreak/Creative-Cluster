@@ -53,8 +53,7 @@ async function countAlreadyQueued(effectiveDate: string): Promise<number> {
   return row?.total ?? 0;
 }
 
-// Blocked accounts are skipped. Each user gets one mail per effective date: running the same date
-// again queues only users who have none yet, and reports how many were already queued.
+// Running the same date again queues only users who have no mail for it yet, so each gets one per effective date.
 export async function enqueueTermsNotice(notice: ITermsNotice) {
   const recipients = await db
     .select({

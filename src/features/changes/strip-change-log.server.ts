@@ -10,7 +10,6 @@ const KEYS = sql.raw(
   `array[${CHANGE_LOG_PERSONAL_FIELDS.map((f) => `'${f}'`).join(", ")}]`,
 );
 
-// Removes personal values and the actor from rows older than the retention window (jsonb "-" drops keys).
 // A person's own name is the identifier, so their rows lose every stored value, not only the listed fields.
 export async function stripOldChangeLog(tx: DbOrTx = db) {
   await tx.execute(sql`
@@ -31,8 +30,7 @@ export async function stripOldChangeLog(tx: DbOrTx = db) {
         or after ?| ${KEYS})`);
 }
 
-// On erasure every row of the entity loses its stored values and its actor at once, whatever its age:
-// names, descriptions and websites identify the person too. Only the audit shape (action, fields) stays.
+// On erasure names, descriptions and websites identify the person too, so every row loses its values, whatever its age.
 export async function stripEntityChangeLog(tx: DbOrTx, entityId: string) {
   await tx.execute(sql`
     update change_log

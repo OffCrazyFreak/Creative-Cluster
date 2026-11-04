@@ -11,7 +11,6 @@ const csrfMiddleware = createCsrfMiddleware({
 });
 
 // CSRF stays first so forged requests are rejected before anything else runs.
-// Without a Sentry DSN the SDK has no client and the capture calls do nothing.
 export const startInstance = createStart(() => ({
   requestMiddleware: [csrfMiddleware, sentryRequestMiddleware],
   functionMiddleware: [sentryFunctionMiddleware],

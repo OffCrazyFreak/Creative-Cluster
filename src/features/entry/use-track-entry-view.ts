@@ -13,8 +13,7 @@ interface ITrackedEntry {
   kind: EntryKind;
 }
 
-// Fired from the browser after hydration, so crawlers that do not run scripts and
-// router prefetches never reach the counter; the server still checks the user agent.
+// Fired after hydration so crawlers without scripts and router prefetches never reach the counter.
 export function useTrackEntryView(entry: ITrackedEntry | null) {
   const slug = entry?.slug ?? null;
   const kind = entry?.kind ?? null;

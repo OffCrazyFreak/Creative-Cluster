@@ -38,8 +38,7 @@ const DIRECTIONS = [
   },
 ] as const;
 
-// Panning is a drag, and WCAG 2.5.7 asks for a single-pointer way to do anything that takes a
-// drag. Arrow keys already pan the focused map. Desktop only, left of the zoom buttons.
+// WCAG 2.5.7 asks for a single-pointer alternative to dragging; arrow keys already pan the focused map.
 export default function MapPanControls({
   getMap,
   duration,

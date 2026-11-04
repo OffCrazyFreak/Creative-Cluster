@@ -67,8 +67,7 @@ function reportLink(entryName: string): string {
   return `mailto:${site.contactEmail}?subject=${subject}`;
 }
 
-// The limit reads, the hash row and the queued mail share one transaction, so a refused or
-// failed attempt leaves nothing behind and parallel requests cannot all pass the check.
+// One transaction, so a refused or failed attempt leaves nothing behind and parallel requests cannot all pass the check.
 async function relay(input: ContactInput, now: Date) {
   const hash = senderHash(input.email);
   return db.transaction(async (tx) => {

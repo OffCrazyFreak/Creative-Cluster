@@ -23,8 +23,7 @@ export interface IRemoveResult {
   emailed: boolean;
 }
 
-// An admin takes a post down (for example after a report). The owner gets the statement of reasons
-// the Digital Services Act requires, including for spam, whenever the entry has an account.
+// The Digital Services Act requires the owner's statement of reasons, including for spam, whenever the entry has an account.
 export async function removeOpportunity(
   tx: Tx,
   { id, reasonCode, note, adminId }: IRemoveOpportunity,

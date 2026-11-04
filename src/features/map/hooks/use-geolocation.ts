@@ -25,8 +25,7 @@ export interface ICenterRequest extends IPoint {
   zoom?: number;
 }
 
-// The spec does not count time on the permission prompt against `timeout`, so an ignored
-// prompt would spin forever without our own timer.
+// The spec does not count the permission prompt against `timeout`, so an ignored prompt would spin forever without this.
 const GIVE_UP_MS = 15_000;
 const GUESS_ZOOM = 11;
 // A fast Wi-Fi or cell fix comes first; GPS is only worth waiting for when it is vaguer than a street.
@@ -40,8 +39,7 @@ function toFix({ coords }: GeolocationPosition): IGpsPosition {
   };
 }
 
-// The position never leaves the device. When a tap gets no position at all, the IP guess
-// (`fallback`) stands in, labelled approximate; a refusal never guesses.
+// The position never leaves the device; with no position the IP guess stands in, labelled approximate, but a refusal never guesses.
 export function useGeolocation(fallback: IPoint | null, autoLocate: boolean) {
   const [status, setStatus] = useState<GeolocationStatus>("idle");
   const [position, setPosition] = useState<IGpsPosition | null>(null);
@@ -116,8 +114,7 @@ export function useGeolocation(fallback: IPoint | null, autoLocate: boolean) {
     );
   }
 
-  // Locating without a tap is fine only when no prompt can appear. Safari may report "prompt"
-  // for a granted permission; that just means waiting for a tap.
+  // Auto-locate only when no prompt can appear; Safari may report "prompt" for a granted permission, which just waits for a tap.
   useEffect(() => {
     if (!autoLocate) return;
     let cancelled = false;

@@ -218,9 +218,7 @@ export async function countActiveByEntry(): Promise<Map<string, number>> {
   return new Map(rows.map((row) => [row.entryId, row.n]));
 }
 
-// Only live posts are indexed; ended pages leave the sitemap at once (they are noindex, then 410).
-// A language variant is listed only when it is not a copy of the owner's text: the page keeps it out of
-// the index until a translation exists, and the sitemap must not list URLs that say noindex.
+// Only live posts are listed, and copies of the owner's text are left out because the sitemap must not list noindex URLs.
 export async function listSitemapOpportunities() {
   const rows = await db
     .select({

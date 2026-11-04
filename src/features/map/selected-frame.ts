@@ -10,8 +10,7 @@ export interface ISelectedFrame {
   wide: boolean;
 }
 
-// Where the selected entry shows right now: its own tile, or the cluster it merged into once the
-// map zoomed out. Null while neither is on screen, so the frame never circles empty map.
+// Null while neither its tile nor its cluster is on screen, so the frame never circles empty map.
 export async function findSelectedFrame(
   map: MaplibreMap,
   slug: string,

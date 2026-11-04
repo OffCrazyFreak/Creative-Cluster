@@ -77,7 +77,6 @@ function yearOk(value: string) {
   );
 }
 
-// Mirrors what the server enforces so errors show beside the field before anything is sent.
 // Length limits live in superRefine because a failed base parse would hide every other error.
 export const proposeFormSchema = z
   .object({

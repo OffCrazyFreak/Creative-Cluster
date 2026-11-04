@@ -20,8 +20,7 @@ import { lockOwnOpportunity } from "./own-opportunity-lock.server";
 interface IRenewOpportunity {
   id: string;
   userId: string;
-  // undefined keeps the post's deadline. A post that has one must pass a later one, because it ends
-  // the day after it. An empty string drops the deadline and gives the default 60 days.
+  // undefined keeps the deadline; an existing one must move later because the post ends the day after; empty string drops it (60 days).
   deadline?: string;
 }
 

@@ -9,8 +9,7 @@ import { daysAgo } from "./link-conditions.server";
 import type { IOrientedLink } from "./orient-link";
 import { ProposeRefused } from "./propose-refused";
 
-// Only the exact stored pair counts: directed kinds are separate relationships per direction,
-// and symmetric kinds are already normalised by orientLink.
+// Only the exact pair counts: directed kinds are separate per direction, and orientLink already normalises symmetric kinds.
 export async function assertLinkFree(
   tx: Tx,
   kind: LinkKind,

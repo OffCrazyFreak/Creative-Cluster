@@ -7,8 +7,7 @@ import type { IDirectoryEntry } from "@/features/directory/directory-schemas";
 import { useClusterStacks } from "../hooks/use-cluster-stacks";
 import MapStackTile from "./map-stack-tile";
 
-// Back to front: the third entry peeks out on the right, the second on the left, the first sits
-// in front.
+// Back to front: the third entry peeks out on the right, the second on the left, the first sits in front.
 const FAN = [
   "translate-x-2.5 translate-y-0.5 rotate-10",
   "-translate-x-2.5 translate-y-0.5 -rotate-10",
@@ -22,9 +21,7 @@ interface IMapStackMarkersProps {
   onStackClick: (clusterId: number) => void;
 }
 
-// Nearby entries merge into one stack: up to three tiles, fanned, plus the entry count as the
-// app's own Badge. HTML over the canvas, so the selection frame never covers a count. Pointer
-// only, like the canvas tiles: the list is the keyboard path.
+// HTML over the canvas so the selection frame never covers a count; pointer only, because the list is the keyboard path.
 export default function MapStackMarkers({
   allEntries,
   data,

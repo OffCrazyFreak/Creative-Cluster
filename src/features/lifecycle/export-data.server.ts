@@ -19,8 +19,7 @@ import { publicEntryCondition } from "@/features/entry/public-entry-filter.serve
 import { NotFoundError } from "@/server/errors";
 import { site } from "@/sites";
 
-// Everything that belongs to one account: its profile, its listings and what hangs off them. Other people's
-// data is left out: connections show the other listing's public name only, admins appear as a role.
+// Other people's data is left out: connections show the other listing's public name only, and admins appear as a role.
 export async function exportUserData(userId: string) {
   const [account] = await db
     .select({

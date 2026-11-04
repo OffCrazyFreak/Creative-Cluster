@@ -7,7 +7,7 @@ import { verification } from "@/db/schema";
 
 export type ApplicationTokenKind = "apply-verify" | "apply-edit";
 
-// Only a hash is stored, so a leaked database cannot be used to confirm or edit applications.
+// Only a hash is stored, so a leaked database cannot confirm or edit applications.
 function identifier(kind: ApplicationTokenKind, token: string): string {
   const hash = createHash("sha256").update(token).digest("hex");
   return `${kind}:${hash}`;

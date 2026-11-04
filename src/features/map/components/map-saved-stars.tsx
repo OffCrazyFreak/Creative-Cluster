@@ -7,8 +7,7 @@ import { useSavedEntries } from "@/features/saved/hooks/use-saved-entries";
 import { useUnstackedPoints } from "../hooks/use-unstacked-points";
 import { MAP_COLORS } from "../map-colors";
 
-// Decorative: the list names saved entries in its own group. A saved entry inside a stack gets
-// no star, since the stack is drawn somewhere else.
+// Decorative, because the list names saved entries in its own group; a stack gets no star because it is drawn elsewhere.
 export default function MapSavedStars() {
   const { current } = useMap();
   const { entries } = useSavedEntries();

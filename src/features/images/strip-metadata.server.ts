@@ -19,9 +19,7 @@ function malformed(): never {
   throw new ImageError("image_type");
 }
 
-// APP1 (EXIF, XMP), APP13 (IPTC), the other app segments and comments can carry GPS, names and device ids.
-// JFIF, ICC and Adobe colour segments stay because they change how the pixels look.
-// APP2 also carries MPF and FlashPix data, which can hold image ids, so only a real ICC profile stays.
+// These segments can carry GPS, names and device ids; JFIF, Adobe and real ICC segments stay because they change how pixels look.
 function dropsJpegSegment(marker: number, payload: Buffer) {
   if (marker === JPEG_COMMENT) return true;
   if (marker <= JPEG_APP0 || marker > JPEG_APP15) return false;

@@ -52,8 +52,7 @@ export async function saveEntryTagsInTx(
     .from(entryTag)
     .innerJoin(tag, eq(tag.id, entryTag.tagId))
     .where(and(eq(entryTag.entryId, entryId), eq(entryTag.field, field)));
-  // A tag already on the field stays valid even if the actor could not pick it (another member's pending
-  // suggestion an admin added): the form sends it back, and refusing it would block every save of the field.
+  // A tag already on the field stays valid even if the actor could not pick it, or refusing it would block every save of the field.
   const usable = current.length
     ? or(
         usableTagCondition(actor),

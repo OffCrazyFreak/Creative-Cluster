@@ -30,10 +30,7 @@ function text(value: unknown): string {
   return JSON.stringify(value ?? null, null, 2);
 }
 
-// Only fields that still have a stored "before" can be restored: old rows lose personal fields.
-// A group (for example the location) is restored whole or not at all, so a half-stripped row
-// never leaves a city without its coordinates. A field that was edited again since is left alone,
-// so reverting an old change never discards a newer one.
+// Groups restore whole and newer edits stay, so a revert never splits a location or discards a later change.
 function restorableFields(log: LogRow, current?: EntryRow): string[] {
   const before = log.before ?? {};
   const after = log.after ?? {};

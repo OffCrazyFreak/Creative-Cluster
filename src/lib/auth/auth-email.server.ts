@@ -21,8 +21,7 @@ export function recipientLocale(user: IMailRecipient): AppLocale {
   return LOCALES.find((locale) => locale === user.locale) ?? site.baseLocale;
 }
 
-// Reset and invite links point at our own pages with the recipient's language prefix; the
-// verification links stay on better-auth's verify endpoint, which must see the token itself.
+// Verification links stay on better-auth's endpoint because it must see the token; reset and invite links use our localized pages.
 export function pageLink(path: string, locale: AppLocale): string {
   return new URL(localizeHref(path, { locale }), env.BETTER_AUTH_URL).href;
 }

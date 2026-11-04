@@ -7,10 +7,7 @@ import { account, user } from "@/db/schema";
 
 export const MIN_ADMINS_CODE = "MIN_ADMINS";
 
-// Gives the admin a clear message before better-auth writes. A row lock here could not span
-// that write, so migration 0003 (a trigger with an advisory lock) is what holds the rule when
-// two changes race, and it also covers any path that reaches the update without a known target.
-// Only admins with a sign-in method (password or Google) count: an unused invite must not stand in for a second admin.
+// A clear message only: migration 0003's trigger holds the rule on races, and only admins with a sign-in method count.
 export async function assertAdminsRemain(targetUserId: string) {
   const admins = await db
     .select({ id: user.id })

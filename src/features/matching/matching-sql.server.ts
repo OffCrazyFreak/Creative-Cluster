@@ -9,8 +9,7 @@ import {
   TOPIC_WEIGHT,
 } from "./matching-constants";
 
-// One statement does the whole match so the request costs a single round trip.
-// idf = 1 + ln(N / df): a tag held by every eligible entry weighs 1, a rare one more.
+// One statement so the request costs one round trip; idf = 1 + ln(N / df), so a tag every eligible entry holds weighs 1.
 export function matchQuery(entryId: string) {
   const me = sql`${entryId}::uuid`;
   return sql`

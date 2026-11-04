@@ -33,8 +33,7 @@ export interface ITranslatedText {
   // Only the description is rich text: a validated RichTextDoc.
   doc: SerializableDoc | null;
   origin: TranslationOrigin;
-  // The original changed after this text was saved. The owner's own version is kept for good (the
-  // owner's choice); a machine one shows, with the note, only until the queued job replaces it.
+  // The owner's own version is kept for good; a machine one shows, with the note, only until the queued job replaces it.
   outdated: boolean;
 }
 

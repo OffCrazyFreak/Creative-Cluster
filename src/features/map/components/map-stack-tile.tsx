@@ -11,8 +11,7 @@ interface IMapStackTileProps {
   className?: string;
 }
 
-// The HTML twin of a pin's canvas tile (entry-icon.ts), at the 0.9 scale stacks use, so a stack
-// reads as the same tiles fanned.
+// The HTML twin of a pin's canvas tile (entry-icon.ts) at the stack's 0.9 scale, so a stack reads as the same tiles fanned.
 export default function MapStackTile({ entry, className }: IMapStackTileProps) {
   return (
     <span

@@ -1,7 +1,6 @@
 import type { entry } from "@/db/schema";
 
-// Entry columns an owner or admin edit may change, and the only ones a revert may restore.
-// Slug (history rules), status, owner, trust and consent are changed by their own services.
+// The only columns a revert may restore; slug, status, owner, trust and consent change through their own services.
 export const ENTRY_REVERTIBLE_FIELDS = [
   "name",
   "description",

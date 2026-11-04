@@ -39,8 +39,7 @@ export function useSelectedFrame({
     let cancelled = false;
     let latestRun = 0;
 
-    // "idle" fires once tiles and clusters for the new view are drawn, which a plain moveend can
-    // beat. An unchanged frame keeps its object, so the overlay does not redraw and fire idle again.
+    // "idle" fires once the new view is drawn, which moveend can beat; an unchanged frame keeps its object so idle does not refire.
     async function locate() {
       const run = ++latestRun;
       let next: ISelectedFrame | null;

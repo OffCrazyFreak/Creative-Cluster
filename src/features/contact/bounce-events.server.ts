@@ -11,8 +11,7 @@ export interface IBadAddressEvent {
   reason: string;
 }
 
-// Entries still marked valid whose contact address matches, ignoring case (mail systems do).
-// Only a few thousand entries exist, so the scan needs no index.
+// Case is ignored because mail systems ignore it; a few thousand entries need no index for this scan.
 async function markInvalid(address: string, reason: string) {
   await db.transaction(async (tx) => {
     const rows = await tx

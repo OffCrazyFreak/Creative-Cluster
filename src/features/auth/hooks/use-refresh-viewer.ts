@@ -6,8 +6,7 @@ export function useRefreshViewer() {
   const queryClient = useQueryClient();
   const router = useRouter();
   return async function refreshViewer() {
-    // ensureQueryData serves stale cache, so entries have to go, not just be marked stale. Account and
-    // admin keys are not scoped to a user, so everything goes or the next user on this tab sees the last one's data.
+    // ensureQueryData serves stale cache and account keys are not per user, so everything goes or the next user sees this one's data.
     queryClient.clear();
     await router.invalidate();
   };

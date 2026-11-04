@@ -39,8 +39,7 @@ export const Route = createFileRoute("/_map/opportunities/$id")({
         name: opportunity.entry.name,
         site: site.name,
       });
-    // Ended pages and pages still in the owner's language stay out of the index. No structured
-    // data on purpose: Google's JobPosting is for jobs, and these are not.
+    // No structured data on purpose: Google's JobPosting is for jobs, and these are not.
     const noindex =
       opportunity.state !== "active" || opportunity.translationMissing;
     return {

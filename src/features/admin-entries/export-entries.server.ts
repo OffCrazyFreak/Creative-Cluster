@@ -38,8 +38,7 @@ function iso(value: Date | null): string {
   return value?.toISOString() ?? "";
 }
 
-// Contact fields are included on purpose: only admins reach this (adminGuard on the server function).
-// Listings queued for deletion are left out because their owner already asked for erasure.
+// Contact fields are on purpose (adminGuard only); listings queued for deletion are out because the owner asked for erasure.
 export async function exportEntries(): Promise<string> {
   // Columns are picked one by one so the large jsonb fields are never loaded.
   const rows = await db
@@ -108,9 +107,7 @@ export async function exportEntries(): Promise<string> {
         imported_at: iso(e.importedAt),
       })),
     },
-    // Cells starting with = + - @ would run as formulas in a spreadsheet, so they get a leading quote. The pattern
-    // spans newlines (the default stops at the first one, and descriptions are multi-line) and leaves plain phone
-    // numbers such as +385 91 234 5678 alone: digits and punctuation cannot form a formula that does anything.
+    // Cells starting with = + - @ would run as spreadsheet formulas; the pattern spans newlines and leaves plain phone numbers alone.
     {
       escapeFormulae: /^(?!\+[ \d()./-]*$)[=+\-@\t\r][\s\S]*$/,
       newline: "\r\n",

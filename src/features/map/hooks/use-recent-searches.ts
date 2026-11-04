@@ -6,8 +6,7 @@ import {
   readRecentSearches,
 } from "../recent-searches";
 
-// Search runs as you type, so only a query left alone this long is one the
-// user actually meant, not a half-typed word.
+// Search runs as you type, so only a query left alone this long is one the user meant.
 const SETTLE_MS = 2_000;
 
 const EMPTY: string[] = [];

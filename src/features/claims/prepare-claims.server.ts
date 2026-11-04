@@ -40,8 +40,7 @@ function eligible() {
   );
 }
 
-// Creates the invite rows and nothing else: no job, no mail. Sending is a separate, approved step.
-// The lock keeps two overlapping runs from giving one listing two valid tokens.
+// Sending is a separate, approved step; the lock keeps overlapping runs from giving one listing two valid tokens.
 export async function prepareClaimInvites(): Promise<IPrepareResult> {
   return db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${PREPARE_LOCK_KEY})`);
@@ -105,7 +104,6 @@ export interface IPreparedInvite {
   importedAt: Date;
 }
 
-// Invites that exist but have not gone out; used for the review files and for the sender.
 // Re-checks what can change after preparing: removal (suppression), archive, erasure, bounces.
 export async function listUnsentInvites(): Promise<IPreparedInvite[]> {
   const rows = await db

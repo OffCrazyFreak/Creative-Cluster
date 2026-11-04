@@ -11,8 +11,7 @@ interface IResolveQueuedTags {
   ids: string[];
 }
 
-// A tag merged, rejected or taken off the field while the edit waited must not block approval: merges follow
-// the surviving tag, rejections are dropped, and so is another member's pending suggestion an admin removed.
+// A tag merged, rejected or removed while the edit waited must not block approval, so merges follow the survivor and the rest drop.
 export async function resolveQueuedTags(
   tx: Tx,
   { entryId, field, submittedBy, ids }: IResolveQueuedTags,

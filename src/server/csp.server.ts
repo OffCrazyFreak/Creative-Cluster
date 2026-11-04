@@ -27,8 +27,7 @@ export function buildCsp({ nonce, reportUri }: ICspOptions): string {
     "default-src": ["'self'"],
     // strict-dynamic lets the nonced bundle load its own chunks, PostHog and Turnstile.
     "script-src": [`'nonce-${nonce}'`, "'strict-dynamic'"],
-    // Sonner injects an un-nonced <style> element and Base UI and MapLibre set style attributes at runtime.
-    // Style injection is far less dangerous than script injection, so styles stay inline.
+    // Sonner, Base UI and MapLibre inject styles at runtime, and style injection is far less dangerous than script injection.
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": [
       "'self'",

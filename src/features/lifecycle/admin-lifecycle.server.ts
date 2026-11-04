@@ -10,8 +10,7 @@ import { NotFoundError } from "@/server/errors";
 
 import { transitionEntry, type IActor } from "./entry-transitions.server";
 
-// A listing queued for deletion stays hidden until the owner cancels, and a person who withdrew consent stays
-// unpublished until they give it again.
+// A listing queued for deletion stays hidden until cancelled, and a person who withdrew consent until they give it again.
 async function assertCanPublish(
   tx: Tx,
   entryId: string,
@@ -86,8 +85,7 @@ export async function suspendEntry(
 export async function reinstateEntry(entryId: string, adminId: string) {
   await db.transaction(async (tx) => {
     const current = await assertCanPublish(tx, entryId, false);
-    // A person who withdrew consent while suspended cannot go public again; the listing lands in the archive,
-    // where the owner can show it again with fresh consent.
+    // A person without consent cannot go public, so the listing lands in the archive, where fresh consent can show it again.
     const needsConsent = current.kind === "person" && !current.consentAt;
     await transitionEntry(tx, {
       entryId,

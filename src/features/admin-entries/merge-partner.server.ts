@@ -11,8 +11,7 @@ type LinkRow = typeof link.$inferSelect;
 
 const LIVE = ["proposed", "confirmed"] as const;
 
-// Returns true when the link moved, false when it had to be dropped (it would link the target to itself, or
-// duplicate a live link the target already has).
+// False means the link was dropped, because it would self-link the target or duplicate a live link.
 async function repoint(tx: Tx, row: LinkRow, stubId: string, targetId: string) {
   function swap(id: string) {
     return id === stubId ? targetId : id;

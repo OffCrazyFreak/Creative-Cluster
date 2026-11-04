@@ -32,8 +32,7 @@ export const submitApplicationFn = createServerFn({ method: "POST" })
   .middleware([publicGuard])
   .inputValidator(submitApplicationSchema)
   .handler(async ({ data }): Promise<SubmitApplicationResult> => {
-    // A filled honeypot, a forged token or a too-fast send is never a fake success: the person (or a
-    // script) gets a plain "try again", so a wrongly flagged human is never left waiting for a mail.
+    // Bots get a plain "try again", never a fake success, so a wrongly flagged human is not left waiting for a mail.
     if (data.referenceCode !== "" || checkFormToken(data.formToken) !== "ok")
       return { status: "retry" };
     try {

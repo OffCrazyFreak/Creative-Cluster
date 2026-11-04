@@ -60,8 +60,7 @@ export function unbanUser(userId: string) {
   );
 }
 
-// better-auth revokes the sessions before it deletes, so a refused removal would still log the
-// person out; checking the rule first avoids that.
+// better-auth revokes sessions before deleting, so checking first stops a refused removal from logging the person out.
 export function removeUser(userId: string) {
   return runUserAction(async () => {
     await assertAdminsRemain(userId);
