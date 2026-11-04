@@ -1,17 +1,29 @@
 const DIRECTIVE =
-  /^\s*(eslint|@ts-|@type-check|@vitest-environment|@jsx|global\b|globals\b|exported\b|prettier-ignore|istanbul|c8\b|v8 ignore|#region|#endregion)/;
+  /^\s*(eslint-disable|eslint-enable|@ts-|@vitest-environment|@jsx|prettier-ignore|(c8|v8|istanbul) ignore|#region|#endregion|\/ <reference)/;
+const BLOCK_DIRECTIVE = /^\s*(eslint\s+[\w@/-]+\s*:|globals?\s|exported\s)/;
 const HISTORY = /\b(used to|previously|originally)\b/i;
 
 function isDirective(comment) {
-  return comment.type === "Shebang" || DIRECTIVE.test(comment.value);
+  return (
+    comment.type === "Shebang" ||
+    DIRECTIVE.test(comment.value) ||
+    (comment.type === "Block" && BLOCK_DIRECTIVE.test(comment.value))
+  );
 }
 
-function continuesLineComment(previous, comment) {
+function startsItsLine(comment, lines) {
+  const before = lines[comment.loc.start.line - 1];
+  return before.slice(0, comment.loc.start.column).trim() === "";
+}
+
+function continuesLineComment(previous, comment, lines) {
   return (
     previous.type === "Line" &&
     comment.type === "Line" &&
     comment.loc.start.line === previous.loc.end.line + 1 &&
-    comment.loc.start.column === previous.loc.start.column
+    comment.loc.start.column === previous.loc.start.column &&
+    startsItsLine(previous, lines) &&
+    startsItsLine(comment, lines)
   );
 }
 
@@ -24,7 +36,7 @@ export default {
       multiLine:
         "Keep a comment to one line: the why the code cannot show. Rename or restructure instead of explaining.",
       history:
-        "Keep history out of comments; it belongs in the commit message.",
+        "Keep history out of comments; it belongs in the commit message. Reword if the phrase only sounds like history.",
     },
   },
   create(context) {
@@ -38,7 +50,8 @@ export default {
           }
           if (
             comment.loc.start.line !== comment.loc.end.line ||
-            (previous && continuesLineComment(previous, comment))
+            (previous &&
+              continuesLineComment(previous, comment, context.sourceCode.lines))
           ) {
             context.report({ loc: comment.loc, messageId: "multiLine" });
           }
