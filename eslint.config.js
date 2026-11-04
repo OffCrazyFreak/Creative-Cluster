@@ -7,6 +7,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import oneLineComments from "./eslint-rules/one-line-comments.js";
 
 export default defineConfig([
   globalIgnores([
@@ -23,6 +24,7 @@ export default defineConfig([
   pluginQuery.configs["flat/recommended"],
   pluginRouter.configs["flat/recommended"],
   {
+    plugins: { local: { rules: { "one-line-comments": oneLineComments } } },
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
       parserOptions: {
@@ -43,6 +45,7 @@ export default defineConfig([
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/only-throw-error": "off",
       "func-style": ["error", "declaration"],
+      "local/one-line-comments": "error",
       "no-restricted-syntax": [
         "error",
         {
@@ -75,6 +78,7 @@ export default defineConfig([
     files: ["src/components/ui/**"],
     rules: {
       "func-style": "off",
+      "local/one-line-comments": "off",
       "no-restricted-syntax": "off",
       "react-hooks/purity": "off",
       "react-hooks/set-state-in-effect": "off",
