@@ -2,6 +2,7 @@ const DIRECTIVE =
   /^\s*(eslint-disable|eslint-enable|@ts-|@vitest-environment|@jsx|prettier-ignore|(c8|v8|istanbul) ignore|#region|#endregion|\/ <reference)/;
 const BLOCK_DIRECTIVE = /^\s*(eslint\s+[\w@/-]+\s*:|globals?\s|exported\s)/;
 const HISTORY = /\b(used to|previously|originally)\b/i;
+const MAX_LINE_LENGTH = 120;
 
 function isDirective(comment) {
   return (
@@ -35,6 +36,7 @@ export default {
     messages: {
       multiLine:
         "Keep a comment to one line: the why the code cannot show. Rename or restructure instead of explaining.",
+      tooLong: `Keep a comment line to ${MAX_LINE_LENGTH} characters: one short why, or delete it.`,
       history:
         "Keep history out of comments; it belongs in the commit message. Reword if the phrase only sounds like history.",
     },
@@ -54,6 +56,9 @@ export default {
               continuesLineComment(previous, comment, context.sourceCode.lines))
           ) {
             context.report({ loc: comment.loc, messageId: "multiLine" });
+          }
+          if (comment.loc.end.column > MAX_LINE_LENGTH) {
+            context.report({ loc: comment.loc, messageId: "tooLong" });
           }
           if (HISTORY.test(comment.value)) {
             context.report({ loc: comment.loc, messageId: "history" });
