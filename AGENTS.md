@@ -36,7 +36,7 @@ Put these to me instead of working around them: I say yes far more often than no
 
 ## Worktrees and git
 
-- Create worktrees under `~/.t3/worktrees/Creative-Cluster/<name>` and run `pnpm install --frozen-lockfile` in each.
+- Create worktrees under `~/.t3/worktrees/Creative-Cluster/<name>`; `t3.json` installs dependencies in T3's, so run `pnpm install --frozen-lockfile` in any other.
 - Run one site at a time per checkout, because both compile Paraglide into the same folder.
 - Branches are `<type>/<kebab-description>`; rename T3's `t3/<hex>` branch before the first push.
 - Fetch and merge the latest `origin/main` before resuming an open PR.
