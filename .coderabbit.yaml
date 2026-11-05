@@ -1,6 +1,6 @@
-# Reviews run through the CodeRabbit CLI per pull request. Automatic reviews on every push
-# use the same hourly quota and starve those runs, so they are off.
+# Automatic reviews are off because they use the same hourly quota as CodeRabbit CLI runs.
 reviews:
+  review_status: false
   auto_review:
     enabled: false
   # Generated and vendored files only make requests bigger; large requests fail to start on the free tier.
