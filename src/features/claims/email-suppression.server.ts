@@ -7,7 +7,7 @@ import type { DbOrTx } from "@/db/client.server";
 import { emailSuppression } from "@/db/schema";
 import { env } from "@/env.server";
 
-// Keyed so a leaked table cannot be checked against addresses; rotating PSEUDONYM_SECRET empties the list.
+// Keyed so a leak cannot be checked against addresses; rotating PSEUDONYM_SECRET empties the list: re-add them first.
 export function suppressionHash(email: string): string {
   return createHmac("sha256", env.PSEUDONYM_SECRET)
     .update(email.trim().toLowerCase())

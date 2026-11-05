@@ -19,7 +19,7 @@ interface IErasedAccount {
   locale?: string | null;
 }
 
-// The marker stays until the account is gone so a failed delete retries; the hook acts only on a due marker.
+// The marker stays so a failed delete retries; the hook acts only on a due marker, so admin removal is no erasure.
 export async function purgeErasedUser(
   account: IErasedAccount,
 ): Promise<boolean> {

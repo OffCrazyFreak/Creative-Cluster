@@ -37,7 +37,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Nominatim allows one request a second app-wide; each caller reserves the next slot, so searches queue, not race.
+// Nominatim allows one request a second app-wide; one statement reserves the next slot, so searches queue, not race.
 const NOMINATIM_MAX_WAIT_MS = 3000;
 
 export async function acquireNominatim() {
