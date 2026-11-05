@@ -15,21 +15,22 @@ Put these to me instead of working around them: I say yes far more often than no
 ## Boundaries
 
 - Never deploy or call a Netlify build hook; production deploys come only from the Deploy workflow and its Saturday schedule.
-- Run `pnpm claims:send` only when I say so, and check `isSuppressed` before any other mail to an imported contact.
+- Run `pnpm claims:send` only when I say so.
+- Send mail to an imported contact only through a template `email-job-handler.server.ts` checks with `isSuppressed`.
 - Never commit secrets or real keys; `.env.example` and `.env.ci` hold placeholders.
 - When nothing reads a variable, delete it from Netlify, GitHub and local `.env` files, printing names only.
 - Keep personal names and real contact data out of the repository, because it is public.
 - Leave unrelated changes already in the worktree alone: no revert, reformat, stage or claim.
 - Use pnpm only; never hand-edit a dependency entry or lockfile.
 - Kill and find processes by PID or port; `.claude/hooks/guard-process.py` blocks `pkill -f` and `pgrep -f`, whose pattern matches their own shell.
-- Regenerate `src/routeTree.gen.ts`, `src/paraglide/` and `drizzle/meta/` with their commands, never by hand.
+- Edit nothing in `src/routeTree.gen.ts`, `src/paraglide/` or `drizzle/meta/`; run `pnpm generate` or `pnpm db:generate` instead.
 - When an account or client fact is missing, use placeholder env values, local Docker Postgres, console email, fake seed data or `[[GAP]]` in legal text.
 
 ## Done means
 
 - Run `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build:rpcc` and `pnpm build:dnz` until they pass, with `pnpm size` after each build.
 - When the schema changes, run `pnpm db:generate` and apply the migration to an empty database.
-- Fix type errors in `src/`, `scripts/` and `tests/`; ignore errors from generated files and dependencies.
+- Fix type errors in `src/`, `scripts/`, `netlify/` and `tests/`; ignore errors from generated files and dependencies.
 - When a failure is unrelated to your change, report the command and the error, say it looks pre-existing, and leave it.
 - Report a check I interrupted as not run, without re-running it.
 - After editing `.claude/hooks/`, run `python3 .claude/hooks/guard-process.test.py`.
@@ -51,12 +52,14 @@ Put these to me instead of working around them: I say yes far more often than no
 - Write "Part of #N" in a PR that does not finish the issue, and "Closes #N" in one that does.
 - Give every PR one Sonnet `reviewer`.
 - Run the CodeRabbit CLI on every PR, because `.coderabbit.yaml` turns automatic review off; when its quota is out, the `reviewer` is enough.
-- For 5000+ changed lines, 50+ files, or auth, security, personal data or migrations, also run Greptile once: `@greptileai review` or its CLI.
-- Give those same big or sensitive PRs one `reviewer` per app area, and wait for both bots unless a quota is out.
+- For 5000+ changed lines, 50+ files, or auth, security, personal data or migrations, also run Greptile once when installed: `@greptileai review` or its CLI.
+- Give those same big or sensitive PRs one `reviewer` per app area, and wait for each installed bot that has quota.
 - When a change alters what renders, check every changed screen in the T3 preview, then ask me whether to attach screenshots.
 - When the T3 Code preview browser is available, use it for previews and screenshots and for pages that block or error on fetch.
-- Before any merge, settle every PR comment and review body, bots included, with the smallest fix, the same mistake elsewhere in the PR included, or a reply giving the reason.
-- Merge once CI is green and review is settled, as the orchestrating session; a delegate reports instead of merging.
+- Before any merge, settle every PR comment and review body, bots included.
+- Settle each with the smallest fix for its cause and the same mistake elsewhere, or a reply with the reason, and resolve it.
+- Merge with a merge commit once CI is green on the latest commit and review is settled, as the orchestrating session.
+- As a delegate, report instead of merging.
 - Append anything a deploy needs (data step, migration, env step, post-deploy check) to the PR body, saying what is left and by whom.
 
 ## Board and issues
@@ -74,8 +77,9 @@ Put these to me instead of working around them: I say yes far more often than no
 - Read library docs through Context7 or the official docs for the installed version.
 - For every dependency change, a single bump included, delete `node_modules` and `pnpm-lock.yaml`, then install, because a plain install keeps the old resolution.
 - List the unrelated lockfile updates in the PR.
-- Read the `frontend-design` skill before generating or redesigning UI.
+- When the `frontend-design` skill is available, read it before generating or redesigning UI.
 - Style UI freely on shadcn (Base UI) components, because the brand theme replaces the styling in `src/styles.css` later.
+- Keep map colours in `src/features/map/map-colors.ts`, because MapLibre paint and canvas drawing cannot read CSS variables.
 - Edit `src/components/ui/` (shadcn output) only where the primitive is the natural home; ours live in `src/components/custom/` or the feature folder.
 - Use `site.baseLocale` from `src/sites`, never Paraglide's `baseLocale`, because one inlang project serves both sites.
 - Pass the locale explicitly in code outside a request (jobs, emails, scripts).
@@ -106,7 +110,8 @@ Put these to me instead of working around them: I say yes far more often than no
 
 - Explain in plain words, and define any jargon in one phrase.
 - Write Markdown with one physical line per paragraph and bullet.
-- Write numeric dates as `03.11.2026.` in Croatian text and ISO `2026-11-03` in English, with straight quotes.
+- Write numeric dates in prose as `03.11.2026.` in Croatian and ISO `2026-11-03` in English; UI dates keep the locale formatter.
+- Use straight quotes.
 - Cite commits by full 40-character SHA.
 
 ## Commits
