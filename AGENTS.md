@@ -61,6 +61,8 @@ Put these to me instead of working around them: I say yes far more often than no
 - Settle each with the smallest fix for its cause and the same mistake elsewhere, or a reply with the reason, and resolve it.
 - Merge with a merge commit once CI is green on the latest commit and review is settled, as the orchestrating session.
 - As a delegate, report instead of merging.
+- When you merge a PR, confirm its branch is pushed and merged, then remove its worktree, local and remote branch, test data and servers.
+- As a subagent, delete your test data and stop your servers and containers before reporting, and list the branch and worktree you left.
 - Append anything a deploy needs (data step, migration, env step, post-deploy check) to the PR body, saying what is left and by whom.
 
 ## Board and issues
