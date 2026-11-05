@@ -8,7 +8,6 @@ Put these to me instead of working around them: I say yes far more often than no
 
 - Ask before adding or renaming an environment variable.
 - Ask before adding a dependency the task does not strictly require.
-- Ask before changing how the app looks (size, spacing, colour, layout), accessibility fixes and side effects included, with before and after screenshots.
 - Ask before adding anything that can bill; services, plans and CI stay free with no card, or hard-capped.
 - Hand back interactive installers and `init` wizards, except `pnpm dlx shadcn@latest add <component>`, which you may run.
 
