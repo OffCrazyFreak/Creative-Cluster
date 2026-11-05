@@ -67,7 +67,7 @@ export default [
     gzip: true,
     limit: "58 kB",
   },
-  // Spec: about 430 kB gzip, loaded on idle on map routes only.
+  // About 430 kB gzip, loaded on idle on map routes only.
   {
     name: "Map library chunks (idle, map routes only)",
     path: [join(clientDir, "assets/maplibre-gl-*.js")],
