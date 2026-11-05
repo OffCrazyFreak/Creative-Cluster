@@ -26,11 +26,11 @@ if [ "$generated" = no ]; then
   [ "$length" -le 72 ] || fail "the subject is $length characters; the limit is 72."
 fi
 
-dashes=$(printf '\342\200\223\\|\342\200\224')
-if printf '%s\n' "$message" | LC_ALL=C grep -q "$dashes"; then
+dashes=$(printf '\342\200\223|\342\200\224')
+if printf '%s\n' "$message" | LC_ALL=C grep -Eq "$dashes"; then
   fail 'em and en dashes are not allowed; use a comma, a colon, parentheses or a rewrite.'
 fi
 
-if printf '%s\n' "$message" | LC_ALL=C grep -Eiq '^(co-authored-by|signed-off-by):|^[^[:alnum:]]*generated with'; then
+if printf '%s\n' "$message" | LC_ALL=C grep -Eiq '^[[:space:]]*(co-authored-by|signed-off-by):|^[^[:alnum:]]*generated with \[?[[:alnum:] ]+\]?(\([^)]*\))?\.?[[:space:]]*$'; then
   fail 'attribution trailers (Co-Authored-By, Signed-off-by, Generated with) are not allowed.'
 fi
