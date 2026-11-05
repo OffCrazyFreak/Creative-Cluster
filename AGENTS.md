@@ -73,8 +73,7 @@ Put these to me instead of working around them: I say yes far more often than no
 - For every dependency change, a single bump included, delete `node_modules` and `pnpm-lock.yaml`, then install, because a plain install keeps the old resolution.
 - List the unrelated lockfile updates in the PR.
 - Read the `frontend-design` skill before generating or redesigning UI.
-- Build UI from plain shadcn (Base UI) with layout classes and shadcn's typography and border utilities, because a tweakcn theme lands in `src/styles.css` later.
-- Add no hard-coded colours, font families, shadows or custom theme tokens; the theme supplies them.
+- Style UI freely on shadcn (Base UI) components, because the brand theme replaces the styling in `src/styles.css` later.
 - Edit `src/components/ui/` (shadcn output) only where the primitive is the natural home; ours live in `src/components/custom/` or the feature folder.
 - Use `site.baseLocale` from `src/sites`, never Paraglide's `baseLocale`, because one inlang project serves both sites.
 - Pass the locale explicitly in code outside a request (jobs, emails, scripts).
