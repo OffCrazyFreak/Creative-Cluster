@@ -69,6 +69,6 @@ describe("dnz seed", () => {
   });
 });
 
-it("MAX_TAGS_PER_FIELD stays 5 as the spec says", () => {
+it("MAX_TAGS_PER_FIELD stays 5", () => {
   expect(MAX_TAGS_PER_FIELD).toBe(5);
 });

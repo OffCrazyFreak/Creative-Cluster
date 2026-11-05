@@ -1,6 +1,6 @@
 import type { ISiteConfig } from "./site-config-types.ts";
 
-// TODO values await client facts (site-texts/CHECKLIST.md); Inovatori DNŽ runs both sites, so the legal identity is shared.
+// TODO values await client facts; Inovatori DNŽ runs both sites, so the legal identity is shared.
 export const rpcc = {
   id: "rpcc",
   name: "Creative Cluster",

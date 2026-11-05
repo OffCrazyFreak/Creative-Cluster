@@ -1,6 +1,6 @@
 import type { ISiteConfig } from "./site-config-types.ts";
 
-// Values marked TODO are placeholders until the clients send the facts (site-texts/CHECKLIST.md).
+// Values marked TODO are placeholders until the clients send the facts.
 export const dnz = {
   id: "dnz",
   name: "Registar inovatora DNŽ",

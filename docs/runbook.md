@@ -63,7 +63,7 @@ The domains' DNS is held outside this project (who holds it: UNVERIFIED, the pro
 - Keep the `restorativepractices.xyz` apex redirect working (decision on record).
 - Resend: the SPF TXT, DKIM TXT and MX return-path records for the `send.` subdomain, exactly as the Resend domain page shows them (see below). Exact hostnames are UNVERIFIED here.
 - DMARC: a TXT record at `_dmarc` on the parent domain, `v=DMARC1; p=none; rua=mailto:<report address>`, for reports with no enforcement (decision on record: `p=none`). The record format is the standard DMARC one; it was not checked against a provider page.
-- Cutover (from the spec, section 18): lower the TTL a day ahead, test with `curl --resolve <domain>:443:<netlify-ip> https://<domain>/healthz` before switching, switch the CNAMEs at a quiet hour (a few minutes of certificate gap are accepted), keep the old server for two weeks and take a final dump before shutting it down, then watch the certificate issue.
+- Cutover: lower the TTL a day ahead, test with `curl --resolve <domain>:443:<netlify-ip> https://<domain>/healthz` before switching, switch the CNAMEs at a quiet hour (a few minutes of certificate gap are accepted), keep the old server for two weeks and take a final dump before shutting it down, then watch the certificate issue.
 
 ## Resend domain setup
 
