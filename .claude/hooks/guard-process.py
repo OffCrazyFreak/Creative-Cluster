@@ -12,7 +12,11 @@ import shlex
 import sys
 
 PROCESS_TOOLS = {"pkill", "pgrep"}
-WRAPPERS = {"sudo", "timeout", "env", "nice", "nohup", "command", "time", "xargs"}
+# ssh and docker count because the remote shell also carries the pattern in its arguments.
+WRAPPERS = {
+    "sudo", "timeout", "env", "nice", "nohup", "command", "time", "xargs",
+    "exec", "setsid", "watch", "ssh", "docker",
+}
 SHELLS = {"sh", "bash", "zsh", "dash", "ksh", "fish"}
 SHELL_KEYWORDS = {"if", "then", "elif", "else", "while", "until", "do", "!", "{"}
 
@@ -24,9 +28,10 @@ WITH_VALUE = {
 }
 
 SHORT_FULL = re.compile(r"^-[a-zA-Z]*f[a-zA-Z]*$")
+BUNDLED_VALUE_LETTERS = "dgGPstuUFTA"
 ENV_ASSIGN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 SUBSTITUTION = re.compile(r"\$\(([^()]*)\)|`([^`]*)`")
-QUOTED_HEREDOC = re.compile(r"<<-?\s*(['\"])(\w+)\1")
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)(\w+)\1")
 MAX_DEPTH = 5
 
 
@@ -35,18 +40,35 @@ def basename(token):
 
 
 def strip_heredocs(command):
-    # Only a quoted delimiter makes the body inert; an unquoted one still expands.
+    # A heredoc body is data, except that an unquoted one still runs its substitutions.
     lines, kept, index = command.split("\n"), [], 0
     while index < len(lines):
         line = lines[index]
         kept.append(line)
         index += 1
-        match = QUOTED_HEREDOC.search(line)
+        match = HEREDOC.search(line)
         if match:
             while index < len(lines) and lines[index].strip() != match.group(2):
+                if not match.group(1):
+                    kept.extend(sub.group(0) for sub in SUBSTITUTION.finditer(lines[index]))
                 index += 1
             index += 1
     return "\n".join(kept)
+
+
+def without_single_quoted(command):
+    # Single quotes keep backticks and $() literal; double quotes do not.
+    kept, quote = [], None
+    for char in command:
+        if quote == "'":
+            quote = None if char == "'" else quote
+        elif char == "'" and quote is None:
+            quote = "'"
+        else:
+            if char == '"':
+                quote = None if quote == '"' else '"'
+            kept.append(char)
+    return "".join(kept)
 
 
 def segments(command):
@@ -124,6 +146,7 @@ def full_pattern(args):
             skip_next = True
         elif token == "--full" or SHORT_FULL.match(token):
             full = True
+            skip_next = token != "--full" and token[-1] in BUNDLED_VALUE_LETTERS
         elif not token.startswith("-") and pattern is None:
             pattern = token
     return pattern if full else None
@@ -162,7 +185,7 @@ def check(command, depth=0, root=None):
     if depth > MAX_DEPTH:
         return "Blocked: command nests shells too deeply to check. Rewrite it as a plain command."
     command = strip_heredocs(command)
-    for match in SUBSTITUTION.finditer(command):
+    for match in SUBSTITUTION.finditer(without_single_quoted(command)):
         message = check(match.group(1) or match.group(2) or "", depth + 1, root)
         if message:
             return message
@@ -170,6 +193,10 @@ def check(command, depth=0, root=None):
         tokens, wrapped = strip_prefixes(tokens_of(segment))
         if not tokens:
             continue
+        if tokens[0] == "eval":
+            message = check(" ".join(tokens[1:]), depth + 1, root)
+            if message:
+                return message
         if basename(tokens[0]) in SHELLS:
             for payload in shell_payloads(tokens[1:]):
                 message = check(payload, depth + 1, root)

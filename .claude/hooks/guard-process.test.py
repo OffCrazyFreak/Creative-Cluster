@@ -33,6 +33,14 @@ BLOCKED = [
     "(pkill -f vitest)",
     "{ pkill -f vitest; }",
     "echo ok && pkill -f vitest",
+    "exec pkill -f next",
+    "setsid pkill -f next",
+    "watch pgrep -f next",
+    "eval 'pkill -f next'",
+    "ssh host pkill -f next",
+    "docker exec c pkill -f next",
+    'echo "$(pgrep -f vitest)"',
+    "cat <<EOF\n$(pkill -f next)\nEOF",
 ]
 
 ALLOWED = [
@@ -48,6 +56,13 @@ ALLOWED = [
     'grep -rn "pkill -f next" docs/',
     'git commit -m "stop using pkill -f next"',
     "git commit -F - <<'EOF'\npkill -f next\nEOF",
+    "pgrep -fu jj '[v]itest'",
+    "git commit -m 'docs: block `pkill -f next` in agents'",
+    "gh pr create --body 'Blocks `pkill -f next`'",
+    "echo 'use $(pkill -f x) here'",
+    "git commit -F - <<EOF\npkill -f next is blocked\nEOF",
+    "docker ps",
+    "ssh host uptime",
     "pnpm test",
 ]
 
