@@ -122,7 +122,6 @@ Changes:
 Notes: a tradeoff the reader would otherwise miss.
 ```
 
-- Keep the subject to 72 characters.
+- Expect `.githooks/commit-msg` to reject an unknown type, a subject over 72 characters, em or en dashes, and attribution trailers.
 - Add `Changes:` only for two or more separable parts, and `Notes:` only for a tradeoff.
-- Use type `fix`, `feat`, `docs`, `refactor`, `chore`, `style`, `perf`, `ci` or `test`.
 - Leave the scope out when none fits, and otherwise reuse one from `git log`.

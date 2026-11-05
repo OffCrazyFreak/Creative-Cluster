@@ -1,0 +1,36 @@
+#!/bin/sh
+# Plain sh, so the repository needs no hook dependency. AGENTS.md has the commit template.
+
+fail() {
+  printf 'commit-msg: %s\n' "$1" >&2
+  exit 1
+}
+
+message=$(sed '/^# -* >8 -*$/,$d' "$1" | git stripspace --strip-comments)
+subject=$(printf '%s\n' "$message" | sed -n 1p)
+
+# Git writes these subjects itself, or they disappear in an autosquash, so the template does not apply.
+case "$subject" in
+  "Merge branch "* | "Merge branches "* | "Merge remote-tracking branch "* | "Merge remote-tracking branches "* | "Merge tag "* | "Merge commit "* | "Merge pull request "* | 'Revert "'* | "fixup! "* | "squash! "* | "amend! "*)
+    generated=yes
+    ;;
+  *)
+    generated=no
+    ;;
+esac
+
+if [ "$generated" = no ]; then
+  printf '%s\n' "$subject" | grep -Eq '^(fix|feat|docs|refactor|chore|style|perf|ci|test)(\([a-z0-9-]+\))?: [^ ]' ||
+    fail 'the subject must be "type(scope): Summary", with type fix, feat, docs, refactor, chore, style, perf, ci or test.'
+  length=$(printf '%s' "$subject" | LC_ALL=C.UTF-8 wc -m)
+  [ "$length" -le 72 ] || fail "the subject is $length characters; the limit is 72."
+fi
+
+dashes=$(printf '\342\200\223\\|\342\200\224')
+if printf '%s\n' "$message" | LC_ALL=C grep -q "$dashes"; then
+  fail 'em and en dashes are not allowed; use a comma, a colon, parentheses or a rewrite.'
+fi
+
+if printf '%s\n' "$message" | LC_ALL=C grep -Eiq '^(co-authored-by|signed-off-by):|^[^[:alnum:]]*generated with'; then
+  fail 'attribution trailers (Co-Authored-By, Signed-off-by, Generated with) are not allowed.'
+fi
