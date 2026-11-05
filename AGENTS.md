@@ -27,7 +27,7 @@ Put these to me instead of working around them: I say yes far more often than no
 
 ## Done means
 
-- Run `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build:rpcc` and `pnpm build:dnz` until they pass, with `pnpm size` after each build.
+- Run `pnpm check` until it passes; its tests need Postgres (`pnpm db:up`).
 - When the schema changes, run `pnpm db:generate` and apply the migration to an empty database.
 - Fix type errors in `src/`, `scripts/`, `netlify/` and `tests/`; ignore errors from generated files and dependencies.
 - When a failure is unrelated to your change, report the command and the error, say it looks pre-existing, and leave it.

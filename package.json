@@ -16,6 +16,7 @@
     "lint": "pnpm generate && eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build:rpcc && pnpm size && pnpm build:dnz && pnpm size",
     "typecheck": "pnpm generate && tsc --noEmit",
     "test": "pnpm generate && vitest run",
     "generate": "tsx scripts/generate.ts && tsr generate",
