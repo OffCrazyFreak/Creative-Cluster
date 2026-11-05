@@ -28,7 +28,7 @@ export default function MapSameSpotPopover({
   const anchorRef = useRef<HTMLSpanElement>(null);
   const rows = spot ? pins.filter((pin) => spot.slugs.includes(pin.slug)) : [];
 
-  // A filter that hides every entry here closes the list for good, so it cannot reappear over an old spot when the filter clears.
+  // A filter hiding every entry here closes the list for good, so it cannot reappear over an old spot.
   const isEmpty = spot !== null && rows.length === 0;
   useEffect(() => {
     if (isEmpty) onClose();
@@ -50,7 +50,7 @@ export default function MapSameSpotPopover({
       open
       onOpenChange={(open, details) => {
         if (open) return;
-        // There is no trigger to return to, so Escape hands focus to the map and a click elsewhere leaves it where it landed.
+        // There is no trigger to return to, so Escape hands focus to the map.
         if (details.reason === "escape-key") map?.getCanvas().focus();
         onClose();
       }}

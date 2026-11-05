@@ -12,7 +12,7 @@ import {
 } from "@/db/schema";
 import { stripEntityChangeLog } from "@/features/changes/strip-change-log.server";
 
-// Sent mail no longer needs the address, queued mail does; a contact address may be a member's login, whose history stays.
+// Sent mail no longer needs the address, queued mail does; a member's login address keeps its history.
 export async function scrubSentEmails(
   tx: Tx,
   address: string,
@@ -35,7 +35,7 @@ export async function scrubSentEmails(
       and lower(payload ->> 'to') = ${lowered}`);
 }
 
-// Deletes text, translations, posts, connections, queue items and unshared images; log rows stay without identifiers; `onlyIf` is re-checked under the lock.
+// Deletes the listing and all it owns; log rows stay without identifiers; `onlyIf` is re-checked under the lock.
 export async function purgeEntry(tx: Tx, entryId: string, onlyIf?: SQL) {
   const [row] = await tx
     .select({

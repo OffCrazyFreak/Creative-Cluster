@@ -6,7 +6,7 @@ import { writeChange } from "@/lib/change-log/write-change.server";
 
 import type { OpResult, TransferError } from "./admin-entries-schemas";
 
-// One account owns one listing and a blocked account could not use it; no mail goes out because no template covers this.
+// One account owns one listing and a blocked account could not use it; no mail template covers this.
 export async function transferOwner(
   entryId: string,
   newOwnerId: string,

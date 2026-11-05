@@ -13,7 +13,7 @@ export function richTextDepth(node: Node): number {
   return deepest + 1;
 }
 
-// Keeps the editor from building what parseRichText rejects; too-deep content still loads and edits as long as it gets no deeper.
+// Keeps the editor from building what parseRichText rejects; too-deep content still loads and edits.
 export const DepthLimit = Extension.create({
   name: "depthLimit",
   addProseMirrorPlugins() {

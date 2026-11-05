@@ -65,7 +65,7 @@ export async function inviteUser(
     try {
       await queueInvite(created, input, invitedBy);
     } catch (error) {
-      // better-auth commits on its own connection; without the mail the account is invisible and blocks a retry with "already exists".
+      // better-auth commits separately; without the mail the account is invisible and blocks a retry.
       await db.delete(user).where(eq(user.id, created.id));
       throw error;
     }

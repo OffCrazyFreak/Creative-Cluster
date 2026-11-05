@@ -9,7 +9,7 @@ export function missingFields(
   return view ? view.sourceFields.filter((field) => !view.texts[field]) : [];
 }
 
-// An untranslated page shows another language's text under this URL, so it stays out of the index until a translation exists.
+// An untranslated page shows another language under this URL, so it stays out of the index.
 export function needsNoindex(view: ITranslationView | null) {
   return missingFields(view).length > 0;
 }

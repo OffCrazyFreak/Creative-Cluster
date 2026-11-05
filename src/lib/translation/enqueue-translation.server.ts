@@ -7,7 +7,7 @@ export interface IEnqueueTranslation {
   entityId: string;
 }
 
-// Call inside the save transaction after the write; no idempotency key, because the job compares hashes and a key would swallow an edit back to earlier text.
+// Call inside the save transaction after the write; a key would swallow an edit back to earlier text.
 export async function enqueueTranslation(
   tx: DbOrTx,
   { entityType, entityId }: IEnqueueTranslation,

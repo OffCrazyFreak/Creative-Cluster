@@ -6,7 +6,7 @@ export function useRefreshViewer() {
   const queryClient = useQueryClient();
   const router = useRouter();
   return async function refreshViewer() {
-    // ensureQueryData serves stale cache and account keys are not per user, so everything goes or the next user sees this one's data.
+    // ensureQueryData serves stale cache and keys are not per user, so all goes or the next user sees this data.
     queryClient.clear();
     await router.invalidate();
   };

@@ -6,7 +6,7 @@ import { publicGuard } from "@/server/guards";
 
 import { readIpGuess } from "./ip-guess.server";
 
-// Called after hydration, never in a loader, so cached HTML never carries one visitor's guess; the response is private too.
+// Called after hydration, never in a loader, so cached HTML never carries one visitor's guess.
 export const ipGuessFn = createServerFn({ method: "GET" })
   .middleware([publicGuard])
   .inputValidator(z.void())

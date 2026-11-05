@@ -43,7 +43,7 @@ function readClusters(map: MaplibreMap): ICluster[] {
   return [...byId.values()].sort((a, b) => a.id - b.id);
 }
 
-// MapLibre's "HTML clusters" pattern; entries rank in JS only when clusters change, because expressions cannot sort distinct entries.
+// MapLibre's "HTML clusters" pattern; ranking runs in JS because expressions cannot sort distinct entries.
 export function useClusterStacks(
   map: MaplibreMap | undefined,
   bySlug: Map<string, IDirectoryEntry>,

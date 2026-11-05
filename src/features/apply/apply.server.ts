@@ -85,7 +85,7 @@ async function queueVerification(
   });
 }
 
-// The application enters the review queue only after the address is confirmed, so the queue holds no spam from typo'd or forged addresses.
+// Enters the review queue only after the address is confirmed, so it holds no typo'd or forged addresses.
 export async function enterReviewQueue(
   tx: Tx,
   entryId: string,

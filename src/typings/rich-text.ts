@@ -16,7 +16,7 @@ export interface RichTextDoc extends IRichTextNode {
   type: "doc";
 }
 
-// parseRichText only lets scalar attributes through, so the stored RichTextDoc is safe to narrow to this for server functions.
+// parseRichText lets only scalar attributes through, so the stored RichTextDoc is safe to narrow to this.
 export interface IJsonRichTextNode {
   type: string;
   attrs?: Record<string, string | number | boolean | null>;
@@ -32,7 +32,7 @@ export interface JsonRichTextDoc extends IJsonRichTextNode {
   type: "doc";
 }
 
-// TanStack Form's key walker overflows on the recursive RichTextDoc type; the server still validates with richTextInput.
+// TanStack Form's key walker overflows on the recursive RichTextDoc; the server validates with richTextInput.
 export interface IFormRichText {
   type: "doc";
   content?: readonly unknown[];

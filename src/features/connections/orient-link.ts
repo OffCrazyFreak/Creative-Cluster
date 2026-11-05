@@ -8,7 +8,7 @@ export interface IOrientedLink {
   symmetric: boolean;
 }
 
-// Symmetric kinds are stored with the smaller id first (link_symmetric_order_check); directed kinds keep the proposer's direction.
+// Symmetric kinds store the smaller id first (link_symmetric_order_check); directed kinds keep the direction.
 export function orientLink(
   kind: LinkKind,
   proposerId: string,

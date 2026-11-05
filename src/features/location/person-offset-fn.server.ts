@@ -1,7 +1,7 @@
 import type { LocationValue } from "./location-schemas";
 import { pseudonymPin } from "./person-offset.server";
 
-// Only a fresh TownPicker value is offset; stored values already are, and anything else loses its coordinates so people are never exact.
+// Only a fresh TownPicker value is offset; stored values already are, and anything else loses its coordinates.
 export function applyPersonOffset(
   entryId: string,
   value: LocationValue,

@@ -48,7 +48,7 @@ async function isBreached(password: string): Promise<boolean> {
   }
 }
 
-// Runs in a before hook because the haveIBeenPwned plugin runs after the one-time reset token is consumed, which would burn the link.
+// A before hook, because the haveIBeenPwned plugin runs after the reset token is consumed, burning the link.
 export const passwordPolicyHook = createAuthMiddleware(async (ctx) => {
   const field = PASSWORD_FIELDS[ctx.path];
   if (!field) return;

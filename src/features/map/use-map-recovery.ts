@@ -10,7 +10,7 @@ interface IUseMapRecoveryInput {
   remount: () => void;
 }
 
-// MapLibre issues 8690 and 8461: a lost WebGL context can blank the style, and iOS can stall tiles after the tab was hidden.
+// MapLibre issues 8690 and 8461: a lost WebGL context can blank the style, and iOS can stall tiles after hiding.
 export function useMapRecovery({
   getMap,
   ready,

@@ -41,7 +41,7 @@ export interface IOwnOpportunities {
   items: IOwnOpportunity[];
 }
 
-// Start's serialization check rejects the open `attrs` type although stored JSON is plain, so the function returns this shape and the query casts it back.
+// Start's serialization check rejects the open `attrs` type although stored JSON is plain, so the query casts back.
 export type OwnOpportunitiesWire = Omit<IOwnOpportunities, "items"> & {
   items: (Omit<IOwnOpportunity, "values"> & {
     values: Record<string, never>;

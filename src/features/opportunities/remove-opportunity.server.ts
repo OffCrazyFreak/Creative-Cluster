@@ -23,7 +23,7 @@ export interface IRemoveResult {
   emailed: boolean;
 }
 
-// The Digital Services Act requires the owner's statement of reasons, including for spam, whenever the entry has an account.
+// The Digital Services Act requires a statement of reasons, even for spam, when the entry has an account.
 export async function removeOpportunity(
   tx: Tx,
   { id, reasonCode, note, adminId }: IRemoveOpportunity,

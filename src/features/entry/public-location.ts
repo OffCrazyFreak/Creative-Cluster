@@ -13,7 +13,7 @@ export interface ILocationRow {
   visibility: VisibilityMap;
 }
 
-// People already sit at an offset point; others round to about 1 km unless exact and allowed, so a pin cannot reveal a hidden address.
+// People already sit at an offset point; others round to about 1 km, so a pin cannot reveal a hidden address.
 export function publicLocation(
   row: ILocationRow,
   isMember: boolean,

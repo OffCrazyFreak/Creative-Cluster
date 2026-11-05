@@ -6,7 +6,7 @@ import { m } from "@/paraglide/messages";
 
 import { CONNECTIONS_QUERY_KEY } from "../connections-queries";
 
-// A rejected call (session expired, link already decided) shows the generic failure instead of escaping the click handler.
+// A rejected call (session expired, link already decided) shows the failure instead of escaping the click.
 export function useConnectionAction() {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);

@@ -4,7 +4,7 @@ import { MIN_ADMINS_CODE } from "@/lib/auth/min-admins.server";
 
 import type { UserActionError, UserActionResult } from "./admin-users-schemas";
 
-// The whole message is matched so free text from the request (a ban reason, an email) cannot be mistaken for the trigger's.
+// The whole message is matched so request text (a ban reason, an email) cannot be mistaken for the trigger's.
 function mentionsTrigger(error: unknown): boolean {
   for (let e = error; e instanceof Error; e = e.cause) {
     if (e.message === "min_admins") return true;

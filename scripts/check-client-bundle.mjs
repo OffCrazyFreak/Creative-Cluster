@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-// BETTER_AUTH_SECRET is left out because the better-auth client ships a getter with that name; the value check catches the secret.
+// BETTER_AUTH_SECRET is left out: the better-auth client ships a getter with that name; a value check covers it.
 const FORBIDDEN = [
   "DATABASE_URL",
   "PSEUDONYM_SECRET",

@@ -19,7 +19,7 @@ function malformed(): never {
   throw new ImageError("image_type");
 }
 
-// APP1, APP13, other app segments and comments can carry GPS, names and device ids; JFIF, Adobe and ICC stay for colour, but APP2 can hide MPF and FlashPix ids.
+// These segments can carry GPS, names and device ids; colour segments stay, but APP2 can hide MPF and FlashPix ids.
 function dropsJpegSegment(marker: number, payload: Buffer) {
   if (marker === JPEG_COMMENT) return true;
   if (marker <= JPEG_APP0 || marker > JPEG_APP15) return false;

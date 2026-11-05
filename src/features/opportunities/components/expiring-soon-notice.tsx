@@ -10,7 +10,7 @@ import { myOpportunitiesQuery } from "../opportunity-queries";
 // Shown on /account: no email goes out in v1, so this is the only reminder before a post ends.
 export default function ExpiringSoonNotice() {
   const { data } = useQuery(myOpportunitiesQuery());
-  // Expired posts count while they can still be renewed and their public page still exists: after expiry this is the only reminder.
+  // Expired posts count while still renewable with a live public page: after expiry this is the only reminder.
   const now = new Date();
   const count =
     data?.items.filter(

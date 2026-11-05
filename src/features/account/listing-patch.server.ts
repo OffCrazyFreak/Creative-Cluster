@@ -27,7 +27,7 @@ function socialsOf(input: ListingInput["socials"]): Record<string, string> {
   return result;
 }
 
-// Site rules live here, not in the form: people have no cover or legal status, and legal status exists only where the site asks.
+// Site rules live here, not in the form: people have no cover or legal status, and only some sites ask for it.
 function extraOf(
   current: EntryRow["extra"],
   input: ListingInput,
@@ -72,7 +72,7 @@ async function listedTown(input: ListingInput["location"]) {
   return findTown(countryCode, city, lat, lng);
 }
 
-// People are never stored exactly: a new pin must come from the town list, which carries the population the offset needs.
+// People are never stored exactly: a new pin must come from the town list, which holds the offset's population.
 async function personLocation(row: PatchRow, input: ListingInput["location"]) {
   if (input.onlineOnly) {
     return {

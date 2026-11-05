@@ -65,7 +65,7 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
   if (!row) throw new NotFoundError();
   await applyUntrustedEditTags(tx, input.entryId, input.payload);
 
-  // Items may hold a full snapshot, so only what differs from the live row applies, and later admin fixes are not overwritten.
+  // Items may hold a full snapshot, so only what differs from the live row applies; later fixes survive.
   const patch = recordOf(input.payload.patch);
   const locale = LOCALES.find((code) => code === patch.sourceLocale);
   const proposed = await withoutMissingImages(tx, {
@@ -115,7 +115,7 @@ export async function applyUntrustedEdit(tx: Tx, input: IApplyUntrustedEdit) {
     .where(eq(reviewItem.id, input.itemId));
 }
 
-// Saved inside the decision transaction after the lock and published check, so a stale item leaves no tags and a failure rolls back.
+// Saved inside the decision transaction, so a stale item leaves no tags and a failure rolls back.
 async function applyUntrustedEditTags(
   tx: Tx,
   entryId: string,

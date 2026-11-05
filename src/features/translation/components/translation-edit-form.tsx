@@ -34,7 +34,7 @@ export default function TranslationEditForm({
     offering: view.texts.offering?.text ?? "",
     seeking: view.texts.seeking?.text ?? "",
   });
-  // Only edited fields are sent so a machine translation stays machine; outdated owner fields start touched so saving confirms them.
+  // Only edited fields are sent so machine text stays machine; outdated owner fields start touched to confirm them.
   const [touched, setTouched] = useState<Set<TranslatedField>>(
     () => new Set(outdatedOwnFields(view)),
   );

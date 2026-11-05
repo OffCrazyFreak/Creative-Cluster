@@ -49,7 +49,7 @@ function Link({ mark, children }: IMarkProps) {
   );
 }
 
-// Plain JSON mapping keeps ProseMirror off public pages, and unlisted nodes render nothing, so stored JSON cannot inject elements.
+// Plain JSON mapping keeps ProseMirror off public pages; unlisted nodes render nothing, so JSON cannot inject.
 const render = renderJSONContentToReactElement({
   nodeMapping: {
     doc: ({ children }: INodeProps) => <>{children}</>,

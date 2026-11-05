@@ -108,7 +108,7 @@ async function dismissOpenEdits(tx: Tx, entryId: string) {
     );
 }
 
-// An untrusted entry keeps its live content; only changed fields are queued, so approval leaves the others as an admin left them.
+// An untrusted entry keeps its live content; only changed fields are queued, so approval leaves the rest alone.
 async function queueForReview(
   tx: Tx,
   entryId: string,

@@ -117,7 +117,7 @@ export const saveListingInput = z.object({
 
 type FieldIssues = Record<string, { message: string }[]>;
 
-// Nested issues land on the mounted field (location or the image field), and messages are localized here, not taken from Zod.
+// Nested issues land on the mounted field, and messages are localized here, not taken from Zod.
 export function validateListing({ value }: { value: ListingFormValues }) {
   const result = listingSchema.safeParse(value);
   if (result.success) return undefined;

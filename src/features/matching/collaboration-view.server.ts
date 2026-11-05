@@ -7,7 +7,7 @@ import { publicEntryCondition } from "@/features/entry/public-entry-filter.serve
 import type { ICollaborationView } from "./matching-schemas";
 import { findCollaborators } from "./matching.server";
 
-// Reason lines are written from the shown entry's viewpoint, so the client needs its name and whether the reader owns it.
+// Reason lines use the shown entry's viewpoint, so the client needs its name and whether the reader owns it.
 export async function findCollaborationView(
   db: Db,
   entryId: string,

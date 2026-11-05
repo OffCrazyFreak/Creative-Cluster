@@ -19,7 +19,7 @@ const FRAMES: Record<string, boolean> = {
   [SELECTED_STACK_FRAME_ID]: true,
 };
 
-// Initials go in at once so no tile waits on the network; our /img route is same origin, so logos never need a CDN's CORS.
+// Initials go in at once so no tile waits on the network; /img is same origin, so logos need no CDN CORS.
 export async function registerEntryIcon(map: MaplibreMap, id: string) {
   const icon = parseEntryIconId(id);
   // Initials drawn before the page font loads would keep the fallback font for the session.
@@ -45,7 +45,7 @@ export async function registerEntryIcon(map: MaplibreMap, id: string) {
     });
 }
 
-// Tiles draw on first need through MapLibre's image resolver, which is awaited before the tile builds; a rejection only drops that image.
+// Drawn on first need through MapLibre image resolver, awaited before the tile; a rejection drops one image.
 export function watchEntryIcons(map: MaplibreMap): () => void {
   map.setMissingStyleImageResolver((id) => registerEntryIcon(map, id));
   return () => {

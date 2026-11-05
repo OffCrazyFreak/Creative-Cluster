@@ -24,7 +24,7 @@ export type SaveListingResult = { sourceLocale: AppLocale } & (
   { status: "saved"; changed: boolean } | { status: "pending_review" }
 );
 
-// Start's serialization check rejects the open `attrs` type although stored JSON is plain, so the function returns this shape and the query casts it back.
+// Start's serialization check rejects the open `attrs` type although stored JSON is plain, so the query casts back.
 export type OwnListingWire = Omit<IOwnListing, "values"> & {
   values: Record<string, never>;
 };

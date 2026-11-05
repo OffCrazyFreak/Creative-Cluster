@@ -1,4 +1,4 @@
-// Step back only when that lands on the map, because any other earlier page (the directory, another site) would leave it.
+// Step back only when that lands on the map; any other earlier page (the directory, another site) would leave it.
 export function backReturnsToMap(
   mapHistoryIndex: number | null,
   historyIndex: number | null,

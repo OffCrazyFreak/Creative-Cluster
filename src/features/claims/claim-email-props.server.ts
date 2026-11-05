@@ -20,7 +20,7 @@ export function claimEmailLocale(value: string): AppLocale {
   return LOCALES.find((locale) => locale === value) ?? site.baseLocale;
 }
 
-// Same rule as the daily archive check, in UTC; a date already past becomes today because the archive job runs within a day.
+// Same rule as the daily archive check, in UTC; a past date becomes today: the archive job runs within a day.
 function archiveDateText(importedAt: Date, locale: AppLocale): string {
   const date = new Date(importedAt);
   const day = date.getUTCDate();

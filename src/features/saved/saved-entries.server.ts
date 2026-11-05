@@ -59,7 +59,7 @@ export async function replaceSavedList(
   keys: string[],
 ): Promise<ISavedEntry[]> {
   return db.transaction(async (tx) => {
-    // Serialises one member's saves, even on an empty list; "no key update" leaves other tables' foreign key checks free.
+    // Serialises one member's saves, even on an empty list; "no key update" leaves foreign key checks free.
     const [owner] = await tx
       .select({ id: user.id })
       .from(user)

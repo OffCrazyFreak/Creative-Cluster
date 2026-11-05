@@ -1,4 +1,4 @@
-// MapLibre paint and canvas drawing cannot read CSS variables; these placeholders are replaced by the brand theme's style fork.
+// MapLibre paint and canvas drawing cannot read CSS variables; the brand theme's style fork replaces these.
 export const MAP_COLORS = {
   selected: "#db2777",
   outline: "#ffffff",

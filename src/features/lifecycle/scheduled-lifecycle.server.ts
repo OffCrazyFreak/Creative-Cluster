@@ -63,7 +63,7 @@ export async function archiveStaleImports(): Promise<number> {
   return archived;
 }
 
-// Rejected applications stay 90 days and unconfirmed ones expire with their link; partner stubs stay drafts, because purging would cascade away confirmed links.
+// Rejected stay 90 days, unconfirmed expire with their link; purging partner stubs would cascade confirmed links.
 export async function purgeExpiredApplications(): Promise<number> {
   const expiredCondition = sql`(${entry.status} = 'rejected' and ${entry.updatedAt} < now() - make_interval(days => ${REJECTED_APPLICATION_RETENTION_DAYS}))
         or (${entry.status} = 'draft' and ${entry.kind} <> 'outside_partner' and ${entry.ownerUserId} is null and ${entry.importedAt} is null and ${entry.updatedAt} < now() - make_interval(secs => ${APPLY_VERIFY_TTL_SECONDS}))`;
@@ -112,7 +112,7 @@ export async function purgeOldInviteTokens(): Promise<number> {
   return removed.length;
 }
 
-// The admin rule and purge run first because better-auth removes credentials before its hook, so a refusal there would lock the person out.
+// Runs first because better-auth removes credentials before its hook, so a refusal there would lock them out.
 export async function deleteDueErasedAccounts(): Promise<number> {
   const due = await db
     .select({ identifier: verification.identifier })

@@ -38,7 +38,7 @@ function iso(value: Date | null): string {
   return value?.toISOString() ?? "";
 }
 
-// Contact fields are on purpose (adminGuard only); listings queued for deletion are out because the owner asked for erasure.
+// Contact fields are on purpose (adminGuard only); listings queued for deletion are out: erasure was requested.
 export async function exportEntries(): Promise<string> {
   // Columns are picked one by one so the large jsonb fields are never loaded.
   const rows = await db
@@ -107,7 +107,7 @@ export async function exportEntries(): Promise<string> {
         imported_at: iso(e.importedAt),
       })),
     },
-    // Cells starting with = + - @ would run as spreadsheet formulas; the pattern spans newlines and leaves plain phone numbers alone.
+    // = + - @ cells would run as spreadsheet formulas; spans newlines and leaves plain phone numbers alone.
     {
       escapeFormulae: /^(?!\+[ \d()./-]*$)[=+\-@\t\r][\s\S]*$/,
       newline: "\r\n",

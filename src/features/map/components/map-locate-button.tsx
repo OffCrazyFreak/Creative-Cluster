@@ -28,11 +28,11 @@ export default function MapLocateButton({
   onLocate,
 }: IMapLocateButtonProps) {
   const locating = status === "locating";
-  // Counted rather than flagged: a browser without geolocation answers every tap with the same status, which would not rerun the effect.
+  // Counted, not flagged: without geolocation every tap gets the same status, which would not rerun the effect.
   const [taps, setTaps] = useState(0);
   const answered = useRef(0);
 
-  // Over the map nothing else says why a locate failed, so each failed tap gets a toast; automatic attempts fail quietly.
+  // Over the map nothing else says why a locate failed, so failed taps toast; automatic attempts stay quiet.
   useEffect(() => {
     if (taps === answered.current || status === "locating") return;
     answered.current = taps;

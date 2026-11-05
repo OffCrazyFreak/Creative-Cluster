@@ -140,7 +140,7 @@ async function previousState(tx: Tx, entryId: string) {
 
 export async function cancelErasure(userId: string): Promise<void> {
   await db.transaction(async (tx) => {
-    // The purge locks the marker row too, so cancel and the purge take turns; once the grace period is over it is too late.
+    // The purge locks the marker row too, so cancel and purge take turns; after the grace period it is too late.
     const row = await markerRow(tx, userId, true);
     if (!row || deleteDateOf(row.createdAt) <= new Date())
       throw new NotFoundError();

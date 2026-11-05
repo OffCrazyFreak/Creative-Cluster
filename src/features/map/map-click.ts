@@ -39,7 +39,7 @@ function average(values: number[]) {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
-// Entries on one spot never split (clustering runs to the deepest zoom), so a popover lists them, as for a person at their zoom cap.
+// Entries on one spot never split (clustering runs to the deepest zoom), so a popover lists them.
 export async function openStack({
   map,
   clusterId,

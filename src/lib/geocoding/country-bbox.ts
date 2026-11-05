@@ -1,4 +1,4 @@
-// They only steer Photon's ranking, because the country-code check is the real guard; add a country here to enable Photon for it.
+// They only steer Photon's ranking; the country-code check is the real guard. Add a country to enable Photon.
 export const COUNTRY_BBOX: Record<string, [number, number, number, number]> = {
   HR: [13.4, 42.3, 19.5, 46.6],
   SI: [13.3, 45.4, 16.7, 46.9],

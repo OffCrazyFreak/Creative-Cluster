@@ -2,7 +2,7 @@ import { and, eq, gt, ne, sql, type SQL } from "drizzle-orm";
 
 import { entry, link, opportunity } from "@/db/schema";
 
-// The one definition of "publicly visible": suspended, archived, pending, draft and outside-partner entries never appear.
+// The one definition of "publicly visible": suspended, archived, pending, draft and partner entries never appear.
 export function publicEntryCondition(): SQL {
   return and(
     eq(entry.status, "published"),

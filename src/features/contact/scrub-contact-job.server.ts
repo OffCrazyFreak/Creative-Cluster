@@ -3,7 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@/db/client.server";
 import { job } from "@/db/schema";
 
-// The privacy policy says the message is not stored; a failure is only logged because the daily purge removes the row anyway.
+// The privacy policy says the message is not stored; a failure is only logged: the daily purge removes the row.
 export async function scrubContactJob(jobId: string) {
   try {
     await db

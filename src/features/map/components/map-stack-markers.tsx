@@ -21,7 +21,7 @@ interface IMapStackMarkersProps {
   onStackClick: (clusterId: number) => void;
 }
 
-// HTML over the canvas so the selection frame never covers a count; pointer only, because the list is the keyboard path.
+// HTML over the canvas so the selection frame never covers a count; the list is the keyboard path.
 export default function MapStackMarkers({
   allEntries,
   data,

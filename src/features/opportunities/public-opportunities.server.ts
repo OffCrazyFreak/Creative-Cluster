@@ -218,7 +218,7 @@ export async function countActiveByEntry(): Promise<Map<string, number>> {
   return new Map(rows.map((row) => [row.entryId, row.n]));
 }
 
-// Only live posts are listed, and copies of the owner's text are left out because the sitemap must not list noindex URLs.
+// Copies of the owner's text are left out because the sitemap must not list noindex URLs.
 export async function listSitemapOpportunities() {
   const rows = await db
     .select({

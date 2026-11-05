@@ -5,7 +5,7 @@ interface IShareData {
   url: string;
 }
 
-// A second share while one is open raises InvalidStateError; falling through would copy to the clipboard behind the user's back.
+// A second share while one is open raises InvalidStateError; falling through would copy behind the user's back.
 function isDismissal(error: unknown): boolean {
   return (
     error instanceof DOMException &&

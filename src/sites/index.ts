@@ -3,7 +3,7 @@ import { rpcc } from "./rpcc.ts";
 import type { ISiteConfig } from "./site-config-types.ts";
 import { parseSiteId } from "./site-id.ts";
 
-// Vite inlines VITE_SITE_ID so the other site's config is tree-shaken; Node scripts have no import.meta.env and read process.env.
+// Vite inlines VITE_SITE_ID so the other site is tree-shaken; Node scripts have no import.meta.env.
 const siteId =
   typeof import.meta.env === "undefined"
     ? parseSiteId(process.env.VITE_SITE_ID)

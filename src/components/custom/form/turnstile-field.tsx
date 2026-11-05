@@ -2,7 +2,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 
 import { getLocale } from "@/paraglide/runtime";
 
-// env.client.ts is client-only and this form also renders on the server; the fallback is Cloudflare's always-pass test key.
+// env.client.ts is client-only and this renders on the server too; the fallback is Cloudflare's test key.
 const SITE_KEY =
   (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ||
   "1x00000000000000000000AA";

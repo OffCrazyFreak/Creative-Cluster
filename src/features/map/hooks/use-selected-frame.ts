@@ -39,7 +39,7 @@ export function useSelectedFrame({
     let cancelled = false;
     let latestRun = 0;
 
-    // "idle" fires once the new view is drawn, which moveend can beat; an unchanged frame keeps its object so idle does not refire.
+    // "idle" fires once the view is drawn, which moveend can beat; an unchanged frame keeps its object to avoid a loop.
     async function locate() {
       const run = ++latestRun;
       let next: ISelectedFrame | null;

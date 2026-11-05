@@ -26,7 +26,7 @@ export const Route = createFileRoute("/help")({
   component: HelpPage,
 });
 
-// Public page, so an admin whose session expired reads it like any visitor; the viewer is dropped so the next page sees them logged out.
+// Public page, so an admin with an expired session reads it like any visitor, seen as logged out next.
 async function adminHelpOrNull(queryClient: QueryClient) {
   try {
     return await loadAdminHelp();

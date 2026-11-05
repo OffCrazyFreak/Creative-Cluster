@@ -1,4 +1,4 @@
-// Limits are the measured gzip sizes plus about 2 percent, to catch regressions; raise one only with the reason in the PR.
+// Limits are measured gzip sizes plus about 2 percent; raise one only with the reason in the PR.
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 

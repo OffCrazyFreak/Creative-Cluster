@@ -21,7 +21,7 @@ const ProposeTargetFields = withForm({
         <form.Subscribe selector={(state) => state.values.outside}>
           {(outside) => (
             <>
-              {/* Both groups stay mounted: TanStack Form only shows submit errors on fields that existed at submit time. */}
+              {/* Both groups stay mounted: TanStack Form shows submit errors only on fields present at submit. */}
               <div className={outside ? "contents" : "hidden"}>
                 <form.AppField name="outsideName">
                   {(field) => (

@@ -16,7 +16,7 @@ export function offsetRadiusKm(population: number): number {
   return Math.min(4, Math.max(1, 0.4 * townRadiusKm(population)));
 }
 
-// The same id and secret give the same spot so the pin never jumps, and the secret stops the spot being worked backwards.
+// The same id and secret give the same spot so the pin never jumps; the secret stops working it backwards.
 export function offsetPin(
   entryId: string,
   town: Pick<ITown, "lat" | "lng" | "population">,

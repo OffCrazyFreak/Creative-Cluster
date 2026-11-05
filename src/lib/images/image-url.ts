@@ -11,7 +11,7 @@ interface ICloudinaryOptions extends IImageRef {
   width: number;
 }
 
-// The source is always the public origin because Cloudinary fetches only from our two hosts; c_limit stops 2x upscaling; EntryImage falls back to our URL on error.
+// Always the public origin: Cloudinary fetches only from our two hosts; EntryImage falls back on error.
 export function cloudinaryImageUrl({
   cloudName,
   origin,
@@ -22,7 +22,7 @@ export function cloudinaryImageUrl({
   return `https://res.cloudinary.com/${cloudName}/image/fetch/f_auto,q_auto,c_limit,w_${width}/${source}`;
 }
 
-// env.client.ts on the server is a mock with truthy properties, which would send server-rendered images to a bogus Cloudinary URL.
+// env.client.ts on the server is a mock with truthy properties, which would produce a bogus Cloudinary URL.
 function cloudName(): string | undefined {
   return (
     (import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string | undefined) ||

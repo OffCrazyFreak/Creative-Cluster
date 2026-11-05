@@ -23,7 +23,7 @@ export function createBreaker(
   };
 }
 
-// A 403 means banned or a dead key, so stop for ten minutes; rate limits and outages get a short pause so keystrokes do not hammer it.
+// A 403 means banned or a dead key, so stop for ten minutes; rate limits and outages get a short pause.
 export async function guarded<T>(
   breaker: IBreaker,
   call: () => Promise<T>,

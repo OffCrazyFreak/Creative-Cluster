@@ -26,7 +26,7 @@ interface IMapPhoneLayoutProps {
   children: ReactNode;
 }
 
-// The floating search opens into the list, and other pages of the frame show in that open surface, with back to the map.
+// The floating search opens into the list, and other pages of the frame show in that open surface.
 export default function MapPhoneLayout({
   status,
   frameRef,
