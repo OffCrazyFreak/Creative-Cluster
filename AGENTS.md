@@ -21,6 +21,7 @@ Put these to me instead of working around them: I say yes far more often than no
 - Keep personal names and real contact data out of the repository, because it is public.
 - Leave unrelated changes already in the worktree alone: no revert, reformat, stage or claim.
 - Use pnpm only; never hand-edit a dependency entry or lockfile.
+- Kill and find processes by PID or port; `.claude/hooks/guard-process.py` blocks `pkill -f` and `pgrep -f`, whose pattern matches their own shell.
 - Regenerate `src/routeTree.gen.ts`, `src/paraglide/` and `drizzle/meta/` with their commands, never by hand.
 - When an account or client fact is missing, use placeholder env values, local Docker Postgres, console email, fake seed data or `[[GAP]]` in legal text.
 
@@ -31,6 +32,7 @@ Put these to me instead of working around them: I say yes far more often than no
 - Fix type errors in `src/`, `scripts/` and `tests/`; ignore errors from generated files and dependencies.
 - When a failure is unrelated to your change, report the command and the error, say it looks pre-existing, and leave it.
 - Report a check I interrupted as not run, without re-running it.
+- After editing `.claude/hooks/`, run `python3 .claude/hooks/guard-process.test.py`.
 - Put docs in the same PR as their own `docs:` commit before the PR opens, and again if behaviour changes.
 - List docs touched and those checked and left alone in your summary.
 
