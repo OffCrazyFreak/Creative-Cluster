@@ -17,6 +17,7 @@ Put these to me instead of working around them: I say yes far more often than no
 - Never deploy or call a Netlify build hook; production deploys come only from the Deploy workflow and its Saturday schedule.
 - Run `pnpm claims:send` only when I say so, and check `isSuppressed` before any other mail to an imported contact.
 - Never commit secrets or real keys; `.env.example` and `.env.ci` hold placeholders.
+- When nothing reads a variable, delete it from Netlify, GitHub and local `.env` files, printing names only.
 - Keep personal names and real contact data out of the repository, because it is public.
 - Leave unrelated changes already in the worktree alone: no revert, reformat, stage or claim.
 - Use pnpm only; never hand-edit a dependency entry or lockfile.
