@@ -9,6 +9,13 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import oneLineComments from "./eslint-rules/one-line-comments.js";
 
+const PARAGLIDE_BASE_LOCALE = {
+  group: ["**/paraglide/runtime*"],
+  importNames: ["baseLocale"],
+  message:
+    "Use site.baseLocale from src/sites: one inlang project serves both sites.",
+};
+
 export default defineConfig([
   globalIgnores([
     "dist/**",
@@ -46,6 +53,7 @@ export default defineConfig([
       "@typescript-eslint/only-throw-error": "off",
       "func-style": ["error", "declaration"],
       "local/one-line-comments": "error",
+      "no-restricted-imports": ["error", { patterns: [PARAGLIDE_BASE_LOCALE] }],
       "no-restricted-syntax": [
         "error",
         {
@@ -70,6 +78,7 @@ export default defineConfig([
               message: "Define server functions in a *.functions.ts file.",
             },
           ],
+          patterns: [PARAGLIDE_BASE_LOCALE],
         },
       ],
     },

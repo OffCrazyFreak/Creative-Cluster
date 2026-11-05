@@ -83,7 +83,7 @@ Put these to me instead of working around them: I say yes far more often than no
 - Style UI freely on shadcn (Base UI) components, because the brand theme replaces the styling in `src/styles.css` later.
 - Keep map colours in `src/features/map/map-colors.ts`, because MapLibre paint and canvas drawing cannot read CSS variables.
 - Edit `src/components/ui/` (shadcn output) only where the primitive is the natural home; ours live in `src/components/custom/` or the feature folder.
-- Use `site.baseLocale` from `src/sites`, never Paraglide's `baseLocale`, because one inlang project serves both sites.
+- Use `site.baseLocale` from `src/sites`; `no-restricted-imports` in `eslint.config.js` rejects Paraglide's own.
 - Pass the locale explicitly in code outside a request (jobs, emails, scripts).
 - Put constants and pure helpers that client code imports in `<area>-fields.ts`, because `<area>-schemas.ts` can pull in heavy parsers.
 
