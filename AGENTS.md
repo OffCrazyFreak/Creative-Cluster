@@ -49,7 +49,8 @@ Put these to me instead of working around them: I say yes far more often than no
 
 - Fill in `.github/PULL_REQUEST_TEMPLATE.md`.
 - Write issue, commit and PR titles and bodies in plain words a newcomer can follow.
-- Write "Part of #N" in a PR that does not finish the issue, and "Closes #N" in one that does.
+- Write every PR or issue reference as number plus short name, in chat, lists, tables, board cards, comments and bodies, even when repeated.
+- Write "Part of #N (short name)" in a PR that does not finish the issue, and "Closes #N (short name)" in one that does.
 - Give every PR one Sonnet `reviewer`.
 - Run the CodeRabbit CLI on every PR, because `.coderabbit.yaml` turns automatic review off; when its quota is out, the `reviewer` is enough.
 - For 5000+ changed lines, 50+ files, or auth, security, personal data or migrations, also run Greptile once when installed: `@greptileai review` or its CLI.

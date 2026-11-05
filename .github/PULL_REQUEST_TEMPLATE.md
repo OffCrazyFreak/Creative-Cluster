@@ -1,6 +1,6 @@
 <!--
 Why and Tested are required. Delete any other section that does not apply.
-Write "Closes #123" when the PR finishes the issue, otherwise "Part of #123".
+Write "Closes #123 (short name)" when the PR finishes the issue, otherwise "Part of #123 (short name)".
 -->
 
 ## Why
