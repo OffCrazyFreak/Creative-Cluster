@@ -123,8 +123,7 @@ export async function countPendingProposals(userId: string): Promise<number> {
   return row?.count ?? 0;
 }
 
-// Proposals addressed to listings nobody has claimed yet; an admin may decide for them, except
-// for proposals the admin made, which would otherwise be confirmed by one person alone.
+// An admin may decide these, except proposals the admin made, which one person alone would otherwise confirm.
 export function listUnclaimedWaiting(
   adminId: string,
 ): Promise<IConnectionItem[]> {

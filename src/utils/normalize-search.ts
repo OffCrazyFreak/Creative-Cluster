@@ -1,4 +1,4 @@
-// Lowercase, no diacritics, "đ" as "d": the one key used to index and match place and street names.
+// Lowercase, no diacritics, "đ" as "d": the one key that indexes and matches place and street names.
 export function normalizeSearch(text: string): string {
   return text
     .normalize("NFD")

@@ -98,7 +98,6 @@ async function encode(canvas: HTMLCanvasElement, type: string) {
   throw new ImagePrepareError("output_too_big");
 }
 
-// Crops (in pixels of the EXIF-oriented image), scales down to the stored size and encodes WebP, else JPEG.
 // Canvas re-encoding drops EXIF and other metadata.
 export async function prepareImage(
   file: File,

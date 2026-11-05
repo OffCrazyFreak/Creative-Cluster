@@ -10,8 +10,7 @@ export interface IEntryIcon {
   logo: IImageRef | null;
 }
 
-// Up to two letters from the first two words; letters and digits only, so the id stays parseable.
-// A name with neither still gets a mark rather than a blank tile.
+// Letters and digits only so the id stays parseable; a name with neither still gets a mark rather than a blank tile.
 export function entryInitials(name: string): string {
   const initials = name
     .split(/\s+/)
@@ -23,8 +22,7 @@ export function entryInitials(name: string): string {
   return initials || "?";
 }
 
-// The id carries everything needed to draw the tile, so the missing image resolver can draw it.
-// Entries with the same initials and no logo share one image.
+// The id carries everything needed to draw the tile, so the missing-image resolver can draw it.
 export function entryIconId({ initials, logo }: IEntryIcon): string {
   return logo
     ? `${PREFIX}:${initials}:${logo.id}:${logo.hash}`

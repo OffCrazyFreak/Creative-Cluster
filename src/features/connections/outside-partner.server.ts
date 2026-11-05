@@ -10,8 +10,7 @@ interface IOutsidePartnerInput {
   website: string;
 }
 
-// Stubs are never published. The proposer's repeated partner reuses its stub so one name does not
-// pile up duplicates, because no moderator sees these before they show on the proposer's page.
+// Reuses the proposer's stub so one name does not pile up duplicates, because no moderator sees these before they show.
 export async function findOrCreateOutsidePartner(
   tx: Tx,
   proposerEntryId: string,

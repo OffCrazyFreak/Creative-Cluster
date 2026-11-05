@@ -2,8 +2,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 
 import { claimInvite, entry } from "@/db/schema";
 
-// An invite is worth mailing only while its listing is live, unclaimed, deliverable and still has the
-// address the invite was made for (an admin may have corrected or cleared it since preparing).
+// Mail only while live, unclaimed, deliverable and at the invited address, which an admin may have changed.
 export const openInviteCondition = and(
   isNull(claimInvite.usedAt),
   eq(entry.status, "published"),

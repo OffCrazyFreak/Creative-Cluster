@@ -85,7 +85,7 @@ async function queueVerification(
   });
 }
 
-// The application enters the review queue only after the address is confirmed, so the queue holds no spam from typo'd or forged addresses.
+// Enters the review queue only after the address is confirmed, so it holds no typo'd or forged addresses.
 export async function enterReviewQueue(
   tx: Tx,
   entryId: string,
@@ -174,8 +174,7 @@ export async function resubmitApplication(
 
     const fields = await applicationEntryFields(entryId, input);
     const emailChanged = fields.contactEmail !== row.contactEmail;
-    // A draft never holds a name: a changed address goes back to a placeholder slug until confirmation.
-    // Otherwise a real slug is renewed only when the name changed.
+    // A draft never holds a name, so a changed address returns to a placeholder slug until confirmation.
     const slug = emailChanged
       ? `${DRAFT_SLUG_PREFIX}${entryId}`
       : row.name === input.name || row.slug.startsWith(DRAFT_SLUG_PREFIX)

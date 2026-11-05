@@ -4,6 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@12.8.1",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
     "dev": "vite dev --port 3000",
     "dev:dnz": "cross-env VITE_SITE_ID=dnz vite dev --port 3001",
     "build": "vite build",
@@ -15,6 +16,7 @@
     "lint": "pnpm generate && eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build:rpcc && pnpm size && pnpm build:dnz && pnpm size",
     "typecheck": "pnpm generate && tsc --noEmit",
     "test": "pnpm generate && vitest run",
     "generate": "tsx scripts/generate.ts && tsr generate",

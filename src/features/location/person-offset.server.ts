@@ -16,8 +16,7 @@ export function offsetRadiusKm(population: number): number {
   return Math.min(4, Math.max(1, 0.4 * townRadiusKm(population)));
 }
 
-// People are shown near their town, never at a real address. The same entry id and secret always give
-// the same spot (so the pin never jumps), and the secret keeps the spot from being worked backwards.
+// The same id and secret give the same spot so the pin never jumps; the secret stops working it backwards.
 export function offsetPin(
   entryId: string,
   town: Pick<ITown, "lat" | "lng" | "population">,

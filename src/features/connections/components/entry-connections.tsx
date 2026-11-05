@@ -10,7 +10,7 @@ import { publicConnectionsQuery } from "../connections-queries";
 import { GRAPH_BOX_CLASS } from "../graph-layout";
 import PublicPartnerItem from "./public-partner-item";
 
-// The stylesheet (about 2.5 kB gzip) is imported above, not in the lazy chunk, so server-rendered markup is styled before the graph code arrives. A failed chunk load drops only the graph; the partner list below stays.
+// The stylesheet is imported above so server markup is styled early; a failed chunk drops only the graph.
 const ConnectionGraph = lazy(() => import("./connection-graph"));
 
 interface IEntryConnectionsProps {

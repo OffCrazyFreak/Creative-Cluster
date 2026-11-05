@@ -4,8 +4,7 @@ import { m } from "@/paraglide/messages";
 
 export const PASSWORD_MIN_LENGTH = 12;
 export const PASSWORD_MAX_LENGTH = 128;
-// better-auth counts raw UTF-16 units before normalising, and 128 NFKC code points can need
-// far more than 256 of them (decomposed Hangul is 3 each), so the backstop sits well above.
+// better-auth counts raw UTF-16 units before normalising, and 128 NFKC code points can far exceed 256.
 export const PASSWORD_BACKSTOP_LENGTH = 1024;
 
 export type PasswordIssue = "too_short" | "too_long";

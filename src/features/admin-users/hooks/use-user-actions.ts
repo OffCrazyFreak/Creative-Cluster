@@ -15,8 +15,7 @@ function errorText(error: UserActionError): string {
   return m.admin_users_failed();
 }
 
-// Every action reports in a toast and refreshes the list; the 2-admin rule shows its own message.
-// A rejected call (expired session, network) is shown as a failure instead of escaping the click.
+// A rejected call (expired session, network) shows as a failure instead of escaping the click.
 export function useUserActions() {
   const queryClient = useQueryClient();
   return async function perform(

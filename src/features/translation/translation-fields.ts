@@ -2,7 +2,7 @@ import type { AppLocale } from "@/constants/locales";
 import type { TranslationOrigin } from "@/constants/translations";
 import type { RichTextDoc } from "@/typings/rich-text";
 
-// Client code imports from this file, never from translation-schemas.ts: those zod schemas pull the ProseMirror parser (about 115 KB gzip) into the page.
+// Client code imports this file, never translation-schemas.ts, which pulls about 115 KB of ProseMirror parser.
 export const TRANSLATED_FIELDS = [
   "description",
   "offering",
@@ -33,8 +33,7 @@ export interface ITranslatedText {
   // Only the description is rich text: a validated RichTextDoc.
   doc: SerializableDoc | null;
   origin: TranslationOrigin;
-  // The original changed after this text was saved. The owner's own version is kept for good (the
-  // owner's choice); a machine one shows, with the note, only until the queued job replaces it.
+  // The owner's own version is kept for good; a machine one shows, with the note, until the queued job replaces it.
   outdated: boolean;
 }
 

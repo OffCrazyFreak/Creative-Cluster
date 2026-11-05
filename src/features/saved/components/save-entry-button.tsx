@@ -12,8 +12,7 @@ interface ISaveEntryButtonProps {
   entry: ISavedEntry;
 }
 
-// Saving (or a failed save rolling back) moves the row to another group, which mounts a new star
-// and drops focus to the page. The new star takes it back until focus lands anywhere else.
+// A save moves the row to another group, which mounts a new star and drops focus, so the new star takes focus back.
 let pendingFocus: string | null = null;
 let watchingFocus = false;
 

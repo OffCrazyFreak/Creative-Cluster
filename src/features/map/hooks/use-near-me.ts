@@ -9,8 +9,7 @@ import { resolveMapOrigin } from "../map-origin";
 import type { IMapPadding } from "../map-padding";
 import { useGeolocation } from "./use-geolocation";
 
-// People's pins are offset about a kilometre, so a locate never zooms in far enough to make
-// an offset pin look exact.
+// People's pins are offset about a kilometre, so a locate never zooms far enough to make one look exact.
 const LOCATE_ZOOM = 13;
 
 interface IUseNearMeInput {
@@ -50,8 +49,7 @@ export function useNearMe(input: IUseNearMeInput) {
     const request = geo.centerRequest;
     if (!ready || !map || !request || handled.current === request.id) return;
     handled.current = request.id;
-    // A fix nobody tapped for must not yank the map from where the user moved it, from the
-    // entry they opened, or from the view a shared link opened.
+    // A fix nobody tapped for must not yank the map from the user's view, an opened entry, or a shared link's view.
     if (
       request.auto &&
       (userMoved.current || selected.current || input.hasInitialViewport)

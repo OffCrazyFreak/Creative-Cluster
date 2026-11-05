@@ -1,8 +1,7 @@
 import { localeUrlPatterns } from "./locale-url-patterns.ts";
 import type { SiteId } from "./site-id.ts";
 
-// Paraglide recommends one module per message for production (tree-shaking) and one per
-// locale elsewhere; hundreds of message modules also made Vitest fail to resolve them.
+// Paraglide recommends one module per message in production; hundreds of them made Vitest fail to resolve.
 export function paraglideOptions(siteId: SiteId, production: boolean) {
   return {
     project: "./project.inlang",

@@ -6,7 +6,7 @@ import { writeChange } from "@/lib/change-log/write-change.server";
 
 import type { ITagSeed } from "./seeds/seed-types";
 
-// Insert-only by slug (the unique index is on lower(slug), so no conflict target is named): reruns add new seed tags but never overwrite an admin's edits or merges.
+// Insert-only by slug (index on lower(slug), so no conflict target): reruns never overwrite an admin's edits.
 export async function seedTags(db: Db, seed: readonly ITagSeed[]) {
   return db.transaction(async (tx) => {
     const inserted = await tx

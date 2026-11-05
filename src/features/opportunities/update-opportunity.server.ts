@@ -51,8 +51,7 @@ function nextExpiry(current: Date, deadline: string | null, now: Date) {
   return end < current ? end : current;
 }
 
-// Edits go live without review, except that a changed text on an entry the admin set to review
-// takes the post offline until the admin has seen it again. A rejected post always returns to the queue.
+// Edits go live unreviewed, except changed text on an entry set to review; a rejected post always returns to the queue.
 export async function updateOpportunity({
   id,
   userId,

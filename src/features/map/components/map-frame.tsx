@@ -31,8 +31,7 @@ import MapLazy from "./map-lazy";
 import MapListLayout from "./map-list-layout";
 import MapOverlayLayout from "./map-overlay-layout";
 
-// The pathless layout of "/", "/e/$slug" and the opportunities board. It stays mounted while the
-// panel (the Outlet) changes, so the map never reloads between those pages.
+// Stays mounted while the panel (the Outlet) changes, so the map never reloads between those pages.
 export default function MapFrame() {
   const search = useSearch({ from: "/_map" });
   const navigate = useNavigate();

@@ -33,8 +33,7 @@ export default function MapPhoneSearch({
   const inputRef = useRef<HTMLInputElement>(null);
   const transition = useMorphTransition(open);
   const frame = useFrameBox(barRef, containerRef);
-  // Set when a keyboard closes the search, so focus returns to the field; on a touch screen
-  // that would raise the keyboard again, so it blurs instead.
+  // A keyboard close returns focus to the field; on a touch screen that would raise the keyboard, so it blurs instead.
   const keepFocus = useRef(false);
 
   useEffect(() => {
@@ -72,8 +71,7 @@ export default function MapPhoneSearch({
         data-open={open || undefined}
       >
         <MapSearchLead open={open} onBack={close} menu={menu} />
-        {/* The same field throughout: iOS raises the keyboard only for an input focused
-            within the tap. Its own buttons (filters) leave the map as it is. */}
+        {/* The same field throughout, because iOS raises the keyboard only for an input focused within the tap. */}
         <div
           className="min-w-0 flex-1"
           onPointerDown={(event) => {

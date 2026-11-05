@@ -20,8 +20,7 @@ function pinOf(entry: IDirectoryEntry): [number, number] | null {
     : [entry.lng, entry.lat];
 }
 
-// One great-circle line per partner. Pairs without coordinates, or sharing the same coordinates
-// (a great circle needs two distinct points), are skipped.
+// A great circle needs two distinct points, so pairs without coordinates or sharing them are skipped.
 export function buildArcs(
   origin: IDirectoryEntry,
   partners: IDirectoryEntry[],

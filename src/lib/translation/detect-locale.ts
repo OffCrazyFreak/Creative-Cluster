@@ -26,8 +26,7 @@ export function detectSourceLocale(
   return detectLocale(text) ?? fallback;
 }
 
-// Detection runs when the text changes, so a language the owner corrected by hand survives saves that
-// leave the text alone. Short text keeps the chosen language. No previous text means a new record.
+// Detection runs only on text changes, so a hand-corrected language survives saves that leave the text alone.
 export function sourceLocaleOnSave(
   text: string,
   chosen: AppLocale,

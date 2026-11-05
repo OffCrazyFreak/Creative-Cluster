@@ -44,7 +44,7 @@ if (defaultCountry && !/^[A-Z]{2}$/.test(defaultCountry)) {
 }
 const legacyFile = "Frontend/src/data/organizations.json";
 
-// The old Spring controller serves GET /api/organizations without authentication; nothing is called unless --from-api is given.
+// The old Spring controller serves this without auth; nothing is called unless --from-api is given.
 async function readFromApi(base: string): Promise<unknown> {
   // Relative on purpose: a context path on the old server must survive.
   const url = new URL(

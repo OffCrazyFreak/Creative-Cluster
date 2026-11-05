@@ -21,8 +21,7 @@ async function queueInvite(
   invitedBy: string,
 ) {
   await db.transaction(async (tx) => {
-    // Created as a member and promoted here: an admin row would trip the 2-admin trigger if the
-    // cleanup below ever had to delete it.
+    // Promoted here because an admin row would trip the 2-admin trigger if the cleanup below had to delete it.
     await tx
       .update(user)
       .set({ invitedBy, role: input.role })
@@ -66,8 +65,7 @@ export async function inviteUser(
     try {
       await queueInvite(created, input, invitedBy);
     } catch (error) {
-      // better-auth commits the user on its own connection; without the mail the account
-      // would be invisible to the admin and block a retry with "already exists".
+      // better-auth commits separately; without the mail the account is invisible and blocks a retry.
       await db.delete(user).where(eq(user.id, created.id));
       throw error;
     }

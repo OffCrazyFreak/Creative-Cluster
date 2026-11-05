@@ -23,8 +23,7 @@ function readPoints(map: MaplibreMap, slugs: Set<string>): IUnstackedPoint[] {
   return [...bySlug.values()].sort((a, b) => a.slug.localeCompare(b.slug));
 }
 
-// Which of the given entries are drawn as their own pin, not inside a stack, re-read as the
-// stacks change. Nothing is read while the list is empty, so guests pay no cost per frame.
+// Nothing is read while the list is empty, so guests pay no cost per frame.
 export function useUnstackedPoints(
   map: MaplibreMap | undefined,
   slugs: string[],

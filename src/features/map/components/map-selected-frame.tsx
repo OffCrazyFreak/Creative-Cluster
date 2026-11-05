@@ -17,8 +17,7 @@ interface IMapSelectedFrameProps {
   selectedSlug: string | null;
 }
 
-// Drawn on the canvas above the pins but under the opportunities dot; stack counts are HTML
-// badges above the canvas, so the frame never covers a number.
+// On the canvas under stack count badges, which are HTML above it, so the frame never covers a number.
 export default function MapSelectedFrame({
   ready,
   allEntries,

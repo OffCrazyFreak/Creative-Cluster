@@ -91,8 +91,7 @@ export async function runTranslation(
         field.field,
       );
       if (currentHash !== field.hash) continue;
-      // A failed field is kept as an empty row with this hash, so later jobs skip it until the
-      // text changes. The page ignores empty rows.
+      // A failed field stays as an empty row with this hash, so later jobs skip it until the text changes.
       await saveMachineRow(db, request, to, {
         field: field.field,
         text: outcome.status === "ok" ? outcome.text : "",

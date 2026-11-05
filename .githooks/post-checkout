@@ -1,0 +1,6 @@
+#!/bin/sh
+# A repository core.hooksPath replaces a global one, so pass this event on to any global hook that prepares new worktrees.
+global=$(git config --global --type=path --get core.hooksPath)
+if [ -n "$global" ] && [ -x "$global/post-checkout" ]; then
+  exec "$global/post-checkout" "$@"
+fi

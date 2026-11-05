@@ -70,7 +70,7 @@ export async function decideOpportunity(
     .where(openItems(id));
 
   if (approve) {
-    // A post approved before keeps its period: editing never extends a post, and only renewing counts toward maxRenewals.
+    // A post approved before keeps its period: editing never extends it, and only renewing counts toward maxRenewals.
     const expiresAt = row.publishedAt
       ? row.expiresAt
       : periodEnd({ start: now, deadline: row.deadline });

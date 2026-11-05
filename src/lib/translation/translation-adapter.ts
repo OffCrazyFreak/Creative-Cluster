@@ -22,5 +22,4 @@ export class TranslationQuotaError extends Error {}
 // The model answered, but not in the shape asked for. Counts as a failed validation.
 export class TranslationOutputError extends Error {}
 
-// eTranslation (EU Commission) is a v2 adapter behind this same interface; it answers by
-// callback, so it needs a random-token callback route that does not exist yet.
+// eTranslation (EU Commission) could sit behind this interface, but it needs a callback route we lack.

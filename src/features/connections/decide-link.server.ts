@@ -15,8 +15,7 @@ import {
 
 type Actor = { userId: string; admin: boolean };
 
-// Ownership sits in the same statement as the update. An admin acts only for a recipient
-// listing without an owner; a listing with an owner decides for itself.
+// Ownership sits in the update statement; an admin acts only for a listing without an owner.
 function recipientOwnedBy({ userId, admin }: Actor): SQL {
   const owned = admin
     ? or(eq(entry.ownerUserId, userId), sql`${entry.ownerUserId} is null`)

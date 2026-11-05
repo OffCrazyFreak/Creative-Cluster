@@ -15,7 +15,7 @@ function validBatch(batch: number | null): batch is number {
   );
 }
 
-// Real mail to imported contacts goes out only after the owner's go-ahead, which is the env value plus an explicit confirm.
+// Real mail to imported contacts needs the owner's go-ahead: the env value plus an explicit confirm.
 export function sendBlocker(
   env: Record<string, string | undefined>,
   flags: ISendFlags,

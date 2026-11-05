@@ -1,5 +1,4 @@
-// The back arrow may step back in history only when that step lands on the map itself;
-// any other earlier page (the directory, another site) would leave the map.
+// Step back only when that lands on the map; any other earlier page (the directory, another site) would leave it.
 export function backReturnsToMap(
   mapHistoryIndex: number | null,
   historyIndex: number | null,

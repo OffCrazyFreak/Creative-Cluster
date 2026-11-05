@@ -12,8 +12,7 @@ function round(value: number) {
   return Math.round(value * 100) / 100;
 }
 
-// Netlify's guess at where the request comes from. Nothing is stored or logged; only a guess
-// inside the site's own region is used, so a visitor elsewhere keeps the default order.
+// Nothing is stored or logged, and only a guess inside the site's region is used, so others keep the default order.
 export function readIpGuess(): IIpGuess | null {
   let geo;
   try {

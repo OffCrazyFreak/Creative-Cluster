@@ -31,9 +31,7 @@ export function fieldLabel(name: string, kind: EntryKind): string {
 // Moves keyboard focus to the control of a field; custom fields mark their wrapper with data-field.
 export function focusField(name: string, countryMissing = false) {
   const wrapper = document.querySelector(`[data-field="${CSS.escape(name)}"]`);
-  // The editing area comes before the toolbar buttons in DOM order only by accident, so ask for it first.
-  // The location wrapper starts with the Online-only switch; send focus to where the text is typed, or to
-  // the country select when that is what is missing.
+  // Ask for the editing area first because DOM order is accidental; location falls back to the country select.
   const locationTarget = wrapper?.querySelector<HTMLElement>(
     countryMissing
       ? '[id$="-country"]'

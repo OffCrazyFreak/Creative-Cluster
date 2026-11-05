@@ -19,8 +19,7 @@ import {
   ownListingStatusQueryOptions,
 } from "../lifecycle-queries";
 
-// The owner's listing actions on /account: "confirm up to date", hide and show again, consent withdrawal.
-// The account home already shows the status, the suspension reason and the erasure notice.
+// Status, suspension reason and erasure notice are on the account home, so this panel holds only the actions.
 export default function ListingStatusPanel() {
   const { data } = useQuery(ownListingStatusQueryOptions());
   const run = useLifecycleAction(OWN_LISTING_KEY);

@@ -43,8 +43,7 @@ function toText(
   };
 }
 
-// null when the visitor reads the owner's own language or the entry is not public. Looked up by
-// id and re-checked for visibility here: the caller's entry data is never trusted.
+// Re-checked for visibility by id here, because the caller's entry data is never trusted.
 export async function loadEntryTranslation(
   entryId: string,
   locale: AppLocale,

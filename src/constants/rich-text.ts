@@ -1,5 +1,5 @@
 export const RICH_TEXT_MAX_BYTES = 60_000;
-// Counts nodes from doc down to the text leaf; nine nested list levels fit. The editor enforces the same cap (depth-limit.ts).
+// Counts nodes from doc down to the text leaf; nine nested list levels fit. depth-limit.ts enforces the same cap.
 export const RICH_TEXT_MAX_DEPTH = 20;
 export const RICH_TEXT_MAX_NODES = 4_000;
 export const RICH_TEXT_MAX_LINKS = 50;

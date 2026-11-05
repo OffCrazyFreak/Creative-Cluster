@@ -1,6 +1,4 @@
-// Netlify applies netlify.toml [[headers]] only to static files, so SSR responses get
-// these from the server entry. netlify.toml repeats them for static assets
-// (tests/security-headers.test.ts keeps the two in sync).
+// netlify.toml [[headers]] reach static files only, so SSR gets these here; tests/security-headers.test.ts syncs both.
 export const SECURITY_HEADERS: Record<string, string> = {
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
   "X-Content-Type-Options": "nosniff",

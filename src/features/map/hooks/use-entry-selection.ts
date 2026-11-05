@@ -1,8 +1,7 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback } from "react";
 
-// The phone's selected entry lives in `?entry=`: selecting pushes, so Back closes the sheet,
-// and closing replaces, so the history does not fill up (as Disscount's `?store=`).
+// Selecting pushes to `?entry=` so Back closes the sheet, and closing replaces so the history does not fill up.
 export function useEntrySelection() {
   const { entry } = useSearch({ from: "/_map" });
   const navigate = useNavigate();

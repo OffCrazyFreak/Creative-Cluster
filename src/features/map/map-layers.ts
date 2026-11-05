@@ -27,15 +27,13 @@ const hasOpportunities: ExpressionSpecification = [
 ];
 const isPoint: ExpressionSpecification = ["!", ["has", "point_count"]];
 
-// Pins never hide each other: an entry that silently vanished in a dense town would read as
-// missing data. Clustering keeps the overlap in check instead.
+// An entry vanishing in a dense town would read as missing data, so pins never hide; clustering handles overlap.
 const ALWAYS_VISIBLE = {
   "icon-allow-overlap": true,
   "icon-ignore-placement": true,
 } as const;
 
-// Stacks are HTML markers drawn over each cluster (map-stack-markers.tsx); this invisible circle
-// under them is what clicks and the selection frame find a cluster by.
+// Stacks are HTML markers; this invisible circle is what clicks and the selection frame find a cluster by.
 export const clusterLayer: Omit<CircleLayerSpecification, "source"> = {
   id: CLUSTER_LAYER_ID,
   type: "circle",

@@ -11,8 +11,7 @@ function applicable(geocoders: Geocoder[], countryCode: string | undefined) {
   return geocoders.filter((g) => g.covers?.(countryCode) ?? true);
 }
 
-// Falls through on every error except bad_request (our input is wrong, retrying elsewhere is pointless)
-// and on empty answers, so Geoapify can cover addresses the Croatian table does not hold.
+// Falls through except on bad_request (retrying our wrong input is pointless), so Geoapify can cover gaps.
 async function walk<T>(
   geocoders: Geocoder[],
   attempt: (g: Geocoder) => Promise<T> | undefined,

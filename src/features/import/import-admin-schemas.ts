@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// The browser sends the file as text; about 1500 organizations fit, and a JSON string field stays under the roughly 6 MB request cap of the hosting functions (unverified).
+// About 1500 organizations fit; a JSON string stays under the hosting's roughly 6 MB request cap (unverified).
 export const IMPORT_FILE_MAX_CHARS = 3_000_000;
 
 export const importFileInputSchema = z.object({

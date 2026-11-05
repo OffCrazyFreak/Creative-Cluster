@@ -60,10 +60,10 @@ Create each site at https://app.netlify.com/start (or Add new project), connect 
 The domains' DNS is held outside this project (who holds it: UNVERIFIED, the project lead is checking). Add these at the DNS provider of each domain. Subdomains and the records themselves are below; copy exact values from the dashboards.
 
 - Site subdomain (`creativecluster` under `restorativepractices.xyz`, `registar` under `inovatoridnz.net`): a `CNAME` to `<netlify-site-name>.netlify.app`. For an apex name Netlify documents an ALIAS or ANAME to `apex-loadbalancer.netlify.com`, or an A record to `75.2.60.5` where CNAME flattening does not exist. Source: the Netlify domains page above. Propagation can take up to 24 to 48 hours; check with `dig`. Netlify provisions the HTTPS certificate automatically; how long it takes on external DNS and what to click if it stalls is UNVERIFIED (check the site's Domain management page).
-- Keep the `restorativepractices.xyz` apex redirect working (decision on record).
+- Keep the `restorativepractices.xyz` apex redirect working.
 - Resend: the SPF TXT, DKIM TXT and MX return-path records for the `send.` subdomain, exactly as the Resend domain page shows them (see below). Exact hostnames are UNVERIFIED here.
-- DMARC: a TXT record at `_dmarc` on the parent domain, `v=DMARC1; p=none; rua=mailto:<report address>`, for reports with no enforcement (decision on record: `p=none`). The record format is the standard DMARC one; it was not checked against a provider page.
-- Cutover (from the spec, section 18): lower the TTL a day ahead, test with `curl --resolve <domain>:443:<netlify-ip> https://<domain>/healthz` before switching, switch the CNAMEs at a quiet hour (a few minutes of certificate gap are accepted), keep the old server for two weeks and take a final dump before shutting it down, then watch the certificate issue.
+- DMARC: a TXT record at `_dmarc` on the parent domain, `v=DMARC1; p=none; rua=mailto:<report address>`, for reports with no enforcement. The record format is the standard DMARC one; it was not checked against a provider page.
+- Cutover: lower the TTL a day ahead, test with `curl --resolve <domain>:443:<netlify-ip> https://<domain>/healthz` before switching, switch the CNAMEs at a quiet hour (a few minutes of certificate gap are accepted), keep the old server for two weeks and take a final dump before shutting it down, then watch the certificate issue.
 
 ## Resend domain setup
 
