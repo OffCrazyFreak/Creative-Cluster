@@ -6,8 +6,7 @@ import {
 
 export const GONE_HEADER = "x-entry-gone";
 
-// The router can only answer 200, 404 or 500, so a suspended entry's loader sets this marker
-// header on the response and the route's middleware turns the rendered page into a 410.
+// The router only answers 200, 404 or 500, so a loader sets this header and the middleware makes it a 410.
 export const goneStatusMiddleware = createMiddleware().server(
   async ({ next }) => {
     const result = await next();

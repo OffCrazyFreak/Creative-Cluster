@@ -5,8 +5,7 @@ import { entryTag, tag } from "@/db/schema";
 
 import type { ITagRef } from "./entry-schemas";
 
-// Only active tags are public (suggested ones stay with the suggester) and merged
-// tags show as their canonical tag.
+// Only active tags are public because suggested ones stay with the suggester; merged tags show as their canonical tag.
 export async function loadPublicTags(
   db: DbOrTx,
   entryIds: string[],

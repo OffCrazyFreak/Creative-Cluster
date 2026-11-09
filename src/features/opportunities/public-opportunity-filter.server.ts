@@ -22,8 +22,7 @@ function filledRecently(): SQL {
   ) as SQL;
 }
 
-// The one definition of "visible on the board": live posts and posts filled in the last week,
-// of entries a visitor can see. Suspended entries take their posts down with them.
+// The one definition of "visible on the board"; suspended entries take their posts down with them.
 export function boardCondition(): SQL {
   return and(
     or(activeOpportunityCondition(), filledRecently()),

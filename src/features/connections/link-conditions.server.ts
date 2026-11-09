@@ -10,8 +10,7 @@ export function daysAgo(days: number, now = new Date()): Date {
   return new Date(now.getTime() - days * DAY_MS);
 }
 
-// A proposal older than the auto-withdraw window counts as withdrawn immediately,
-// even before the daily job writes the new status.
+// A proposal past the auto-withdraw window counts as withdrawn even before the daily job writes the status.
 export function isLiveLink(now = new Date()): SQL {
   return or(
     eq(link.status, "confirmed"),

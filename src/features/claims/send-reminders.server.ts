@@ -28,8 +28,7 @@ interface IReminderRow {
   sourceLocale: string;
 }
 
-// Due means: first mail queued long enough ago AND actually delivered (its job is done), so a drain backlog
-// never produces a reminder for a mail the recipient has not received.
+// Requires the first mail delivered, so a drain backlog never reminds about a mail not yet received.
 export async function dueReminders(): Promise<IReminderRow[]> {
   const rows = await db
     .select({

@@ -17,8 +17,7 @@ export function startOfNextUtcDay(now: Date): Date {
   return next;
 }
 
-// Mail being sent by an overlapping drain counts too, or both would pass the cap check. The rest of this
-// drain's batch shares this job's lock time and runs one by one after it, so it is not in flight yet.
+// Mail from an overlapping drain counts too, or both would pass the cap; this drain's own batch runs one by one.
 export async function countSentToday(
   now: Date,
   excludeJobId: string,

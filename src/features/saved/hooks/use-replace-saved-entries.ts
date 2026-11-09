@@ -35,7 +35,7 @@ export function useReplaceSavedEntries() {
     // Toasted here, not per mutate call: a queued click replaces the observer callbacks of the earlier one.
     onError: (_error, _entries, context) => {
       toast.error(m.map_saved_failed());
-      // A queued save was built on this list and replaces the server's list anyway; rolling back under it would drop its change.
+      // A queued save replaces the server's list anyway; rolling back under it would drop its change.
       if (queryClient.isMutating({ mutationKey: savedKeys.save() }) === 1)
         queryClient.setQueryData(savedKeys.all, context?.previous);
     },

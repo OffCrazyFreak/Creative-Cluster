@@ -24,8 +24,7 @@ function plainAddress(value: string): string {
   return (bracketed?.[1] ?? value).trim();
 }
 
-// A bounce event does not say which recipient failed, so only single-recipient mail is judged.
-// Every mail this app sends has one recipient.
+// A bounce event does not name the failed recipient, so only single-recipient mail is judged; all our mail has one.
 function singleRecipient(to: string[], type: string): string[] {
   if (to.length === 1) return to;
   console.warn("resend event with several recipients ignored", type);

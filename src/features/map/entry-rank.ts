@@ -2,8 +2,7 @@ import type { IDirectoryEntry } from "@/features/directory/directory-schemas";
 
 type IRanked = Pick<IDirectoryEntry, "name" | "logo" | "opps">;
 
-// Which entries face up on a stack: a logo reads at a glance, then live opportunities are what
-// visitors come for, then the name keeps the order stable.
+// A logo reads at a glance, live opportunities are what visitors come for, and the name keeps the order stable.
 export function compareForStack(a: IRanked, b: IRanked): number {
   const logo = Number(Boolean(b.logo)) - Number(Boolean(a.logo));
   if (logo !== 0) return logo;

@@ -9,7 +9,7 @@ import {
 import { db } from "@/db/client.server";
 import { contactMessage, job } from "@/db/schema";
 
-// Sender hashes live 30 days. Sent contact mails are scrubbed at once; this removes finished rows and failed ones that still hold text.
+// Sender hashes live 30 days; this removes finished rows and failed ones that still hold text.
 export async function purgeContactData(now = new Date()) {
   const hashes = db
     .delete(contactMessage)

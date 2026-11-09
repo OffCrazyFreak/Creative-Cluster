@@ -5,8 +5,7 @@ interface IShareData {
   url: string;
 }
 
-// AbortError is the user closing the sheet. InvalidStateError is a second share fired while one
-// is still open: falling through to the clipboard there would copy behind the user's back.
+// A second share while one is open raises InvalidStateError; falling through would copy behind the user's back.
 function isDismissal(error: unknown): boolean {
   return (
     error instanceof DOMException &&
@@ -14,8 +13,7 @@ function isDismissal(error: unknown): boolean {
   );
 }
 
-// Returns the outcome rather than showing a toast, so callers keep their own wording. No pending
-// state: navigator.share does not reliably settle when the sheet is dismissed on mobile.
+// No pending state, because navigator.share does not reliably settle when the sheet is dismissed on mobile.
 export async function shareOrCopy(data: IShareData): Promise<ShareOutcome> {
   if (typeof navigator === "undefined") return "failed";
   if (navigator.share) {

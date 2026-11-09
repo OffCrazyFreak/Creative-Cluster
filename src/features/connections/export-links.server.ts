@@ -10,8 +10,7 @@ import { loadEvidenceByLink } from "./link-evidence.server";
 const fromEntry = alias(entry, "from_entry");
 const toEntry = alias(entry, "to_entry");
 
-// Same rule as publicEntryCondition, but on the two aliased ends; an outside-partner stub is
-// allowed on one end only.
+// Same rule as publicEntryCondition on the two aliased ends, with an outside-partner stub allowed on one end only.
 function published(side: typeof fromEntry | typeof toEntry) {
   return and(
     eq(side.status, "published"),

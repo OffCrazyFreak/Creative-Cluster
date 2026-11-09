@@ -3,8 +3,7 @@ import { randomBytes } from "node:crypto";
 import type { DbOrTx } from "@/db/client.server";
 import { verification } from "@/db/schema";
 
-// better-auth's reset endpoint consumes this exact identifier shape, so invites and claims
-// reuse its set-password flow instead of a second token system.
+// better-auth's reset endpoint consumes this shape, so invites and claims reuse it, not a second token system.
 export async function createPasswordToken(
   tx: DbOrTx,
   userId: string,

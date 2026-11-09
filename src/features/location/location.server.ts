@@ -37,8 +37,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// The public Nominatim server allows one request a second across the whole app. Each caller reserves the
-// next free slot in one statement, so concurrent searches queue one second apart instead of racing a window.
+// Nominatim allows one request a second app-wide; one statement reserves the next slot, so searches queue, not race.
 const NOMINATIM_MAX_WAIT_MS = 3000;
 
 export async function acquireNominatim() {
@@ -91,8 +90,7 @@ function cacheable(hits: GeoHit[]) {
   return hits.every((hit) => hit.source !== "dgu");
 }
 
-// Only submitted searches are cached: every typed prefix would otherwise become a row nobody reads again,
-// and the browser's query cache already absorbs repeated keystrokes.
+// Only submitted searches are cached, because every typed prefix would become a row nobody reads again.
 async function cachedSearch(
   input: SuggestInput,
   run: () => ReturnType<typeof searchChain>,

@@ -10,8 +10,7 @@ import { defineConfig, loadEnv } from "vite";
 import { paraglideOptions } from "./src/sites/paraglide-options.ts";
 import { parseSiteId } from "./src/sites/site-id.ts";
 
-// Production builds must name their site (both Netlify sites share one build command)
-// and a real Turnstile key (the client falls back to the always-pass test key).
+// Production builds must name their site (one shared build command) and use a real Turnstile key, never the test key.
 function resolveSiteId(command: string, mode: string) {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   // Cloudflare's test site keys start with 1x, 2x or 3x and must never reach a Netlify build.
@@ -63,11 +62,11 @@ export default defineConfig(({ command, mode }) => {
             applyToEnvironment: (environment) => environment.name === "client",
           }
         : null,
-      // Uploads source maps only when the token exists; SENTRY_ORG and SENTRY_PROJECT come from the environment. Must stay last.
+      // Uploads source maps only with the token; SENTRY_ORG and SENTRY_PROJECT come from env. Must stay last.
       command === "build" && Boolean(process.env.SENTRY_AUTH_TOKEN)
         ? sentryTanstackStart({
             authToken: process.env.SENTRY_AUTH_TOKEN,
-            // The auto-instrumentation rewrites start.ts and the server functions with static Sentry imports, which pull the browser SDK into the initial bundle.
+            // Auto-instrumentation adds static Sentry imports to start.ts, pulling the browser SDK into the bundle.
             autoInstrumentMiddleware: false,
           })
         : null,

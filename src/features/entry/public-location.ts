@@ -13,9 +13,7 @@ export interface ILocationRow {
   visibility: VisibilityMap;
 }
 
-// People are stored at an offset town point already. Everyone else is rounded to about 1 km
-// unless the entry shows its exact place AND the viewer may see the address, so a hidden
-// address cannot be read back from the pin.
+// People already sit at an offset point; others round to about 1 km, so a pin cannot reveal a hidden address.
 export function publicLocation(
   row: ILocationRow,
   isMember: boolean,

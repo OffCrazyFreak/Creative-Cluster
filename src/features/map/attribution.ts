@@ -1,7 +1,6 @@
 import type { Map as MapLibreMap } from "maplibre-gl";
 
-// OpenStreetMap's attribution guidelines let credits fold away after five
-// seconds or on the first pan or zoom, but not be hidden from the start.
+// OpenStreetMap's guidelines let credits fold after five seconds or the first move, but not start hidden.
 const SHOW_FOR_MS = 5000;
 
 // MapLibre itself folds the compact credits only on a drag, not on a zoom or with time.

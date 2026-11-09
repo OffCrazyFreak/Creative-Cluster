@@ -2,10 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { getMapDirectory } from "@/features/directory/map-directory.server";
 
-// A raw route on purpose: the payload is identical for everyone, so it must run no session lookup
-// and can never carry a Set-Cookie header while being publicly cacheable.
-// Browsers revalidate on every use (max-age=0, answered by a 304 through the ETag), so a suspended
-// or archived entry leaves the map within the server cache window plus the short stale window.
+// Raw route so it runs no session lookup and sets no cookie; a suspended entry leaves within the cache windows.
 export const Route = createFileRoute("/directory.json")({
   server: {
     handlers: {

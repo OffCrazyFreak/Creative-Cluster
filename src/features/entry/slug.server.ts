@@ -38,8 +38,7 @@ interface IChangeSlugActor {
   source: ChangeSource;
 }
 
-// Slugs are frozen after publishing except when an admin changes one; the old one then redirects.
-// The input is normalized, then must be free (case-insensitively) and not redirect to another entry.
+// Slugs freeze after publishing unless an admin changes one; then the old one redirects.
 export async function changeEntrySlug(
   tx: Tx,
   entryId: string,

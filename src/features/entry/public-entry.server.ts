@@ -13,8 +13,7 @@ function bySlug(slug: string) {
   return sql`lower(${entry.slug}) = lower(${slug})`;
 }
 
-// Current slug first, then slug_history (old links 301 to the current slug).
-// Suspended entries answer "gone" (410); every other non-public state is "missing" (404).
+// Old slugs in slug_history answer 301; suspended entries answer 410, and every other non-public state 404.
 export async function findEntryForPage(
   slug: string,
   isMember: boolean,

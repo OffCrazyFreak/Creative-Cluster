@@ -43,8 +43,7 @@ function toHit(row: IRow): GeoHit {
   };
 }
 
-// Strict: every typed word starts a word of the street. Fuzzy: trigram word similarity, for
-// DGU's abbreviated names ("Trg G. Bulata") and spelling drift ("Strossmayerova" vs "Josipa Jurja Strossmayera").
+// Fuzzy uses trigram word similarity for DGU's abbreviated names ("Trg G. Bulata") and spelling drift.
 function streetCandidates(q: IDguQuery, fuzzy: boolean) {
   const words = [...q.streetWords, ...q.placeWords];
   const match = fuzzy

@@ -14,10 +14,7 @@ interface IPageSubject {
   expiresAt: Date;
 }
 
-// What a visitor gets for a post: a page (active, expired, filled), 410 (gone) or 404 (missing).
-// Active posts are indexed. Ended ones stay up with a banner for 30 days, then answer 410. Removed
-// posts, and posts of a suspended entry, answer 410 at once; unapproved posts are 404 whatever the
-// entry's state, so a suspended entry cannot reveal them.
+// Ended: banner 30 days, then 410. Removed or suspended: 410 at once. Unapproved: 404, so suspension cannot reveal it.
 export function pageStateOf(
   post: IPageSubject,
   entryStatus: EntryStatus,

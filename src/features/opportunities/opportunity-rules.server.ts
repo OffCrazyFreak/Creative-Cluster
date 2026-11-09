@@ -14,8 +14,7 @@ export function normalizeTitle(title: string): string {
   return title.trim().replace(/\s+/g, " ");
 }
 
-// The owner's row is the lock for all their posting rules (daily limit across entries, caps, titles),
-// taken first by every service so two quick requests cannot both pass a check.
+// Every service takes this lock first, so two quick requests cannot both pass a posting rule.
 export async function lockOwner(tx: Tx, userId: string) {
   await tx
     .select({ id: user.id })
@@ -24,8 +23,7 @@ export async function lockOwner(tx: Tx, userId: string) {
     .for("update");
 }
 
-// The listing the owner area shows: the newest one the user owns. An erasure request freezes it,
-// so "missing", "not yours" and "being erased" look the same.
+// An erasure request freezes the listing, so "missing", "not yours" and "being erased" look the same.
 export async function lockOwnEntry(tx: Tx, userId: string) {
   const [owned] = await tx
     .select({ id: entry.id, status: entry.status, trusted: entry.trusted })

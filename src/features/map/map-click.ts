@@ -39,9 +39,7 @@ function average(values: number[]) {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
-// A stack zooms to fit exactly its entries. Entries on one spot never split (clustering runs to
-// the deepest zoom), so a popover lists them instead; so does a stack holding a person once the
-// fit is already at that person's zoom cap.
+// Entries on one spot never split (clustering runs to the deepest zoom), so a popover lists them.
 export async function openStack({
   map,
   clusterId,
@@ -89,8 +87,7 @@ export async function openStack({
   });
 }
 
-// Pins never overlap (clustering runs to the deepest zoom with a radius wider than a tile), so a
-// pin tap is always exactly one entry.
+// Clustering runs to the deepest zoom with a radius wider than a tile, so a pin tap is always exactly one entry.
 export async function handleMapClick({
   feature,
   onSelectSlug,

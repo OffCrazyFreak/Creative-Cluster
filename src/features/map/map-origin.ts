@@ -1,7 +1,6 @@
 import type { IPoint } from "./map-search";
 
-// Android and iOS "approximate" grants are 2 km or coarser: that pins a town, not a street,
-// so a kilometre figure would claim more than it knows.
+// Android and iOS "approximate" grants are 2 km or coarser, so a kilometre figure would claim more than it knows.
 const PRECISE_WITHIN_M = 2_000;
 
 export interface IMapOrigin {

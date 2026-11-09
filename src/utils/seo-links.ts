@@ -13,8 +13,7 @@ interface ILink {
   hrefLang?: string;
 }
 
-// Canonical for the current language plus reciprocal alternates and x-default (the site's own language).
-// Pass `locales` when some languages of the page are noindex: an alternate must never point at one.
+// An alternate must never point at a noindex page, so pass `locales` when some languages are noindex.
 export function indexableLinks(
   path: string,
   locales: readonly AppLocale[] = LOCALES,

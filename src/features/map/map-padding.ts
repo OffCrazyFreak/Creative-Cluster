@@ -13,8 +13,7 @@ function clamp(value: number, size: number) {
   return Math.max(MARGIN, Math.min(value, size * MAX_SHARE));
 }
 
-// How much of the map the floating panels hide (desktop: left side panel, phones: search block on
-// top and the sheet below, whose top edge is passed in).
+// Desktop: the left side panel. Phones: the search block on top and the sheet below, whose top edge is passed in.
 export function measureCovered(
   frame: DOMRect,
   panel: DOMRect | null,

@@ -84,7 +84,6 @@ async function queueInvite(invite: IPreparedInvite, importSource: string) {
 }
 
 // The first mail restarts the 30 days, so a long wait between prepare and send does not eat into the links.
-// Candidates that turn stale between listing and locking are skipped and replaced, so the batch fills up.
 export async function sendInvites(limit: number, importSource: string) {
   let sent = 0;
   for (const invite of await mailableInvites()) {

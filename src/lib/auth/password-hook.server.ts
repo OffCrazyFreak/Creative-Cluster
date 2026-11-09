@@ -21,8 +21,7 @@ export const PASSWORD_FIELDS: Record<string, string> = {
 
 const HIBP_TIMEOUT_MS = 3000;
 
-// A breached password is refused only when Have I Been Pwned answers in time; an outage or a
-// stall lets it through. better-auth hashes the NFKC form, so that is the form we look up.
+// An outage or stall lets the password through; better-auth hashes the NFKC form, so that is the form we look up.
 async function isBreached(password: string): Promise<boolean> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -49,9 +48,7 @@ async function isBreached(password: string): Promise<boolean> {
   }
 }
 
-// Server-side twin of the Zod schema, and the breach check. Both run in a before hook rather
-// than the haveIBeenPwned plugin's hash step because that step runs after better-auth has
-// already consumed the one-time reset token, so a rejected password would burn the link.
+// A before hook, because the haveIBeenPwned plugin runs after the reset token is consumed, burning the link.
 export const passwordPolicyHook = createAuthMiddleware(async (ctx) => {
   const field = PASSWORD_FIELDS[ctx.path];
   if (!field) return;

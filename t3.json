@@ -1,0 +1,13 @@
+{
+  "$schema": "https://t3.codes/schema/t3.json",
+  "iconPath": "public/favicon.ico",
+  "scripts": [
+    {
+      "name": "Install dependencies",
+      "command": "pnpm install --frozen-lockfile",
+      "icon": "configure",
+      "runOnWorktreeCreate": true,
+      "async": false
+    }
+  ]
+}

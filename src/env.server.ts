@@ -15,8 +15,7 @@ const secret = z
     "Generate a real secret",
   );
 
-// Optional keys switch an adapter to its local stand-in (console email, no
-// translation, test Turnstile keys) so the app runs before the accounts exist.
+// Optional keys switch an adapter to a local stand-in, so the app runs before the accounts exist.
 export const env = createEnv({
   server: {
     NODE_ENV: z

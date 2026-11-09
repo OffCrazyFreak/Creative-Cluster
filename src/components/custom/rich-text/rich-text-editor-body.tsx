@@ -21,8 +21,7 @@ import RichTextToolbar from "./rich-text-toolbar";
 export interface IRichTextEditorProps {
   value: RichTextDoc | null;
   onChange: (doc: RichTextDoc) => void;
-  // Character limit on text, counted the same way parseRichText counts it. Typing stops at the
-  // limit; loaded content over it is kept and shown as over the limit, never trimmed.
+  // Counted as parseRichText counts; typing stops at the limit, but loaded content over it is kept, never trimmed.
   maxChars: number;
   // Accessible name of the editing area.
   label: string;

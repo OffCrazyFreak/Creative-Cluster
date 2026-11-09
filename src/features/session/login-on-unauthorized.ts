@@ -10,7 +10,6 @@ interface ILoaderContext {
   location: { href: string };
 }
 
-// The cached viewer can outlive its session; the guard then says so and the visitor goes to log in.
 // Clearing the viewer matters: otherwise "Try again" reruns the loader with the same stale viewer.
 export async function loginOnUnauthorized<T>(
   { context, location }: ILoaderContext,

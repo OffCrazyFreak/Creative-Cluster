@@ -25,8 +25,7 @@ interface ICreateOpportunity {
   values: OpportunityInput;
 }
 
-// A post always goes to the listing the owner area shows (the owner's newest one). The owner row is
-// locked first, so two quick posts cannot both pass the limits, even across entries.
+// The owner row is locked first, so two quick posts cannot both pass the limits, even across entries.
 export async function createOpportunity({
   userId,
   values,

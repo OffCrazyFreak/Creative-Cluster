@@ -34,10 +34,7 @@ export const Route = createFileRoute("/_map/e/$slug")({
         params: { slug: result.slug },
         statusCode: 301,
       });
-    // Connections are prefetched so the list is in the server-rendered HTML; they load alongside
-    // the translation instead of after it.
-    // Every other language is looked up so hreflang only names pages that are indexable. Only the
-    // shown language may fail the page; another one that fails is left out of hreflang.
+    // Other languages are looked up so hreflang names only indexable pages; only the shown one may fail the page.
     const found = result.status === "found" ? result.entry : null;
     const others = found
       ? LOCALES.filter((locale) => locale !== found.sourceLocale)
@@ -81,8 +78,7 @@ export const Route = createFileRoute("/_map/e/$slug")({
     const { entry, translation } = loaderData;
     const shownText =
       translation?.texts.description?.text ?? entry.descriptionText;
-    // The page still shows the owner's language until a translation is stored: keep it out of the
-    // index and do not advertise it as an alternate.
+    // Still in the owner's language until translated, so keep it out of the index and off the alternates.
     const noindex = needsNoindex(translation);
     const kind =
       entry.kind === "person"

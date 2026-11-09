@@ -10,7 +10,7 @@ Each site has its own Netlify site and its own Postgres database. The previous a
 ## Stack
 
 - TanStack Start (`@tanstack/react-start`, pinned exact) on Vite, React 19, TanStack Router, Query, Form and Table (the table only in `/admin/entries`).
-- shadcn components on Base UI, Tailwind CSS. UI code uses plain shadcn with layout classes only, so a theme can be dropped into `src/styles.css`.
+- shadcn components on Base UI, Tailwind CSS. A brand theme in `src/styles.css` replaces the current styling later.
 - Paraglide JS for Croatian and English messages, split per area under `messages/<area>/`.
 - Drizzle ORM on Postgres: the `pg` driver locally, Neon's WebSocket pool in production (transactions need it). Migrations in `drizzle/`.
 - better-auth (pinned exact) with the admin plugin, email and password plus optional Google sign-in.

@@ -16,8 +16,7 @@ interface IPeriod {
   deadline: string | null;
 }
 
-// Deadline + 1 day when set, otherwise 60 days. The cap ends with UTC day 180, so a deadline on
-// that day (still allowed) stays open through it instead of closing mid-day.
+// The cap ends with UTC day 180, so a deadline on that day stays open through it instead of closing mid-day.
 export function periodEnd({ start, deadline }: IPeriod): Date {
   const natural = deadline
     ? deadlineEnd(deadline)
